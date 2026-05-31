@@ -1,88 +1,112 @@
 # doctors_clinic_saas
 
-Multi-clinic doctor's-office management platform. Supabase + Next.js (web first, Expo later).
+A multi-clinic doctor's-office management platform. Three logged-in roles
+(**admin**, **doctor**, **secretary**) manage clinics, staff, appointments,
+and patient medical records. Built as a lean MVP, architected to grow into a
+subscription SaaS without rewriting auth or tenancy.
 
-## Status
+**Stack:** Next.js 15 (App Router, TypeScript) · Supabase (Postgres + Auth +
+RLS + Edge Functions) · Tailwind CSS v4. Clients talk to Supabase directly,
+secured by RLS; privileged work runs in Server Actions with the service-role
+key (never shipped to the browser).
 
-**Phase 0 — schema only.** Migrations, RLS policies, and RLS test script are in place. The Next.js app has not been scaffolded yet, pending review of the SQL.
+## Features
 
-## Layout
+- **Auth** — email/password + Google / Apple / Facebook OAuth, with social
+  accounts linkable to an existing email. Password reset flow included.
+- **Multi-clinic** — a global clinic switcher; doctors practice at multiple
+  clinics, each with designated secretaries. Patients are scoped per clinic.
+- **Today / Schedule** — appointment queue, booking against real availability
+  slots, status flow (scheduled → confirmed → completed / cancelled / no-show).
+- **Patients** — roster + detail (demographics, problem list, visits,
+  prescriptions, lab orders with file uploads).
+- **Visits** — doctors complete a visit (vitals, diagnosis, tag-based
+  prescriptions / labs / conditions from a reusable library) and print an Rx.
+- **Analytics** — filterable summary (status, provider, completion rate,
+  patients, care hours) with print-to-paper reports for documentation.
+- **Admin** — clinics, doctors, secretaries, clinic assignments, common-use
+  library, pending-user approval, and an audit log of all clinical writes.
+- **UI** — minimal redesign with a single blue accent, light/dark theme
+  (light default), collapsible icon-rail sidebar, and print stylesheets for
+  hard copies.
+
+## Repo layout
 
 ```
+web/                     Next.js app (deploy this on Vercel)
+  app/                   App Router pages + route groups (auth) / (app)
+  app/_components/       shared UI: icons, theme toggle, app shell, etc.
+  lib/                   Supabase clients, queries, Zod schemas, Server Actions
+  lib/database.types.ts  generated from the DB schema (source of truth)
 supabase/
-  migrations/
-    0001_schema.sql   -- tables, enums, indexes, auth.users trigger
-    0002_rls.sql      -- RLS helpers + per-table policies
-    0003_rpcs.sql     -- admin_assign_user, book_appointment,
-                          complete_appointment, bootstrap_first_admin
-  tests/
-    rls_test.sql      -- tenant/role isolation smoke tests (runs in a tx,
-                          ROLLBACK at end)
+  migrations/            0001–0013: schema, RLS, RPCs, clinical extensions,
+                         lab files + storage policy, audit log
+  functions/             Edge Functions (appointment reminders)
+  seed/                  admin/doctor/secretary seeding
+  tests/rls_test.sql     tenant/role isolation smoke tests
 ```
 
-## Local setup
+## Local development
 
-1. Install Supabase CLI, then in this repo:
-   ```
-   supabase init        # only if not already initialized
-   supabase start
-   supabase db reset    # applies everything in migrations/
-   ```
-2. Run the RLS test script:
-   ```
-   psql "$(supabase status -o env | grep DB_URL | cut -d= -f2)" \
-        -f supabase/tests/rls_test.sql
-   ```
-   All `ok: …` notices should print and no `ASSERT FAILED` should appear.
+```bash
+# 1. Database (Supabase CLI)
+supabase start
+supabase db reset            # applies everything in supabase/migrations/
 
-## OAuth providers (configure in Supabase Dashboard → Authentication → Providers)
+# 2. Web app
+cd web
+npm install
+cp .env.example .env.local   # fill in the values below
+npm run gen:types:local      # regenerate lib/database.types.ts from local DB
+npm run dev                  # http://localhost:3000
+```
 
-- **Google** — create an OAuth client in Google Cloud Console; add the
-  Supabase callback URL listed in the dashboard.
-- **Apple** — requires a **paid Apple Developer account** ($99/yr). Apple
-  Sign In is **required by the App Store** any time you ship other social
-  logins, so plan for this before mobile launch.
-- **Facebook** — create a Meta app, enable Facebook Login, add the
-  Supabase callback URL.
+### Environment variables (`web/.env.local`)
 
-No email/password login in the MVP.
+| Var | Where it's used |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | browser + server |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser + server (RLS gates everything) |
+| `SUPABASE_SERVICE_ROLE_KEY` | **server-only** — never exposed to the client |
+| `SUPABASE_PROJECT_ID` | `npm run gen:types` against the hosted project |
 
-## Seeding the first admin
+### Bootstrap the first admin
 
-A first OAuth sign-in creates a `profiles` row with `role='pending'`. To
-bootstrap yourself as the first admin, after you've signed in once:
+After signing in once (which creates a `pending` profile), promote yourself in
+the Supabase SQL editor:
 
 ```sql
--- run in the Supabase SQL editor (service_role context)
 select bootstrap_first_admin('you@example.com', 'Your Clinic Group');
 ```
 
-This creates an `accounts` row if needed and promotes you to admin.
-Subsequent users you approve via the (forthcoming) admin UI, which calls
+Approve subsequent users from the admin UI (Pending users), which calls
 `admin_assign_user(user_id, role)`.
 
-## Type generation
+## Deploy (Vercel)
 
-Once a Next.js app is scaffolded:
+The deployable app is the **`web/`** subdirectory.
 
-```
-supabase gen types typescript --local > web/lib/database.types.ts
-```
+1. Import this repo at [vercel.com/new](https://vercel.com/new).
+2. **Set Root Directory to `web`** (Framework preset auto-detects Next.js).
+3. Add the four env vars above in Project → Settings → Environment Variables.
+4. In **Supabase → Auth → URL Configuration**, add your Vercel domain to
+   Site URL / Redirect URLs, including `https://<domain>/auth/callback` —
+   otherwise OAuth and password-reset links fail in production.
 
-Wire this into the build so the DB schema stays the single source of
-truth — no hand-written or camelCase-remapped row types.
+Every push to `main` then auto-deploys.
 
 ## Trust boundary
 
-- `anon` / `authenticated` keys → safe in the browser. RLS is the only
-  thing standing between a tab and the data.
-- `service_role` key → server-only (Next.js Route Handlers / Server
-  Actions / Edge Functions). Never bundled into client code.
+- `anon` / `authenticated` keys are safe in the browser — **RLS is the only
+  thing standing between a tab and the data.**
+- The `service_role` key is server-only (Server Actions / Edge Functions) and
+  is never bundled into client code. Lab-file storage is locked down with a
+  restrictive Storage policy so the bucket can't be hit with an anon key.
 
-## Future-proofing seams (not built)
+## Future-proofing (seams left open, not built)
 
 - `accounts` table is in place — billing/subscriptions attach here later.
-- All business tables are scoped by `account_id` so multi-tenant
-  isolation works without policy rewrites.
-- Data access lives in `lib/` (to be added) so Expo can reuse it.
-- Reminders → Supabase Edge Functions + `pg_cron`.
+- All business tables are scoped by `account_id`, so multi-tenant isolation
+  holds without policy rewrites.
+- Data access lives in `web/lib/` so a future Expo app can reuse the queries,
+  Zod schemas, and generated types.
