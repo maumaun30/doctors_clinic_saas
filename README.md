@@ -12,8 +12,9 @@ key (never shipped to the browser).
 
 ## Features
 
-- **Auth** — email/password + Google / Apple / Facebook OAuth, with social
-  accounts linkable to an existing email. Password reset flow included.
+- **Auth** — email/password + Google OAuth, with social accounts linkable to
+  an existing email. Password reset flow included. (Apple & Facebook OAuth are
+  scaffolded but disabled for now — re-enable in `(auth)/login` and `account`.)
 - **Multi-clinic** — a global clinic switcher; doctors practice at multiple
   clinics, each with designated secretaries. Patients are scoped per clinic.
 - **Today / Schedule** — appointment queue, booking against real availability

@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
-import { GoogleLogo, AppleLogo, FacebookLogo } from "@/app/_components/brand-icons";
+import { GoogleLogo } from "@/app/_components/brand-icons";
 
-type Provider = "google" | "apple" | "facebook";
+// Apple + Facebook OAuth removed for now (testing). To re-enable: add the
+// provider here, re-add its button below, and import {AppleLogo, FacebookLogo}.
+type Provider = "google";
 type Mode = "signin" | "signup";
 
 export default function LoginPage() {
@@ -99,8 +101,6 @@ export default function LoginPage() {
         </div>
         <div style={{ display: "grid", gap: 8 }}>
           <button type="button" className="btn btn-secondary" onClick={() => oauth("google")}><GoogleLogo /> Google</button>
-          <button type="button" className="btn btn-secondary" onClick={() => oauth("apple")}><AppleLogo /> Apple</button>
-          <button type="button" className="btn btn-secondary" onClick={() => oauth("facebook")}><FacebookLogo /> Facebook</button>
         </div>
 
         <p className="auth-foot">

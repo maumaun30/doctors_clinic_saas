@@ -7,8 +7,11 @@ import { updateMyProfile } from "@/lib/actions/profile";
 import { ProviderLogo } from "@/app/_components/brand-icons";
 import { Skeleton } from "@/app/_components/skeleton";
 
-type Provider = "google" | "apple" | "facebook";
-const ALL: Provider[] = ["google", "apple", "facebook"];
+// Apple + Facebook OAuth removed for now (testing). To re-enable, add the
+// provider back to this list — the ProviderLogo + link/unlink code already
+// handles any provider generically.
+type Provider = "google";
+const ALL: Provider[] = ["google"];
 
 export default function AccountPage() {
   const sb = createClient();

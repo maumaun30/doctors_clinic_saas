@@ -21,7 +21,7 @@ Set OAuth redirect URLs in the Supabase dashboard to:
 app/
   layout.tsx           root
   page.tsx             /  -> redirects by role
-  (auth)/login         OAuth buttons (Google / Apple / Facebook)
+  (auth)/login         OAuth buttons (Google; Apple/Facebook disabled)
   auth/callback        OAuth code-exchange route handler
   (app)/layout.tsx     authed shell + nav, role-gated
   (app)/pending        awaiting-approval screen
