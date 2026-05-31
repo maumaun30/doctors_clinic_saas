@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
                        value={confirm} onChange={e => setConfirm(e.target.value)} required />
               </div>
               <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: "100%" }}>
-                {busy ? "…" : "Update password"}
+                {busy ? <span className="spinner" /> : "Update password"}
               </button>
             </form>
           </>

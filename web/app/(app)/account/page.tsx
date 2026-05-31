@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { updateMyProfile } from "@/lib/actions/profile";
+import { ProviderLogo } from "@/app/_components/brand-icons";
 
 type Provider = "google" | "apple" | "facebook";
 const ALL: Provider[] = ["google", "apple", "facebook"];
@@ -104,7 +105,8 @@ export default function AccountPage() {
               ? <span className="hint">Loading…</span>
               : identities.map(i => (
                 <span key={i.id} className="badge">
-                  <span className="dot" />{i.provider}
+                  {i.provider === "email" ? <span className="dot" /> : <ProviderLogo provider={i.provider} size={13} />}
+                  {i.provider}
                   {i.provider !== "email" && (
                     <button onClick={() => unlink(i)} title="Unlink"
                             style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
@@ -118,6 +120,7 @@ export default function AccountPage() {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {ALL.map(p => (
               <button key={p} className="btn btn-secondary btn-sm" disabled={linkedProviders.has(p)} onClick={() => link(p)}>
+                <ProviderLogo provider={p} size={15} />
                 {linkedProviders.has(p) ? `${p} ✓` : `Link ${p}`}
               </button>
             ))}

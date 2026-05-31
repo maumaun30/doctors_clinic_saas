@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
+import { GoogleLogo, AppleLogo, FacebookLogo } from "@/app/_components/brand-icons";
 
 type Provider = "google" | "apple" | "facebook";
 type Mode = "signin" | "signup";
@@ -87,7 +88,7 @@ export default function LoginPage() {
                    value={password} onChange={e => setPassword(e.target.value)} required />
           </div>
           <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: "100%" }}>
-            {busy ? "…" : mode === "signin" ? "Sign in" : "Sign up"}
+            {busy ? <span className="spinner" /> : mode === "signin" ? "Sign in" : "Sign up"}
           </button>
         </form>
 
@@ -97,9 +98,9 @@ export default function LoginPage() {
           <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
         </div>
         <div style={{ display: "grid", gap: 8 }}>
-          <button type="button" className="btn btn-secondary" onClick={() => oauth("google")}>Google</button>
-          <button type="button" className="btn btn-secondary" onClick={() => oauth("apple")}>Apple</button>
-          <button type="button" className="btn btn-secondary" onClick={() => oauth("facebook")}>Facebook</button>
+          <button type="button" className="btn btn-secondary" onClick={() => oauth("google")}><GoogleLogo /> Google</button>
+          <button type="button" className="btn btn-secondary" onClick={() => oauth("apple")}><AppleLogo /> Apple</button>
+          <button type="button" className="btn btn-secondary" onClick={() => oauth("facebook")}><FacebookLogo /> Facebook</button>
         </div>
 
         <p className="auth-foot">
