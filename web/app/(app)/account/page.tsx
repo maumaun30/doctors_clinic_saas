@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { updateMyProfile } from "@/lib/actions/profile";
 import { ProviderLogo } from "@/app/_components/brand-icons";
+import { Skeleton } from "@/app/_components/skeleton";
 
 type Provider = "google" | "apple" | "facebook";
 const ALL: Provider[] = ["google", "apple", "facebook"];
@@ -17,10 +18,11 @@ export default function AccountPage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   async function refresh() {
     const { data, error } = await sb.auth.getUserIdentities();
-    if (error) { setMsg(error.message); return; }
+    if (error) { setMsg(error.message); setLoading(false); return; }
     setIdentities(data.identities ?? []);
     const { data: u } = await sb.auth.getUser();
     setEmail(u.user?.email ?? "");
@@ -30,6 +32,7 @@ export default function AccountPage() {
       setFullName(p?.full_name ?? "");
       setPhone(p?.phone ?? "");
     }
+    setLoading(false);
   }
 
   const saveProfile = async (e: React.FormEvent) => {
@@ -70,6 +73,28 @@ export default function AccountPage() {
 
   const linkedProviders = new Set(identities.map(i => i.provider));
   const ok = msg === "Profile saved.";
+
+  if (loading) {
+    return (
+      <>
+        <div className="page-head">
+          <div>
+            <Skeleton w={140} h={24} />
+            <Skeleton w={220} h={14} style={{ marginTop: 9 }} />
+          </div>
+        </div>
+        <div className="stack">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="card" style={{ padding: 20 }}>
+              <Skeleton w={120} h={12} />
+              <Skeleton w="100%" h={36} style={{ marginTop: 14 }} />
+              {i === 0 && <Skeleton w="100%" h={36} style={{ marginTop: 12 }} />}
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
