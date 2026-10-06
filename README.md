@@ -48,7 +48,10 @@ supabase/
                          lockdown, reminder delivery log
   functions/             Edge Functions (appointment reminders via Resend)
   seed/                  admin/doctor/secretary seeding
-  tests/rls_test.sql     tenant/role isolation smoke tests
+  tests/                 SQL tests (RLS isolation, reminders), Supabase stub
+                         for plain Postgres, reminders Edge Function e2e
+.github/workflows/ci.yml typecheck + build, migrations + SQL tests, types
+                         freshness, Edge Function e2e
 ```
 
 ## Local development
@@ -86,6 +89,23 @@ select bootstrap_first_admin('you@example.com', 'Your Clinic Group');
 
 Approve subsequent users from the admin UI (Pending users), which calls
 `admin_assign_user(user_id, role)`.
+
+## Testing
+
+CI (`.github/workflows/ci.yml`) runs on every push to `main` and every PR.
+To run the database tests locally against a throwaway Postgres:
+
+```bash
+docker run -d --name clinic-testdb -e POSTGRES_PASSWORD=postgres -p 54398:5432 postgres:17
+export DATABASE_URL=postgres://postgres:postgres@localhost:54398/postgres
+supabase/tests/run.sh        # stub + all migrations + *_test.sql
+cd web && npm run gen:types:db   # regenerate lib/database.types.ts from it
+```
+
+`supabase/tests/supabase_stub.sql` fakes the bits of Supabase the
+migrations rely on (roles, `auth`, `storage`) — never apply it to a real
+project. After adding a migration, regenerate types with
+`npm run gen:types:db` and commit them; CI fails if they drift.
 
 ## Deploy (Vercel)
 

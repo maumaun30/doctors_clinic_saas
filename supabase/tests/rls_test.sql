@@ -82,23 +82,23 @@ insert into clinic_assignments(doctor_clinic_id, secretary_id) values
   ('00000000-0000-0000-0000-0000000000d2','00000000-0000-0000-0000-000000000042');
 
 insert into patients(id, account_id, full_name) values
-  ('00000000-0000-0000-0000-0000000000p1','00000000-0000-0000-0000-0000000000a1','Patient A'),
-  ('00000000-0000-0000-0000-0000000000p2','00000000-0000-0000-0000-0000000000a2','Patient B');
+  ('00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000a1','Patient A'),
+  ('00000000-0000-0000-0000-0000000000b2','00000000-0000-0000-0000-0000000000a2','Patient B');
 
 insert into appointments(id, patient_id, doctor_id, clinic_id, scheduled_at, status, created_by) values
   ('00000000-0000-0000-0000-0000000000e1',
-   '00000000-0000-0000-0000-0000000000p1','00000000-0000-0000-0000-000000000031','00000000-0000-0000-0000-0000000000c1',
+   '00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-000000000031','00000000-0000-0000-0000-0000000000c1',
    now() + interval '1 day','scheduled','00000000-0000-0000-0000-000000000011'),
   ('00000000-0000-0000-0000-0000000000e2',
-   '00000000-0000-0000-0000-0000000000p2','00000000-0000-0000-0000-000000000032','00000000-0000-0000-0000-0000000000c2',
+   '00000000-0000-0000-0000-0000000000b2','00000000-0000-0000-0000-000000000032','00000000-0000-0000-0000-0000000000c2',
    now() + interval '1 day','scheduled','00000000-0000-0000-0000-000000000012');
 
 insert into medical_records(id, patient_id, doctor_id, appointment_id, clinic_id, diagnosis, notes) values
-  ('00000000-0000-0000-0000-0000000000r1',
-   '00000000-0000-0000-0000-0000000000p1','00000000-0000-0000-0000-000000000031','00000000-0000-0000-0000-0000000000e1','00000000-0000-0000-0000-0000000000c1',
+  ('00000000-0000-0000-0000-0000000000f1',
+   '00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-000000000031','00000000-0000-0000-0000-0000000000e1','00000000-0000-0000-0000-0000000000c1',
    'Flu','Patient A notes'),
-  ('00000000-0000-0000-0000-0000000000r2',
-   '00000000-0000-0000-0000-0000000000p2','00000000-0000-0000-0000-000000000032','00000000-0000-0000-0000-0000000000e2','00000000-0000-0000-0000-0000000000c2',
+  ('00000000-0000-0000-0000-0000000000f2',
+   '00000000-0000-0000-0000-0000000000b2','00000000-0000-0000-0000-000000000032','00000000-0000-0000-0000-0000000000e2','00000000-0000-0000-0000-0000000000c2',
    'Cold','Patient B notes');
 
 -- =====================================================================
@@ -170,20 +170,22 @@ select _assert(
 -- 6) secretary A cannot insert appointment for Dr B / Clinic B
 select _as_user('00000000-0000-0000-0000-000000000041');
 do $$
+declare inserted boolean := false;
 begin
   begin
     insert into appointments(patient_id, doctor_id, clinic_id, scheduled_at)
-    values ('00000000-0000-0000-0000-0000000000p2',
+    values ('00000000-0000-0000-0000-0000000000b2',
             '00000000-0000-0000-0000-000000000032',
             '00000000-0000-0000-0000-0000000000c2',
             now() + interval '2 day');
-    raise exception 'ASSERT FAILED: secA inserted into clinic B';
-  exception when insufficient_privilege or check_violation then
-    raise notice 'ok: secA blocked from cross-clinic insert';
-  when others then
-    -- RLS violation surfaces as 42501; PostgREST wraps differently
-    raise notice 'ok: secA blocked (%, %)', sqlstate, sqlerrm;
+    inserted := true;
+  exception when others then
+    -- RLS violation surfaces as 42501 (insufficient_privilege)
+    raise notice 'ok: secA blocked from cross-clinic insert (%)', sqlstate;
   end;
+  if inserted then
+    raise exception 'ASSERT FAILED: secA inserted into clinic B';
+  end if;
 end$$;
 
 -- 7) self-promotion attempt blocked
@@ -193,17 +195,15 @@ begin
   begin
     update profiles set role = 'admin'
      where id = '00000000-0000-0000-0000-000000000051';
-    -- if it didn't throw, verify nothing changed by re-checking
-    perform 1 from profiles
-      where id = '00000000-0000-0000-0000-000000000051' and role = 'admin';
-    if found then
-      raise exception 'ASSERT FAILED: pending user promoted themselves';
-    end if;
-    raise notice 'ok: self-promotion silently blocked by with-check';
   exception when others then
-    raise notice 'ok: self-promotion rejected (%, %)', sqlstate, sqlerrm;
+    raise notice 'ok: self-promotion rejected (%)', sqlstate;
   end;
 end$$;
+reset role;
+select _assert(
+  (select role from profiles where id = '00000000-0000-0000-0000-000000000051') = 'pending',
+  'pending user could not promote themselves'
+);
 
 -- cleanup helpers
 drop function _as_user(uuid);

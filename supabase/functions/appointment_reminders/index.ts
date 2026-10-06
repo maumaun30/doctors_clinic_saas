@@ -10,6 +10,7 @@
 //   RESEND_API_KEY   Resend API key. Unset => dry run (log only, nothing recorded).
 //   REMINDER_FROM    Sender, e.g. "Clinic <reminders@yourdomain.com>" (verified in Resend).
 //   REMINDER_REPLY_TO  optional reply-to address.
+//   RESEND_API_URL   optional override of https://api.resend.com (tests / proxies).
 //
 // Deployed with --no-verify-jwt (cron calls it), so the function checks
 // the bearer token itself: it must equal the service_role key.
@@ -70,10 +71,10 @@ function buildEmail(r: Reminder) {
 }
 
 async function sendResend(
-  apiKey: string, from: string, replyTo: string | undefined, to: string,
+  apiUrl: string, apiKey: string, from: string, replyTo: string | undefined, to: string,
   msg: { subject: string; text: string; html: string }, idempotencyKey: string,
 ): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
-  const res = await fetch("https://api.resend.com/emails", {
+  const res = await fetch(`${apiUrl}/emails`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${apiKey}`,
@@ -98,6 +99,7 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get("RESEND_API_KEY");
   const from = Deno.env.get("REMINDER_FROM");
   const replyTo = Deno.env.get("REMINDER_REPLY_TO") || undefined;
+  const apiUrl = Deno.env.get("RESEND_API_URL") || "https://api.resend.com";
   const dryRun = !apiKey;
   if (!dryRun && !from) {
     return json({ ok: false, error: "REMINDER_FROM not set" }, 500);
@@ -131,7 +133,7 @@ Deno.serve(async (req) => {
 
     if (sent + failed > 0) await new Promise(res => setTimeout(res, SEND_GAP_MS));
     const result = await sendResend(
-      apiKey!, from!, replyTo, r.patient_email, msg,
+      apiUrl, apiKey!, from!, replyTo, r.patient_email, msg,
       `reminder-${r.appointment_id}-${r.scheduled_at}`,
     );
     const { error: logErr } = await supabase.from("appointment_reminders").insert({
