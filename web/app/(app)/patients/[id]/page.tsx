@@ -35,6 +35,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
       date_of_birth: (formData.get("date_of_birth") as string) || null,
       sex: (formData.get("sex") as string) || null,
       phone: (formData.get("phone") as string) || null,
+      email: (formData.get("email") as string) || null,
       address: (formData.get("address") as string) || null,
     });
     revalidatePath(`/patients/${id}`);
@@ -118,6 +119,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             <dt>Age</dt><dd>{ageVerbose(patient.date_of_birth) ?? "—"}</dd>
             <dt>Sex</dt><dd>{patient.sex ?? "—"}</dd>
             <dt>Phone</dt><dd>{patient.phone ?? "—"}</dd>
+            <dt>Email</dt><dd>{patient.email ?? "—"}</dd>
             <dt>Address</dt><dd>{patient.address ?? "—"}</dd>
           </dl>
           <details style={{ marginTop: 14 }}>
@@ -142,9 +144,15 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                   </select>
                 </div>
               </div>
-              <div className="field">
-                <label className="label">Phone</label>
-                <input className="input" name="phone" defaultValue={patient.phone ?? ""} />
+              <div className="grid-2">
+                <div className="field">
+                  <label className="label">Phone</label>
+                  <input className="input" name="phone" defaultValue={patient.phone ?? ""} />
+                </div>
+                <div className="field">
+                  <label className="label">Email</label>
+                  <input className="input" name="email" type="email" defaultValue={patient.email ?? ""} />
+                </div>
               </div>
               <div className="field">
                 <label className="label">Address</label>

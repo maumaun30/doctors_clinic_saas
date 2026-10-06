@@ -55,6 +55,7 @@ export default async function PatientsPage({
       date_of_birth: (formData.get("date_of_birth") as string) || undefined,
       sex: (formData.get("sex") as string) || undefined,
       phone: (formData.get("phone") as string) || undefined,
+      email: (formData.get("email") as string) || undefined,
       address: (formData.get("address") as string) || undefined,
     });
     revalidatePath("/patients");
@@ -128,9 +129,15 @@ export default async function PatientsPage({
                 </select>
               </div>
             </div>
-            <div className="field">
-              <label className="label">Phone</label>
-              <input className="input" name="phone" />
+            <div className="grid-2">
+              <div className="field">
+                <label className="label">Phone</label>
+                <input className="input" name="phone" />
+              </div>
+              <div className="field">
+                <label className="label">Email</label>
+                <input className="input" name="email" type="email" placeholder="For appointment reminders" />
+              </div>
             </div>
             <div className="field">
               <label className="label">Address</label>

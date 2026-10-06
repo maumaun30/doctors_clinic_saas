@@ -9,6 +9,7 @@ const createPatientInput = z.object({
   date_of_birth: z.string().date().optional(),
   sex: z.enum(["male", "female", "other"]).optional(),
   phone: z.string().max(40).optional(),
+  email: z.string().trim().email().max(254).optional(),
   address: z.string().max(500).optional(),
 });
 
@@ -22,6 +23,7 @@ export async function createPatient(raw: unknown) {
     p_sex: input.sex ?? null,
     p_phone: input.phone ?? null,
     p_address: input.address ?? null,
+    p_email: input.email ?? null,
   });
   if (error) throw new Error(error.message);
   return data;
@@ -33,6 +35,7 @@ const updatePatientInput = z.object({
   date_of_birth: z.string().date().optional().nullable(),
   sex: z.enum(["male", "female", "other"]).optional().nullable(),
   phone: z.string().max(40).optional().nullable(),
+  email: z.string().trim().email().max(254).optional().nullable(),
   address: z.string().max(500).optional().nullable(),
 });
 
@@ -45,6 +48,7 @@ export async function updatePatient(raw: unknown) {
     sex: input.sex ?? null,
     phone: input.phone ?? null,
     address: input.address ?? null,
+    email: input.email ?? null,
   }).eq("id", input.id);
   if (error) throw new Error(error.message);
 }

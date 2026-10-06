@@ -21,6 +21,7 @@ export const patientInput = z.object({
   date_of_birth: z.string().date().optional(),
   sex: sex.optional(),
   phone: z.string().max(40).optional(),
+  email: z.string().trim().email().max(254).optional(),
   address: z.string().max(500).optional(),
 });
 

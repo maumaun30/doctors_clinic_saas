@@ -1,8 +1,30 @@
 # appointment_reminders
 
-Edge Function that fetches tomorrow's active appointments via
-`appointments_for_reminder(1)` and (currently) logs them. Hook in an
-SMS/email provider where the `// TODO: dispatch` comment lives.
+Edge Function that emails next-day appointment reminders via
+[Resend](https://resend.com).
+
+- Fetches tomorrow's (Asia/Manila) scheduled/confirmed appointments via
+  `appointments_for_reminder(1)`.
+- Emails each patient that has an `email` on file. Patients without one
+  are counted as `skipped_no_email`.
+- Records every attempt in `appointment_reminders` (`sent` / `failed`).
+  The RPC skips appointments that already have a `sent` email for their
+  current `scheduled_at`, so re-running is safe; failed sends are retried
+  on the next run, and a rescheduled appointment gets a fresh reminder.
+- Without `RESEND_API_KEY` it runs as a **dry run**: logs what it would
+  send and records nothing.
+
+Response: `{ ok, dry_run, sent, failed, skipped_no_email }`.
+
+## Secrets
+
+```
+supabase secrets set RESEND_API_KEY=re_xxx
+supabase secrets set REMINDER_FROM="Clinic <reminders@yourdomain.com>"
+supabase secrets set REMINDER_REPLY_TO=frontdesk@yourdomain.com   # optional
+```
+
+`REMINDER_FROM` must use a domain verified in Resend.
 
 ## Deploy
 
@@ -10,9 +32,10 @@ SMS/email provider where the `// TODO: dispatch` comment lives.
 supabase functions deploy appointment_reminders --no-verify-jwt
 ```
 
-`--no-verify-jwt` because cron / `pg_net` will call it without a user
-JWT. The function authenticates to the DB with the service_role key
-already present in the function environment.
+`--no-verify-jwt` because cron / `pg_net` calls it without a user JWT.
+The function instead requires `Authorization: Bearer <service_role key>`
+and returns 401 otherwise, so the public URL can't be used to trigger
+sends.
 
 ## Schedule with pg_cron + pg_net
 
@@ -39,10 +62,28 @@ select cron.schedule(
 );
 ```
 
+Check delivery history:
+
+```sql
+select r.attempted_at, r.status, r.error, p.full_name, p.email
+from appointment_reminders r
+join appointments a on a.id = r.appointment_id
+join patients p on p.id = a.patient_id
+order by r.attempted_at desc limit 50;
+```
+
 ## Local invoke
 
 ```
 supabase functions serve appointment_reminders --no-verify-jwt
 # in another shell:
-curl http://localhost:54321/functions/v1/appointment_reminders
+curl -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+  http://localhost:54321/functions/v1/appointment_reminders
 ```
+
+## Limits
+
+Sends are paced ~600 ms apart to stay under Resend's default rate limit,
+so one run handles a few hundred reminders within the Edge Function
+time limit. SMS is not wired yet; the `channel` column already allows
+`'sms'` for when it is.
