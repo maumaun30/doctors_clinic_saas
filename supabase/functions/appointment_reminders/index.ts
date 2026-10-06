@@ -1,23 +1,28 @@
 // Supabase Edge Function: appointment_reminders
 //
-// Pulls tomorrow's active appointments via the SECURITY DEFINER RPC
-// `appointments_for_reminder(1)` and emails each patient that has an
-// address on file, via Resend. Every attempt is recorded in
-// `appointment_reminders`; the RPC skips anything already sent, so
-// re-running the job never double-sends.
+// Sends next-day appointment reminders on two independent channels:
+//   * email via Resend, to patients with an email on file
+//   * SMS via Semaphore, to patients with a PH mobile number on file
+// Each channel pulls its own due list from `appointments_for_reminder(1,
+// channel)` and records every attempt in `appointment_reminders`; the RPC
+// skips anything already sent on that channel, so re-running never
+// double-sends and failed sends are retried next run.
 //
 // Env (set with `supabase secrets set ...`):
-//   RESEND_API_KEY   Resend API key. Unset => dry run (log only, nothing recorded).
-//   REMINDER_FROM    Sender, e.g. "Clinic <reminders@yourdomain.com>" (verified in Resend).
-//   REMINDER_REPLY_TO  optional reply-to address.
-//   RESEND_API_URL   optional override of https://api.resend.com (tests / proxies).
+//   RESEND_API_KEY      Resend key. Unset => email dry run (log only, nothing recorded).
+//   REMINDER_FROM       Email sender, e.g. "Clinic <reminders@yourdomain.com>" (verified in Resend).
+//   REMINDER_REPLY_TO   optional reply-to address.
+//   SEMAPHORE_API_KEY   Semaphore key. Unset => SMS dry run.
+//   SEMAPHORE_SENDER_NAME  optional approved sender name (defaults to the account's).
+//   RESEND_API_URL / SEMAPHORE_API_URL  optional base-URL overrides (tests / proxies).
 //
 // Deployed with --no-verify-jwt (cron calls it), so the function checks
 // the bearer token itself: it must equal the service_role key.
 //
 // Schedule + invoke: see README.md.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { buildSms, normalizePhMobile } from "./sms.ts";
 
 type Reminder = {
   appointment_id: string;
@@ -31,8 +36,12 @@ type Reminder = {
   clinic_address: string | null;
 };
 
+type Channel = "email" | "sms";
+type SendResult = { ok: true; id: string } | { ok: false; error: string };
+type Summary = { dry_run: boolean; sent: number; failed: number; skipped: number };
+
 const TZ = "Asia/Manila";
-// Resend's default rate limit is a few requests/second; stay under it.
+// Resend allows a few requests/second, Semaphore 120/minute; stay under both.
 const SEND_GAP_MS = 600;
 
 function json(body: unknown, status = 200) {
@@ -73,7 +82,7 @@ function buildEmail(r: Reminder) {
 async function sendResend(
   apiUrl: string, apiKey: string, from: string, replyTo: string | undefined, to: string,
   msg: { subject: string; text: string; html: string }, idempotencyKey: string,
-): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+): Promise<SendResult> {
   const res = await fetch(`${apiUrl}/emails`, {
     method: "POST",
     headers: {
@@ -88,6 +97,69 @@ async function sendResend(
   return { ok: true, id: body.id };
 }
 
+// Semaphore returns a JSON array of message objects on success. Its error
+// shape is undocumented, so anything else counts as a failure.
+async function sendSemaphore(
+  apiUrl: string, apiKey: string, senderName: string | undefined, number: string, message: string,
+): Promise<SendResult> {
+  const form = new URLSearchParams({ apikey: apiKey, number, message });
+  if (senderName) form.set("sendername", senderName);
+  const res = await fetch(`${apiUrl}/api/v4/messages`, { method: "POST", body: form });
+  const body = await res.json().catch(() => null);
+  const m = Array.isArray(body) ? body[0] : null;
+  if (res.ok && m?.message_id && m.status !== "Failed") return { ok: true, id: String(m.message_id) };
+  const detail = m?.status ?? (body ? JSON.stringify(body).slice(0, 200) : res.statusText);
+  return { ok: false, error: `${res.status} ${detail}` };
+}
+
+async function runChannel(
+  supabase: SupabaseClient,
+  channel: Channel,
+  dryRun: boolean,
+  target: (r: Reminder) => string | null,
+  describe: (r: Reminder) => string,
+  send: (r: Reminder, to: string) => Promise<SendResult>,
+): Promise<Summary | { error: string }> {
+  const { data, error } = await supabase.rpc("appointments_for_reminder", {
+    p_days_ahead: 1, p_channel: channel,
+  });
+  if (error) {
+    console.error(`[${channel}] rpc error:`, error);
+    return { error: error.message };
+  }
+
+  const s: Summary = { dry_run: dryRun, sent: 0, failed: 0, skipped: 0 };
+  for (const r of (data ?? []) as Reminder[]) {
+    const to = target(r);
+    if (!to) { s.skipped++; continue; }
+
+    if (dryRun) {
+      console.log(`[${channel}:dry-run] ${to} — ${describe(r)}`);
+      s.sent++;
+      continue;
+    }
+
+    if (s.sent + s.failed > 0) await new Promise(res => setTimeout(res, SEND_GAP_MS));
+    const result = await send(r, to);
+    const { error: logErr } = await supabase.from("appointment_reminders").insert({
+      appointment_id: r.appointment_id,
+      channel,
+      scheduled_at: r.scheduled_at,
+      status: result.ok ? "sent" : "failed",
+      provider_id: result.ok ? result.id : null,
+      error: result.ok ? null : result.error,
+    });
+    if (logErr) console.error(`[${channel}] log insert failed for ${r.appointment_id}:`, logErr.message);
+
+    if (result.ok) s.sent++;
+    else {
+      s.failed++;
+      console.error(`[${channel}] send failed for ${r.appointment_id}: ${result.error}`);
+    }
+  }
+  return s;
+}
+
 Deno.serve(async (req) => {
   const url = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -96,62 +168,36 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "unauthorized" }, 401);
   }
 
-  const apiKey = Deno.env.get("RESEND_API_KEY");
+  const resendKey = Deno.env.get("RESEND_API_KEY");
   const from = Deno.env.get("REMINDER_FROM");
   const replyTo = Deno.env.get("REMINDER_REPLY_TO") || undefined;
-  const apiUrl = Deno.env.get("RESEND_API_URL") || "https://api.resend.com";
-  const dryRun = !apiKey;
-  if (!dryRun && !from) {
+  const resendUrl = Deno.env.get("RESEND_API_URL") || "https://api.resend.com";
+  if (resendKey && !from) {
     return json({ ok: false, error: "REMINDER_FROM not set" }, 500);
   }
+
+  const semaphoreKey = Deno.env.get("SEMAPHORE_API_KEY");
+  const senderName = Deno.env.get("SEMAPHORE_SENDER_NAME") || undefined;
+  const semaphoreUrl = Deno.env.get("SEMAPHORE_API_URL") || "https://api.semaphore.co";
 
   const supabase = createClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  const { data, error } = await supabase.rpc("appointments_for_reminder", {
-    p_days_ahead: 1,
-  });
-  if (error) {
-    console.error("rpc error:", error);
-    return json({ ok: false, error: error.message }, 500);
-  }
+  const email = await runChannel(
+    supabase, "email", !resendKey,
+    r => r.patient_email,
+    r => buildEmail(r).subject,
+    (r, to) => sendResend(resendUrl, resendKey!, from!, replyTo, to, buildEmail(r),
+      `reminder-${r.appointment_id}-${r.scheduled_at}`),
+  );
+  const sms = await runChannel(
+    supabase, "sms", !semaphoreKey,
+    r => normalizePhMobile(r.patient_phone),
+    r => buildSms(r),
+    (r, to) => sendSemaphore(semaphoreUrl, semaphoreKey!, senderName, to, buildSms(r)),
+  );
 
-  let sent = 0, failed = 0, skipped = 0;
-  for (const r of (data ?? []) as Reminder[]) {
-    if (!r.patient_email) {
-      skipped++;
-      continue;
-    }
-    const msg = buildEmail(r);
-
-    if (dryRun) {
-      console.log(`[reminder:dry-run] ${r.patient_email} — ${msg.subject}`);
-      sent++;
-      continue;
-    }
-
-    if (sent + failed > 0) await new Promise(res => setTimeout(res, SEND_GAP_MS));
-    const result = await sendResend(
-      apiUrl, apiKey!, from!, replyTo, r.patient_email, msg,
-      `reminder-${r.appointment_id}-${r.scheduled_at}`,
-    );
-    const { error: logErr } = await supabase.from("appointment_reminders").insert({
-      appointment_id: r.appointment_id,
-      channel: "email",
-      scheduled_at: r.scheduled_at,
-      status: result.ok ? "sent" : "failed",
-      provider_id: result.ok ? result.id : null,
-      error: result.ok ? null : result.error,
-    });
-    if (logErr) console.error(`log insert failed for ${r.appointment_id}:`, logErr.message);
-
-    if (result.ok) sent++;
-    else {
-      failed++;
-      console.error(`[reminder] send failed for ${r.appointment_id}: ${result.error}`);
-    }
-  }
-
-  return json({ ok: failed === 0, dry_run: dryRun, sent, failed, skipped_no_email: skipped });
+  const ok = [email, sms].every(c => !("error" in c) && c.failed === 0);
+  return json({ ok, email, sms }, "error" in email || "error" in sms ? 500 : 200);
 });

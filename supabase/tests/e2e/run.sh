@@ -21,14 +21,15 @@ psql "$DATABASE_URL" -X -q -v ON_ERROR_STOP=1 -f "$here/seed.sql"
 export SUPABASE_URL=http://localhost:9200
 export RESEND_API_KEY=re_test RESEND_API_URL=http://localhost:9100
 export REMINDER_FROM="Clinic <r@example.com>" POSTGREST_URL
+export SEMAPHORE_API_KEY=sem_test SEMAPHORE_API_URL=http://localhost:9101 SEMAPHORE_SENDER_NAME=BAYSIDE
 
-deno run -A "$here/mock.ts" & mock=$!
-deno run -A "$fn" & func=$!
+deno run --no-lock -A "$here/mock.ts" & mock=$!
+deno run --no-lock -A "$fn" & func=$!
 trap 'kill $mock $func 2>/dev/null || true' EXIT
 
 for _ in $(seq 1 60); do
-  curl -s -o /dev/null http://localhost:8000 && curl -s -o /dev/null http://localhost:9100/_got && break
+  curl -s -o /dev/null http://localhost:8000 && curl -s -o /dev/null http://localhost:9101/_got && break
   sleep 1
 done
 
-deno run -A "$here/check.ts"
+deno run --no-lock -A "$here/check.ts"

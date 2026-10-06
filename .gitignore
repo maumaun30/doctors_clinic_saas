@@ -28,3 +28,6 @@ next-env.d.ts
 Thumbs.db
 .idea/
 .vscode/
+
+# supabase CLI link state (project ref, pooler url)
+supabase/.temp/
