@@ -91,6 +91,17 @@ select _assert(
   not exists(select 1 from appointments_for_reminder(1) where appointment_id = '00000000-0000-0000-0000-0000000001e1'),
   'sent reminder is not resent');
 
+-- channels are independent: email sent, SMS still due
+select _assert(
+  exists(select 1 from appointments_for_reminder(1, 'sms') where appointment_id = '00000000-0000-0000-0000-0000000001e1'),
+  'sms still due after email sent');
+insert into appointment_reminders(appointment_id, channel, scheduled_at, status, provider_id)
+select appointment_id, 'sms', scheduled_at, 'sent', 'sem_1' from _due;
+select _assert(
+  not exists(select 1 from appointments_for_reminder(1, 'sms') where appointment_id = '00000000-0000-0000-0000-0000000001e1'),
+  'sent sms is not resent');
+select _assert(not exists(select 1 from appointments_for_reminder(1, 'fax')), 'unknown channel returns nothing');
+
 -- a second 'sent' row for the same slot is rejected
 do $$
 begin

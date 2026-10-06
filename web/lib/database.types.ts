@@ -60,11 +60,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "appointment_reminders_appointment_id_fkey"
             columns: ["appointment_id"]
+            foreignKeyName: "appointment_reminders_appointment_id_fkey"
             isOneToOne: false
-            referencedRelation: "appointments"
             referencedColumns: ["id"]
+            referencedRelation: "appointments"
           },
         ]
       }
@@ -110,32 +110,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "appointments_clinic_id_fkey"
             columns: ["clinic_id"]
+            foreignKeyName: "appointments_clinic_id_fkey"
             isOneToOne: false
+            referencedColumns: ["id"]
             referencedRelation: "clinics"
-            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "appointments_created_by_fkey"
             columns: ["created_by"]
+            foreignKeyName: "appointments_created_by_fkey"
             isOneToOne: false
+            referencedColumns: ["id"]
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "appointments_doctor_id_fkey"
             columns: ["doctor_id"]
+            foreignKeyName: "appointments_doctor_id_fkey"
             isOneToOne: false
-            referencedRelation: "doctors"
             referencedColumns: ["profile_id"]
+            referencedRelation: "doctors"
           },
           {
-            foreignKeyName: "appointments_patient_id_fkey"
             columns: ["patient_id"]
+            foreignKeyName: "appointments_patient_id_fkey"
             isOneToOne: false
-            referencedRelation: "patients"
             referencedColumns: ["id"]
+            referencedRelation: "patients"
           },
         ]
       }
@@ -196,18 +196,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "clinic_assignments_doctor_clinic_id_fkey"
             columns: ["doctor_clinic_id"]
+            foreignKeyName: "clinic_assignments_doctor_clinic_id_fkey"
             isOneToOne: false
-            referencedRelation: "doctor_clinics"
             referencedColumns: ["id"]
+            referencedRelation: "doctor_clinics"
           },
           {
-            foreignKeyName: "clinic_assignments_secretary_id_fkey"
             columns: ["secretary_id"]
+            foreignKeyName: "clinic_assignments_secretary_id_fkey"
             isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
+            referencedRelation: "profiles"
           },
         ]
       }
@@ -241,11 +241,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "clinics_account_id_fkey"
             columns: ["account_id"]
+            foreignKeyName: "clinics_account_id_fkey"
             isOneToOne: false
-            referencedRelation: "accounts"
             referencedColumns: ["id"]
+            referencedRelation: "accounts"
           },
         ]
       }
@@ -273,11 +273,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "common_conditions_account_id_fkey"
             columns: ["account_id"]
+            foreignKeyName: "common_conditions_account_id_fkey"
             isOneToOne: false
-            referencedRelation: "accounts"
             referencedColumns: ["id"]
+            referencedRelation: "accounts"
           },
         ]
       }
@@ -305,11 +305,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "common_lab_tests_account_id_fkey"
             columns: ["account_id"]
+            foreignKeyName: "common_lab_tests_account_id_fkey"
             isOneToOne: false
-            referencedRelation: "accounts"
             referencedColumns: ["id"]
+            referencedRelation: "accounts"
           },
         ]
       }
@@ -343,11 +343,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "common_medications_account_id_fkey"
             columns: ["account_id"]
+            foreignKeyName: "common_medications_account_id_fkey"
             isOneToOne: false
-            referencedRelation: "accounts"
             referencedColumns: ["id"]
+            referencedRelation: "accounts"
           },
         ]
       }
@@ -378,18 +378,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "doctor_availability_clinic_id_fkey"
             columns: ["clinic_id"]
+            foreignKeyName: "doctor_availability_clinic_id_fkey"
             isOneToOne: false
-            referencedRelation: "clinics"
             referencedColumns: ["id"]
+            referencedRelation: "clinics"
           },
           {
-            foreignKeyName: "doctor_availability_doctor_id_fkey"
             columns: ["doctor_id"]
+            foreignKeyName: "doctor_availability_doctor_id_fkey"
             isOneToOne: false
-            referencedRelation: "doctors"
             referencedColumns: ["profile_id"]
+            referencedRelation: "doctors"
           },
         ]
       }
@@ -414,18 +414,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "doctor_clinics_clinic_id_fkey"
             columns: ["clinic_id"]
+            foreignKeyName: "doctor_clinics_clinic_id_fkey"
             isOneToOne: false
-            referencedRelation: "clinics"
             referencedColumns: ["id"]
+            referencedRelation: "clinics"
           },
           {
-            foreignKeyName: "doctor_clinics_doctor_id_fkey"
             columns: ["doctor_id"]
+            foreignKeyName: "doctor_clinics_doctor_id_fkey"
             isOneToOne: false
-            referencedRelation: "doctors"
             referencedColumns: ["profile_id"]
+            referencedRelation: "doctors"
           },
         ]
       }
@@ -447,11 +447,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "doctors_profile_id_fkey"
             columns: ["profile_id"]
+            foreignKeyName: "doctors_profile_id_fkey"
             isOneToOne: true
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
+            referencedRelation: "profiles"
           },
         ]
       }
@@ -491,25 +491,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "lab_orders_lab_test_id_fkey"
             columns: ["lab_test_id"]
+            foreignKeyName: "lab_orders_lab_test_id_fkey"
             isOneToOne: false
+            referencedColumns: ["id"]
             referencedRelation: "common_lab_tests"
-            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "lab_orders_medical_record_id_fkey"
             columns: ["medical_record_id"]
+            foreignKeyName: "lab_orders_medical_record_id_fkey"
             isOneToOne: false
-            referencedRelation: "medical_records"
             referencedColumns: ["id"]
+            referencedRelation: "medical_records"
           },
           {
-            foreignKeyName: "lab_orders_patient_id_fkey"
             columns: ["patient_id"]
+            foreignKeyName: "lab_orders_patient_id_fkey"
             isOneToOne: false
-            referencedRelation: "patients"
             referencedColumns: ["id"]
+            referencedRelation: "patients"
           },
         ]
       }
@@ -546,18 +546,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "lab_result_files_lab_order_id_fkey"
             columns: ["lab_order_id"]
+            foreignKeyName: "lab_result_files_lab_order_id_fkey"
             isOneToOne: false
-            referencedRelation: "lab_orders"
             referencedColumns: ["id"]
+            referencedRelation: "lab_orders"
           },
           {
-            foreignKeyName: "lab_result_files_uploaded_by_fkey"
             columns: ["uploaded_by"]
+            foreignKeyName: "lab_result_files_uploaded_by_fkey"
             isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
+            referencedRelation: "profiles"
           },
         ]
       }
@@ -603,32 +603,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "medical_records_appointment_id_fkey"
             columns: ["appointment_id"]
+            foreignKeyName: "medical_records_appointment_id_fkey"
             isOneToOne: false
+            referencedColumns: ["id"]
             referencedRelation: "appointments"
-            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "medical_records_clinic_id_fkey"
             columns: ["clinic_id"]
+            foreignKeyName: "medical_records_clinic_id_fkey"
             isOneToOne: false
+            referencedColumns: ["id"]
             referencedRelation: "clinics"
-            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "medical_records_doctor_id_fkey"
             columns: ["doctor_id"]
+            foreignKeyName: "medical_records_doctor_id_fkey"
             isOneToOne: false
-            referencedRelation: "doctors"
             referencedColumns: ["profile_id"]
+            referencedRelation: "doctors"
           },
           {
-            foreignKeyName: "medical_records_patient_id_fkey"
             columns: ["patient_id"]
+            foreignKeyName: "medical_records_patient_id_fkey"
             isOneToOne: false
-            referencedRelation: "patients"
             referencedColumns: ["id"]
+            referencedRelation: "patients"
           },
         ]
       }
@@ -653,11 +653,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "online_booking_attempts_clinic_id_fkey"
             columns: ["clinic_id"]
+            foreignKeyName: "online_booking_attempts_clinic_id_fkey"
             isOneToOne: false
-            referencedRelation: "clinics"
             referencedColumns: ["id"]
+            referencedRelation: "clinics"
           },
         ]
       }
@@ -682,18 +682,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "patient_clinics_clinic_id_fkey"
             columns: ["clinic_id"]
+            foreignKeyName: "patient_clinics_clinic_id_fkey"
             isOneToOne: false
-            referencedRelation: "clinics"
             referencedColumns: ["id"]
+            referencedRelation: "clinics"
           },
           {
-            foreignKeyName: "patient_clinics_patient_id_fkey"
             columns: ["patient_id"]
+            foreignKeyName: "patient_clinics_patient_id_fkey"
             isOneToOne: false
-            referencedRelation: "patients"
             referencedColumns: ["id"]
+            referencedRelation: "patients"
           },
         ]
       }
@@ -736,25 +736,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "patient_conditions_condition_id_fkey"
             columns: ["condition_id"]
+            foreignKeyName: "patient_conditions_condition_id_fkey"
             isOneToOne: false
+            referencedColumns: ["id"]
             referencedRelation: "common_conditions"
-            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "patient_conditions_originating_medical_record_id_fkey"
             columns: ["originating_medical_record_id"]
+            foreignKeyName: "patient_conditions_originating_medical_record_id_fkey"
             isOneToOne: false
-            referencedRelation: "medical_records"
             referencedColumns: ["id"]
+            referencedRelation: "medical_records"
           },
           {
-            foreignKeyName: "patient_conditions_patient_id_fkey"
             columns: ["patient_id"]
+            foreignKeyName: "patient_conditions_patient_id_fkey"
             isOneToOne: false
-            referencedRelation: "patients"
             referencedColumns: ["id"]
+            referencedRelation: "patients"
           },
         ]
       }
@@ -794,11 +794,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "patients_account_id_fkey"
             columns: ["account_id"]
+            foreignKeyName: "patients_account_id_fkey"
             isOneToOne: false
-            referencedRelation: "accounts"
             referencedColumns: ["id"]
+            referencedRelation: "accounts"
           },
         ]
       }
@@ -841,25 +841,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "prescriptions_medical_record_id_fkey"
             columns: ["medical_record_id"]
+            foreignKeyName: "prescriptions_medical_record_id_fkey"
             isOneToOne: false
+            referencedColumns: ["id"]
             referencedRelation: "medical_records"
-            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "prescriptions_medication_id_fkey"
             columns: ["medication_id"]
+            foreignKeyName: "prescriptions_medication_id_fkey"
             isOneToOne: false
-            referencedRelation: "common_medications"
             referencedColumns: ["id"]
+            referencedRelation: "common_medications"
           },
           {
-            foreignKeyName: "prescriptions_patient_id_fkey"
             columns: ["patient_id"]
+            foreignKeyName: "prescriptions_patient_id_fkey"
             isOneToOne: false
-            referencedRelation: "patients"
             referencedColumns: ["id"]
+            referencedRelation: "patients"
           },
         ]
       }
@@ -890,11 +890,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_account_id_fkey"
             columns: ["account_id"]
+            foreignKeyName: "profiles_account_id_fkey"
             isOneToOne: false
-            referencedRelation: "accounts"
             referencedColumns: ["id"]
+            referencedRelation: "accounts"
           },
         ]
       }
@@ -905,16 +905,16 @@ export type Database = {
     Functions: {
       _resolve_account_id: {
         Args: {
-          p_table: string
           p_row: Json
+          p_table: string
         }
         Returns: string
       }
       admin_assign_user: {
         Args: {
+          p_account_id?: string
           p_role: Database["public"]["Enums"]["user_role"]
           p_user_id: string
-          p_account_id?: string
         }
         Returns: {
           account_id: string | null
@@ -927,25 +927,26 @@ export type Database = {
       }
       appointments_for_reminder: {
         Args: {
+          p_channel?: string
           p_days_ahead?: number
         }
         Returns: {
-          clinic_name: string
-          clinic_address: string
           appointment_id: string
-          scheduled_at: string
+          clinic_address: string
+          clinic_name: string
+          doctor_name: string
           duration_minutes: number
+          patient_email: string
           patient_name: string
           patient_phone: string
-          patient_email: string
-          doctor_name: string
+          scheduled_at: string
         }[]
       }
       available_slots: {
         Args: {
           p_clinic_id: string
-          p_doctor_id: string
           p_date_local: string
+          p_doctor_id: string
           p_duration_minutes?: number
           p_step_minutes?: number
         }
@@ -956,11 +957,11 @@ export type Database = {
       book_appointment: {
         Args: {
           p_clinic_id: string
-          p_scheduled_at: string
+          p_doctor_id: string
           p_duration_minutes?: number
           p_notes?: string
           p_patient_id: string
-          p_doctor_id: string
+          p_scheduled_at: string
         }
         Returns: {
           clinic_id: string
@@ -1014,11 +1015,11 @@ export type Database = {
       }
       complete_appointment: {
         Args: {
+          p_appointment_id: string
           p_chief_complaint?: string
           p_diagnosis?: string
-          p_vitals?: Json
           p_notes?: string
-          p_appointment_id: string
+          p_vitals?: Json
         }
         Returns: {
           appointment_id: string | null
@@ -1036,14 +1037,14 @@ export type Database = {
       }
       complete_visit_full: {
         Args: {
-          p_conditions?: Json
           p_appointment_id: string
           p_chief_complaint: string
+          p_conditions?: Json
           p_diagnosis: string
-          p_vitals: Json
+          p_labs?: Json
           p_notes: string
           p_prescriptions?: Json
-          p_labs?: Json
+          p_vitals: Json
         }
         Returns: {
           appointment_id: string | null
@@ -1061,13 +1062,13 @@ export type Database = {
       }
       create_patient: {
         Args: {
-          p_sex?: Database["public"]["Enums"]["sex_type"]
-          p_clinic_id: string
-          p_full_name: string
-          p_date_of_birth?: string
-          p_phone?: string
           p_address?: string
+          p_clinic_id: string
+          p_date_of_birth?: string
           p_email?: string
+          p_full_name: string
+          p_phone?: string
+          p_sex?: Database["public"]["Enums"]["sex_type"]
         }
         Returns: {
           account_id: string
@@ -1115,17 +1116,17 @@ export type Database = {
       list_pending_users: {
         Args: Record<PropertyKey, never>
         Returns: {
-          phone: string
-          full_name: string
           created_at: string
           email: string
+          full_name: string
           id: string
+          phone: string
         }[]
       }
       public_available_slots: {
         Args: {
-          p_doctor_id: string
           p_date_local: string
+          p_doctor_id: string
           p_slug: string
         }
         Returns: {
@@ -1134,18 +1135,18 @@ export type Database = {
       }
       public_book_appointment: {
         Args: {
-          p_full_name: string
-          p_doctor_id: string
-          p_phone: string
-          p_email?: string
           p_date_of_birth?: string
-          p_slug: string
+          p_doctor_id: string
+          p_email?: string
+          p_full_name: string
           p_ip_hash?: string
+          p_phone: string
           p_scheduled_at: string
+          p_slug: string
         }
         Returns: {
-          scheduled_at: string
           appointment_id: string
+          scheduled_at: string
         }[]
       }
       public_booking_info: {
@@ -1153,17 +1154,17 @@ export type Database = {
           p_slug: string
         }
         Returns: {
-          clinic_id: string
-          doctors: Json
           clinic_address: string
+          clinic_id: string
           clinic_name: string
+          doctors: Json
         }[]
       }
       reschedule_appointment: {
         Args: {
-          p_scheduled_at: string
-          p_duration_minutes?: number
           p_appointment_id: string
+          p_duration_minutes?: number
+          p_scheduled_at: string
         }
         Returns: {
           clinic_id: string
@@ -1181,8 +1182,8 @@ export type Database = {
       }
       set_appointment_status: {
         Args: {
-          p_status: Database["public"]["Enums"]["appointment_status"]
           p_appointment_id: string
+          p_status: Database["public"]["Enums"]["appointment_status"]
         }
         Returns: {
           clinic_id: string

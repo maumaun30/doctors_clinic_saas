@@ -70,8 +70,11 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Edge Function typecheck
-        run: deno check supabase/functions/appointment_reminders/index.ts
+      - name: Edge Function typecheck + unit tests
+        working-directory: supabase/functions/appointment_reminders
+        run: |
+          deno check --no-lock index.ts
+          deno test --no-lock sms_test.ts
 
       - name: Start PostgREST
         run: |

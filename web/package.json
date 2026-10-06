@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "gen:types": "supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public > lib/database.types.ts",
-    "gen:types:local": "supabase gen types typescript --local --schema public > lib/database.types.ts",
-    "gen:types:db": "supabase gen types typescript --db-url \"$DATABASE_URL\" --schema public > lib/database.types.ts"
+    "gen:types": "supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public | node scripts/sort-types.mjs > lib/database.types.ts",
+    "gen:types:local": "supabase gen types typescript --local --schema public | node scripts/sort-types.mjs > lib/database.types.ts",
+    "gen:types:db": "supabase gen types typescript --db-url \"$DATABASE_URL\" --schema public | node scripts/sort-types.mjs > lib/database.types.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

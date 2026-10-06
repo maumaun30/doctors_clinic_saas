@@ -26,9 +26,10 @@ key (never shipped to the browser).
   account. Bookings land as `scheduled` with an **Online** badge for staff
   to confirm. Rate-limited per IP and per patient; the public page only
   reaches the DB through service-only RPCs.
-- **Reminders** — daily Edge Function emails next-day appointment
-  reminders to patients via Resend, with per-appointment delivery log so
-  nothing is sent twice (see `supabase/functions/appointment_reminders`).
+- **Reminders** — daily Edge Function sends next-day appointment
+  reminders by email (Resend) and SMS (Semaphore, PH mobiles), with a
+  per-channel delivery log so nothing is sent twice (see
+  `supabase/functions/appointment_reminders`).
 - **Visits** — doctors complete a visit (vitals, diagnosis, tag-based
   prescriptions / labs / conditions from a reusable library) and print an Rx.
 - **Analytics** — filterable summary (status, provider, completion rate,
@@ -48,10 +49,10 @@ web/                     Next.js app (deploy this on Vercel)
   lib/                   Supabase clients, queries, Zod schemas, Server Actions
   lib/database.types.ts  generated from the DB schema (source of truth)
 supabase/
-  migrations/            0001–0016: schema, RLS, RPCs, clinical extensions,
+  migrations/            0001–0017: schema, RLS, RPCs, clinical extensions,
                          lab files + storage policy, audit log, grant
                          lockdown, reminder delivery log, online booking
-  functions/             Edge Functions (appointment reminders via Resend)
+  functions/             Edge Functions (appointment reminders: Resend + Semaphore)
   seed/                  admin/doctor/secretary seeding
   tests/                 SQL tests (RLS isolation, reminders), Supabase stub
                          for plain Postgres, reminders Edge Function e2e
