@@ -36,7 +36,9 @@ export default async function AnalyticsPage({
   if (activeClinic) q = q.eq("clinic_id", activeClinic);
   if (isDoctor) q = q.eq("doctor_id", me.id);
   else if (sp.doctor) q = q.eq("doctor_id", sp.doctor);
-  if (sp.status) q = q.eq("status", sp.status);
+  if (sp.status && (STATUS_ORDER as readonly string[]).includes(sp.status)) {
+    q = q.eq("status", sp.status as (typeof STATUS_ORDER)[number]);
+  }
   const { data: apptData, error } = await q;
   if (error) throw error;
   const rows = (apptData ?? []) as any[];

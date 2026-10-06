@@ -6,7 +6,11 @@ import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths } from "@/app/_components/age";
 import { PrintButton } from "@/app/_components/print-button";
 import BookingForm from "./booking-form";
+import type { Database } from "@/lib/database.types";
 
+type AppointmentStatus = Database["public"]["Enums"]["appointment_status"];
+const isStatus = (s: string | undefined): s is AppointmentStatus =>
+  ["scheduled", "confirmed", "completed", "cancelled", "no_show"].includes(s ?? "");
 const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
   scheduled: { cls: "badge", label: "Scheduled" },
   confirmed: { cls: "badge badge-blue", label: "Confirmed" },
@@ -33,7 +37,7 @@ export default async function SchedulePage({
     .lte("scheduled_at", `${defaultTo}T23:59:59+08:00`)
     .order("scheduled_at");
   if (activeClinic) q = q.eq("clinic_id", activeClinic);
-  if (sp.status) q = q.eq("status", sp.status);
+  if (isStatus(sp.status)) q = q.eq("status", sp.status);
   const { data: appts, error } = await q;
   if (error) throw error;
 

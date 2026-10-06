@@ -19,11 +19,11 @@ export async function createPatient(raw: unknown) {
   const { data, error } = await sb.rpc("create_patient", {
     p_clinic_id: input.clinic_id,
     p_full_name: input.full_name,
-    p_date_of_birth: input.date_of_birth ?? null,
-    p_sex: input.sex ?? null,
-    p_phone: input.phone ?? null,
-    p_address: input.address ?? null,
-    p_email: input.email ?? null,
+    p_date_of_birth: input.date_of_birth,
+    p_sex: input.sex,
+    p_phone: input.phone,
+    p_address: input.address,
+    p_email: input.email,
   });
   if (error) throw new Error(error.message);
   return data;
