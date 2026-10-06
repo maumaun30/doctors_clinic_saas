@@ -7,6 +7,7 @@ import { AppShell, type NavLink } from "@/app/_components/app-shell";
 import { ClinicSwitcher } from "@/app/_components/clinic-switcher";
 import { ThemeToggle } from "@/app/_components/theme-toggle";
 import { Icon } from "@/app/_components/icons";
+import Link from "next/link";
 
 function initials(name: string) {
   return (
@@ -54,10 +55,37 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           { href: "/admin/library", label: "Library", icon: "settings" },
           { href: "/admin/users", label: "Pending users", icon: "user" },
           { href: "/admin/audit", label: "Audit log", icon: "shield" },
+          { href: "/admin/billing", label: "Billing", icon: "card" },
         ]
       : [];
 
   const name = profile.full_name ?? "User";
+
+  // Trial / read-only banner. Shown to everyone when writes are blocked,
+  // and to admins in the last 3 days of the free trial.
+  const billing = isPending ? null : (await sb.rpc("my_billing_status")).data?.[0];
+  const trialDaysLeft = billing
+    ? Math.ceil((new Date(billing.trial_ends_at).getTime() - Date.now()) / 86_400_000)
+    : null;
+  const subscribed = ["active", "trialing", "past_due"].includes(billing?.subscription_status ?? "");
+  const banner = !billing ? null
+    : !billing.is_active ? (
+      <div className="billing-banner billing-banner-danger" role="alert">
+        Read-only: this account’s subscription isn’t active, so nothing can be added or changed.
+        {isAdmin ? <> <Link href="/admin/billing" className="link">Subscribe</Link></> : " Ask an admin to subscribe."}
+      </div>
+    )
+    : isAdmin && !subscribed && trialDaysLeft !== null && trialDaysLeft <= 3 ? (
+      <div className="billing-banner" role="status">
+        Free trial ends in {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"}. <Link href="/admin/billing" className="link">Subscribe</Link>
+      </div>
+    )
+    : billing.subscription_status === "past_due" && isAdmin ? (
+      <div className="billing-banner billing-banner-danger" role="alert">
+        Payment failed — Stripe is retrying. <Link href="/admin/billing" className="link">Update your card</Link>
+      </div>
+    )
+    : null;
 
   const switcher = isPending ? (
     <div className="switcher">
@@ -93,6 +121,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <AppShell switcher={switcher} nav={nav} adminNav={adminNav} footer={footer}>
+      {banner}
       {children}
     </AppShell>
   );

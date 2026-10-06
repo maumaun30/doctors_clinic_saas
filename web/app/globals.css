@@ -857,6 +857,18 @@ html.dark {
     margin: 6px 0 24px;
     font-size: 13.5px;
   }
+  .billing-banner {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    background: var(--accent-subtle);
+    color: var(--fg);
+  }
+  .billing-banner-danger {
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+  }
+
   /* Public self-booking (/book/<slug>) — reuses the auth screen. */
   .auth-card.book-card {
     max-width: 520px;

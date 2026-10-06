@@ -21,9 +21,16 @@ export type IconName =
   | "check"
   | "back"
   | "print"
-  | "chart";
+  | "chart"
+  | "card";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  card: (
+    <>
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <path d="M2 10h20M6 15h4" />
+    </>
+  ),
   today: (
     <>
       <path d="M3 9h18M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9M8 3v4M16 3v4" />
