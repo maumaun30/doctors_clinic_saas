@@ -16,6 +16,16 @@ export const clinicInput = z.object({
   address: z.string().max(500).optional(),
 });
 
+export const clinicBookingInput = z.object({
+  online_booking: z.boolean(),
+  booking_slug: z.string().trim().toLowerCase()
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers and single dashes")
+    .min(3).max(60)
+    .nullable(),
+}).refine(v => !v.online_booking || v.booking_slug, {
+  message: "Set a booking link before turning online booking on",
+});
+
 export const patientInput = z.object({
   full_name: z.string().min(1).max(200),
   date_of_birth: z.string().date().optional(),

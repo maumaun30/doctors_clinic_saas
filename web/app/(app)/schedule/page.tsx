@@ -32,7 +32,7 @@ export default async function SchedulePage({
   const defaultTo = sp.to ?? new Date(todayPh.getTime() + 30 * 86_400_000).toISOString().slice(0, 10);
 
   let q = sb.from("appointments")
-    .select("id, scheduled_at, duration_minutes, status, notes, patient_id, doctor_id, clinic_id, patient:patients!inner(id, full_name, date_of_birth, sex)")
+    .select("id, scheduled_at, duration_minutes, status, notes, source, patient_id, doctor_id, clinic_id, patient:patients!inner(id, full_name, date_of_birth, sex)")
     .gte("scheduled_at", `${defaultFrom}T00:00:00+08:00`)
     .lte("scheduled_at", `${defaultTo}T23:59:59+08:00`)
     .order("scheduled_at");
@@ -144,7 +144,10 @@ export default async function SchedulePage({
                       </Link>
                     ) : <span className="hint">—</span>}
                   </td>
-                  <td><span className={badge.cls}><span className="dot" />{badge.label}</span></td>
+                  <td>
+                    <span className={badge.cls}><span className="dot" />{badge.label}</span>
+                    {a.source === "online" && <span className="badge badge-blue" style={{ marginLeft: 6 }} title="Booked by the patient online">Online</span>}
+                  </td>
                   <td className="num">{a.duration_minutes} min</td>
                   <td className="no-print" style={{ textAlign: "right" }}>
                     <Link href={`/visits/${a.id}`} className="btn btn-ghost btn-sm btn-icon" aria-label="Open">

@@ -1,11 +1,17 @@
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { listClinics, getMyProfile } from "@/lib/data/queries";
-import { clinicInput } from "@/lib/schemas";
+import { clinicBookingInput, clinicInput } from "@/lib/schemas";
+
+const suggestSlug = (name: string) =>
+  name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
 
 export default async function ClinicsAdmin() {
   const sb = await createClient();
   const clinics = await listClinics(sb);
+  const h = await headers();
+  const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
 
   async function add(formData: FormData) {
     "use server";
@@ -31,6 +37,21 @@ export default async function ClinicsAdmin() {
     const sb = await createClient();
     const { error } = await sb.from("clinics").update(input).eq("id", id);
     if (error) throw new Error(error.message);
+    revalidatePath("/admin/clinics");
+  }
+
+  async function updateBooking(formData: FormData) {
+    "use server";
+    const input = clinicBookingInput.parse({
+      online_booking: formData.get("online_booking") === "on",
+      booking_slug: (formData.get("booking_slug") as string)?.trim() || null,
+    });
+    const sb = await createClient();
+    const { error } = await sb.from("clinics").update(input).eq("id", formData.get("id") as string);
+    if (error) {
+      if (error.code === "23505") throw new Error("That booking link is already taken — pick another.");
+      throw new Error(error.message);
+    }
     revalidatePath("/admin/clinics");
   }
 
@@ -64,6 +85,23 @@ export default async function ClinicsAdmin() {
                 <form action={remove}>
                   <input type="hidden" name="id" value={c.id} />
                   <button type="submit" className="btn btn-ghost btn-sm">Delete</button>
+                </form>
+                <form action={updateBooking}
+                      style={{ gridColumn: "1 / -1", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  <input type="hidden" name="id" value={c.id} />
+                  <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13 }}>
+                    <input type="checkbox" name="online_booking" defaultChecked={c.online_booking} />
+                    Online booking
+                  </label>
+                  <span className="hint">{origin}/book/</span>
+                  <input className="input" name="booking_slug" aria-label="Booking link"
+                         defaultValue={c.booking_slug ?? suggestSlug(c.name)}
+                         style={{ flex: 1, minWidth: 140, maxWidth: 260 }} />
+                  <button type="submit" className="btn btn-secondary btn-sm">Save</button>
+                  {c.online_booking && c.booking_slug && (
+                    <a className="link" href={`/book/${c.booking_slug}`} target="_blank" rel="noreferrer"
+                       style={{ fontSize: 13 }}>Open booking page ↗</a>
+                  )}
                 </form>
               </div>
             ))}

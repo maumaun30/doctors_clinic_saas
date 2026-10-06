@@ -21,6 +21,11 @@ key (never shipped to the browser).
   slots, status flow (scheduled → confirmed → completed / cancelled / no-show).
 - **Patients** — roster + detail (demographics, problem list, visits,
   prescriptions, lab orders with file uploads).
+- **Online booking** — admins opt a clinic in and pick a link
+  (`/book/<slug>`); patients pick a doctor and an open slot without an
+  account. Bookings land as `scheduled` with an **Online** badge for staff
+  to confirm. Rate-limited per IP and per patient; the public page only
+  reaches the DB through service-only RPCs.
 - **Reminders** — daily Edge Function emails next-day appointment
   reminders to patients via Resend, with per-appointment delivery log so
   nothing is sent twice (see `supabase/functions/appointment_reminders`).
@@ -43,9 +48,9 @@ web/                     Next.js app (deploy this on Vercel)
   lib/                   Supabase clients, queries, Zod schemas, Server Actions
   lib/database.types.ts  generated from the DB schema (source of truth)
 supabase/
-  migrations/            0001–0015: schema, RLS, RPCs, clinical extensions,
+  migrations/            0001–0016: schema, RLS, RPCs, clinical extensions,
                          lab files + storage policy, audit log, grant
-                         lockdown, reminder delivery log
+                         lockdown, reminder delivery log, online booking
   functions/             Edge Functions (appointment reminders via Resend)
   seed/                  admin/doctor/secretary seeding
   tests/                 SQL tests (RLS isolation, reminders), Supabase stub

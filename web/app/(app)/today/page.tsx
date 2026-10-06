@@ -28,7 +28,7 @@ export default async function TodayPage() {
   const toIso = `${ymd}T23:59:59+08:00`;
 
   let q = sb.from("appointments")
-    .select("id, scheduled_at, duration_minutes, status, notes, patient:patients!inner(id, full_name, phone)")
+    .select("id, scheduled_at, duration_minutes, status, notes, source, patient:patients!inner(id, full_name, phone)")
     .gte("scheduled_at", fromIso)
     .lte("scheduled_at", toIso)
     .order("scheduled_at");
@@ -82,6 +82,7 @@ export default async function TodayPage() {
           </div>
         </div>
         <div className="queue-actions">
+          {a.source === "online" && <span className="badge badge-blue" title="Booked by the patient online">Online</span>}
           <span className={badge.cls}><span className="dot" />{badge.label}</span>
           {a.status === "scheduled" && (
             <form action={mark}>

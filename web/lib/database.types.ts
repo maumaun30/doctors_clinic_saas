@@ -79,6 +79,7 @@ export type Database = {
           notes: string | null
           patient_id: string
           scheduled_at: string
+          source: string
           status: Database["public"]["Enums"]["appointment_status"]
         }
         Insert: {
@@ -91,6 +92,7 @@ export type Database = {
           notes?: string | null
           patient_id: string
           scheduled_at: string
+          source?: string
           status?: Database["public"]["Enums"]["appointment_status"]
         }
         Update: {
@@ -103,6 +105,7 @@ export type Database = {
           notes?: string | null
           patient_id?: string
           scheduled_at?: string
+          source?: string
           status?: Database["public"]["Enums"]["appointment_status"]
         }
         Relationships: [
@@ -212,23 +215,29 @@ export type Database = {
         Row: {
           account_id: string
           address: string | null
+          booking_slug: string | null
           created_at: string
           id: string
           name: string
+          online_booking: boolean
         }
         Insert: {
           account_id: string
           address?: string | null
+          booking_slug?: string | null
           created_at?: string
           id?: string
           name: string
+          online_booking?: boolean
         }
         Update: {
           account_id?: string
           address?: string | null
+          booking_slug?: string | null
           created_at?: string
           id?: string
           name?: string
+          online_booking?: boolean
         }
         Relationships: [
           {
@@ -623,6 +632,35 @@ export type Database = {
           },
         ]
       }
+      online_booking_attempts: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          id: string
+          ip_hash: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          id?: string
+          ip_hash: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "online_booking_attempts_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_clinics: {
         Row: {
           clinic_id: string
@@ -875,8 +913,8 @@ export type Database = {
       admin_assign_user: {
         Args: {
           p_role: Database["public"]["Enums"]["user_role"]
-          p_account_id?: string
           p_user_id: string
+          p_account_id?: string
         }
         Returns: {
           account_id: string | null
@@ -892,24 +930,24 @@ export type Database = {
           p_days_ahead?: number
         }
         Returns: {
-          patient_phone: string
+          clinic_name: string
+          clinic_address: string
           appointment_id: string
           scheduled_at: string
           duration_minutes: number
           patient_name: string
+          patient_phone: string
           patient_email: string
           doctor_name: string
-          clinic_name: string
-          clinic_address: string
         }[]
       }
       available_slots: {
         Args: {
-          p_duration_minutes?: number
-          p_date_local: string
           p_clinic_id: string
-          p_step_minutes?: number
           p_doctor_id: string
+          p_date_local: string
+          p_duration_minutes?: number
+          p_step_minutes?: number
         }
         Returns: {
           slot_start: string
@@ -917,12 +955,12 @@ export type Database = {
       }
       book_appointment: {
         Args: {
+          p_clinic_id: string
           p_scheduled_at: string
+          p_duration_minutes?: number
+          p_notes?: string
           p_patient_id: string
           p_doctor_id: string
-          p_clinic_id: string
-          p_notes?: string
-          p_duration_minutes?: number
         }
         Returns: {
           clinic_id: string
@@ -934,6 +972,7 @@ export type Database = {
           notes: string | null
           patient_id: string
           scheduled_at: string
+          source: string
           status: Database["public"]["Enums"]["appointment_status"]
         }
       }
@@ -975,11 +1014,11 @@ export type Database = {
       }
       complete_appointment: {
         Args: {
-          p_appointment_id: string
+          p_chief_complaint?: string
           p_diagnosis?: string
           p_vitals?: Json
           p_notes?: string
-          p_chief_complaint?: string
+          p_appointment_id: string
         }
         Returns: {
           appointment_id: string | null
@@ -997,14 +1036,14 @@ export type Database = {
       }
       complete_visit_full: {
         Args: {
-          p_labs?: Json
+          p_conditions?: Json
           p_appointment_id: string
           p_chief_complaint: string
           p_diagnosis: string
           p_vitals: Json
           p_notes: string
           p_prescriptions?: Json
-          p_conditions?: Json
+          p_labs?: Json
         }
         Returns: {
           appointment_id: string | null
@@ -1022,13 +1061,13 @@ export type Database = {
       }
       create_patient: {
         Args: {
+          p_sex?: Database["public"]["Enums"]["sex_type"]
+          p_clinic_id: string
           p_full_name: string
           p_date_of_birth?: string
-          p_sex?: Database["public"]["Enums"]["sex_type"]
-          p_email?: string
-          p_address?: string
           p_phone?: string
-          p_clinic_id: string
+          p_address?: string
+          p_email?: string
         }
         Returns: {
           account_id: string
@@ -1083,10 +1122,47 @@ export type Database = {
           id: string
         }[]
       }
+      public_available_slots: {
+        Args: {
+          p_doctor_id: string
+          p_date_local: string
+          p_slug: string
+        }
+        Returns: {
+          slot_start: string
+        }[]
+      }
+      public_book_appointment: {
+        Args: {
+          p_full_name: string
+          p_doctor_id: string
+          p_phone: string
+          p_email?: string
+          p_date_of_birth?: string
+          p_slug: string
+          p_ip_hash?: string
+          p_scheduled_at: string
+        }
+        Returns: {
+          scheduled_at: string
+          appointment_id: string
+        }[]
+      }
+      public_booking_info: {
+        Args: {
+          p_slug: string
+        }
+        Returns: {
+          clinic_id: string
+          doctors: Json
+          clinic_address: string
+          clinic_name: string
+        }[]
+      }
       reschedule_appointment: {
         Args: {
-          p_duration_minutes?: number
           p_scheduled_at: string
+          p_duration_minutes?: number
           p_appointment_id: string
         }
         Returns: {
@@ -1099,6 +1175,7 @@ export type Database = {
           notes: string | null
           patient_id: string
           scheduled_at: string
+          source: string
           status: Database["public"]["Enums"]["appointment_status"]
         }
       }
@@ -1117,6 +1194,7 @@ export type Database = {
           notes: string | null
           patient_id: string
           scheduled_at: string
+          source: string
           status: Database["public"]["Enums"]["appointment_status"]
         }
       }
