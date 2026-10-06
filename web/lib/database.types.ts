@@ -12,18 +12,36 @@ export type Database = {
       accounts: {
         Row: {
           created_at: string
+          current_period_end: string | null
           id: string
           name: string
+          seat_quantity: number | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string | null
+          trial_ends_at: string
         }
         Insert: {
           created_at?: string
+          current_period_end?: string | null
           id?: string
           name: string
+          seat_quantity?: number | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string
         }
         Update: {
           created_at?: string
+          current_period_end?: string | null
           id?: string
           name?: string
+          seat_quantity?: number | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string
         }
         Relationships: []
       }
@@ -898,6 +916,24 @@ export type Database = {
           },
         ]
       }
+      stripe_events: {
+        Row: {
+          id: string
+          received_at: string
+          type: string
+        }
+        Insert: {
+          id: string
+          received_at?: string
+          type: string
+        }
+        Update: {
+          id?: string
+          received_at?: string
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -909,6 +945,12 @@ export type Database = {
           p_table: string
         }
         Returns: string
+      }
+      account_is_active: {
+        Args: {
+          p_account_id: string
+        }
+        Returns: boolean
       }
       admin_assign_user: {
         Args: {
@@ -1121,6 +1163,19 @@ export type Database = {
           full_name: string
           id: string
           phone: string
+        }[]
+      }
+      my_billing_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          account_id: string
+          current_period_end: string
+          doctor_count: number
+          has_customer: boolean
+          is_active: boolean
+          seat_quantity: number
+          subscription_status: string
+          trial_ends_at: string
         }[]
       }
       public_available_slots: {

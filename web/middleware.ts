@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 // Refreshes the Supabase session cookie on every request and gates
 // app routes on auth. Public paths: /login, /auth/*, password reset,
-// and /book/* (patient self-booking).
+// /book/* (patient self-booking) and the Stripe webhook (signature-verified).
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: req });
 
@@ -33,7 +33,8 @@ export async function middleware(req: NextRequest) {
     path.startsWith("/auth") ||
     path.startsWith("/forgot-password") ||
     path.startsWith("/reset-password") ||
-    path.startsWith("/book/");
+    path.startsWith("/book/") ||
+    path === "/api/stripe/webhook";
 
   if (!user && !isPublic) {
     const url = req.nextUrl.clone();
