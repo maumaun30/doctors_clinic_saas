@@ -1183,6 +1183,11 @@ html.dark {
 .route > .skeleton-page {
   animation: skeleton-in 200ms ease 100ms both;
 }
+/* Nested templates (admin/, patients/, visits/): when both levels mount
+   together, only the innermost wrapper animates — no doubled offset. */
+.route > .route {
+  animation: none;
+}
 @keyframes route-in {
   from {
     opacity: 0;
