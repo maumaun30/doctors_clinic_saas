@@ -4,166 +4,272 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { updateMyProfile } from "@/lib/actions/profile";
+import { signOut } from "@/lib/actions/auth";
 import { ProviderLogo } from "@/app/_components/brand-icons";
 import { Skeleton } from "@/app/_components/skeleton";
+import { ThemeToggle } from "@/app/_components/theme-toggle";
+import { Icon } from "@/app/_components/icons";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable, add the
 // provider back to this list — the ProviderLogo + link/unlink code already
 // handles any provider generically.
 type Provider = "google";
 const ALL: Provider[] = ["google"];
+const PROVIDER_LABEL: Record<string, string> = { email: "Email & password", google: "Google" };
+
+type Identity = { provider: string; id: string; identity_data?: { email?: string } };
+type Status = { kind: "ok" | "error"; text: string } | null;
+
+function initials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "U";
+}
+
+function StatusLine({ status }: { status: Status }) {
+  if (!status) return null;
+  return (
+    <p role={status.kind === "error" ? "alert" : "status"}
+       style={{ fontSize: 13, margin: 0, color: status.kind === "ok" ? "var(--success)" : "var(--danger)" }}>
+      {status.text}
+    </p>
+  );
+}
+
+function Section({ title, description, children }: {
+  title: string; description: string; children: React.ReactNode;
+}) {
+  return (
+    <section className="settings-section">
+      <div className="settings-intro">
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
+      <div className="card settings-card">{children}</div>
+    </section>
+  );
+}
 
 export default function AccountPage() {
   const sb = createClient();
   const router = useRouter();
-  const [identities, setIdentities] = useState<{ provider: string; id: string }[]>([]);
-  const [email, setEmail] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [identities, setIdentities] = useState<Identity[]>([]);
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
+  const [saved, setSaved] = useState({ full_name: "", phone: "" });
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profileStatus, setProfileStatus] = useState<Status>(null);
+  const [signInStatus, setSignInStatus] = useState<Status>(null);
+  const [busyProvider, setBusyProvider] = useState<string | null>(null);
 
   async function refresh() {
-    const { data, error } = await sb.auth.getUserIdentities();
-    if (error) { setMsg(error.message); setLoading(false); return; }
-    setIdentities(data.identities ?? []);
-    const { data: u } = await sb.auth.getUser();
+    const [{ data: ids, error }, { data: u }] = await Promise.all([
+      sb.auth.getUserIdentities(),
+      sb.auth.getUser(),
+    ]);
+    if (error) setSignInStatus({ kind: "error", text: error.message });
+    setIdentities((ids?.identities ?? []) as Identity[]);
     setEmail(u.user?.email ?? "");
     if (u.user) {
       const { data: p } = await sb.from("profiles")
-        .select("full_name, phone").eq("id", u.user.id).single();
-      setFullName(p?.full_name ?? "");
-      setPhone(p?.phone ?? "");
+        .select("full_name, phone, role").eq("id", u.user.id).single();
+      const next = { full_name: p?.full_name ?? "", phone: p?.phone ?? "" };
+      setSaved(next);
+      setFullName(next.full_name);
+      setPhone(next.phone);
+      setRole(p?.role ?? "");
     }
     setLoading(false);
   }
+  useEffect(() => { refresh(); }, []);
+
+  const dirty = fullName.trim() !== saved.full_name || phone.trim() !== saved.phone;
 
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMsg(null);
+    setProfileStatus(null);
+    setSaving(true);
     try {
-      await updateMyProfile({ full_name: fullName, phone: phone || null });
-      setMsg("Profile saved.");
-    } catch (err: any) { setMsg(err.message); }
+      await updateMyProfile({ full_name: fullName.trim(), phone: phone.trim() || null });
+      setSaved({ full_name: fullName.trim(), phone: phone.trim() });
+      setProfileStatus({ kind: "ok", text: "Profile saved." });
+      router.refresh(); // sidebar shows the name
+    } catch (err: any) {
+      setProfileStatus({ kind: "error", text: err.message });
+    } finally {
+      setSaving(false);
+    }
   };
-  useEffect(() => { refresh(); }, []);
 
   const link = async (provider: Provider) => {
-    setMsg(null);
+    setSignInStatus(null);
+    setBusyProvider(provider);
     const { error } = await sb.auth.linkIdentity({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    if (error) setMsg(error.message);
+    if (error) { setSignInStatus({ kind: "error", text: error.message }); setBusyProvider(null); }
   };
 
-  const unlink = async (identity: { provider: string; id: string }) => {
-    if (identities.length <= 1) {
-      setMsg("Cannot unlink your only sign-in method.");
-      return;
-    }
-    setMsg(null);
+  const unlink = async (identity: Identity) => {
+    if (identities.length <= 1) return;
+    setSignInStatus(null);
+    setBusyProvider(identity.provider);
     // @ts-expect-error supabase-js accepts the identity object
     const { error } = await sb.auth.unlinkIdentity(identity);
-    if (error) setMsg(error.message); else refresh();
+    setBusyProvider(null);
+    if (error) setSignInStatus({ kind: "error", text: error.message });
+    else { setSignInStatus({ kind: "ok", text: `${PROVIDER_LABEL[identity.provider] ?? identity.provider} disconnected.` }); refresh(); }
   };
 
-  const signOut = async () => {
-    await sb.auth.signOut();
-    router.push("/login");
-    router.refresh();
+  const sendPasswordReset = async () => {
+    setSignInStatus(null);
+    setBusyProvider("email");
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusyProvider(null);
+    setSignInStatus(error
+      ? { kind: "error", text: error.message }
+      : { kind: "ok", text: `We sent a password reset link to ${email}.` });
   };
-
-  const linkedProviders = new Set(identities.map(i => i.provider));
-  const ok = msg === "Profile saved.";
 
   if (loading) {
     return (
-      <>
+      <div role="status" aria-label="Loading" className="skeleton-page">
         <div className="page-head">
-          <div>
-            <Skeleton w={140} h={24} />
-            <Skeleton w={220} h={14} style={{ marginTop: 9 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <Skeleton w={48} h={48} r={999} />
+            <div>
+              <Skeleton w={160} h={22} />
+              <Skeleton w={220} h={13} style={{ marginTop: 8 }} />
+            </div>
           </div>
         </div>
-        <div className="stack">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="card" style={{ padding: 20 }}>
-              <Skeleton w={120} h={12} />
-              <Skeleton w="100%" h={36} style={{ marginTop: 14 }} />
-              {i === 0 && <Skeleton w="100%" h={36} style={{ marginTop: 12 }} />}
+        {[0, 1, 2].map(i => (
+          <div key={i} className="settings-section">
+            <div className="settings-intro">
+              <Skeleton w={110} h={15} />
+              <Skeleton w="90%" h={12} style={{ marginTop: 10 }} />
+              <Skeleton w="70%" h={12} style={{ marginTop: 6 }} />
             </div>
-          ))}
-        </div>
-      </>
+            <div className="card settings-card">
+              <Skeleton w="100%" h={36} r={8} />
+              <Skeleton w="100%" h={36} r={8} style={{ marginTop: 12 }} />
+            </div>
+          </div>
+        ))}
+      </div>
     );
   }
+
+  const identityFor = (p: string) => identities.find(i => i.provider === p);
+  const hasEmail = Boolean(identityFor("email"));
+  const providers = ["email", ...ALL] as const;
+  const name = saved.full_name || email || "Your account";
 
   return (
     <>
       <div className="page-head">
-        <div>
-          <h1>Account</h1>
-          <div className="sub">Signed in as {email || "…"}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(name)}</span>
+          <div>
+            <h1 style={{ fontSize: 20 }}>{name}</h1>
+            <div className="sub" style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              {email}
+              {role && <span className="badge" style={{ textTransform: "capitalize" }}>{role}</span>}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="stack">
-        <div className="card" style={{ padding: 20 }}>
-          <div className="section-title">Profile</div>
-          <form onSubmit={saveProfile} style={{ maxWidth: 420 }}>
+      <Section title="Profile" description="Your name appears on visits, prescriptions and the audit log.">
+        <form onSubmit={saveProfile}>
+          <div className="field">
+            <label className="label" htmlFor="full_name">Full name</label>
+            <input id="full_name" className="input" value={fullName} autoComplete="name"
+                   onChange={e => setFullName(e.target.value)} required />
+          </div>
+          <div className="grid-2">
             <div className="field">
-              <label className="label">Full name</label>
-              <input className="input" value={fullName} onChange={e => setFullName(e.target.value)} required />
+              <label className="label" htmlFor="phone">Phone</label>
+              <input id="phone" className="input" type="tel" value={phone} autoComplete="tel"
+                     onChange={e => setPhone(e.target.value)} />
             </div>
             <div className="field">
-              <label className="label">Phone</label>
-              <input className="input" value={phone} onChange={e => setPhone(e.target.value)} />
+              <label className="label" htmlFor="email">Email</label>
+              <input id="email" className="input" value={email} readOnly aria-describedby="email-hint" />
+              <span id="email-hint" className="hint">Used to sign in. Can’t be changed here.</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button type="submit" className="btn btn-primary">Save profile</button>
-            </div>
-          </form>
-        </div>
+          </div>
+          <div className="settings-actions">
+            <StatusLine status={profileStatus} />
+            <button type="submit" className="btn btn-primary" disabled={!dirty || saving}>
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </Section>
 
-        <div className="card" style={{ padding: 20 }}>
-          <div className="section-title">Sign-in methods</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-            {identities.length === 0
-              ? <span className="hint">Loading…</span>
-              : identities.map(i => (
-                <span key={i.id} className="badge">
-                  {i.provider === "email" ? <span className="dot" /> : <ProviderLogo provider={i.provider} size={13} />}
-                  {i.provider}
-                  {i.provider !== "email" && (
-                    <button onClick={() => unlink(i)} title="Unlink"
-                            style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
-                  )}
+      <Section title="Sign-in methods" description="Ways you can sign in to this account. Keep at least one connected.">
+        <div className="settings-list">
+          {providers.map(p => {
+            const identity = identityFor(p);
+            const busy = busyProvider === p;
+            return (
+              <div key={p} className="settings-list-row">
+                <span className="settings-list-icon">
+                  {p === "email" ? <Icon name="user" /> : <ProviderLogo provider={p} size={18} />}
                 </span>
-              ))}
-          </div>
-          <p className="hint" style={{ marginBottom: 10 }}>
-            Linking requires <strong>Manual Linking</strong> enabled in Supabase Auth settings.
-          </p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {ALL.map(p => (
-              <button key={p} className="btn btn-secondary btn-sm" disabled={linkedProviders.has(p)} onClick={() => link(p)}>
-                <ProviderLogo provider={p} size={15} />
-                {linkedProviders.has(p) ? `${p} ✓` : `Link ${p}`}
-              </button>
-            ))}
-          </div>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="strong" style={{ display: "block" }}>{PROVIDER_LABEL[p] ?? p}</span>
+                  <span className="hint">
+                    {identity
+                      ? identity.identity_data?.email ?? "Connected"
+                      : "Not connected"}
+                  </span>
+                </span>
+                {p === "email" ? (
+                  hasEmail && (
+                    <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={sendPasswordReset}>
+                      {busy ? "Sending…" : "Change password"}
+                    </button>
+                  )
+                ) : identity ? (
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={busy || identities.length <= 1}
+                          title={identities.length <= 1 ? "You can’t remove your only sign-in method" : undefined}
+                          onClick={() => unlink(identity)}>
+                    {busy ? "Disconnecting…" : "Disconnect"}
+                  </button>
+                ) : (
+                  <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => link(p)}>
+                    {busy ? "Redirecting…" : "Connect"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
-
-        <div className="card" style={{ padding: 20 }}>
-          <div className="section-title">Session</div>
-          <button onClick={signOut} className="btn btn-secondary">Sign out</button>
+        <div className="settings-actions" style={{ justifyContent: "flex-start" }}>
+          <StatusLine status={signInStatus} />
         </div>
+      </Section>
 
-        {msg && (
-          <p style={{ fontSize: 13, color: ok ? "var(--success)" : "var(--danger)" }}>{msg}</p>
-        )}
-      </div>
+      <Section title="Appearance" description="Choose light or dark. Saved on this device.">
+        <div className="row-between">
+          <span>Theme</span>
+          <ThemeToggle />
+        </div>
+      </Section>
+
+      <Section title="Session" description="Sign out of this browser.">
+        <form action={signOut}>
+          <button type="submit" className="btn btn-secondary">
+            <Icon name="logout" /> Sign out
+          </button>
+        </form>
+      </Section>
     </>
   );
 }

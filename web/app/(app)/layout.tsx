@@ -5,20 +5,8 @@ import { getMyClinics, getActiveClinicId } from "@/lib/data/clinic-context";
 import { signOut } from "@/lib/actions/auth";
 import { AppShell, type NavLink } from "@/app/_components/app-shell";
 import { ClinicSwitcher } from "@/app/_components/clinic-switcher";
-import { ThemeToggle } from "@/app/_components/theme-toggle";
-import { Icon } from "@/app/_components/icons";
+import { UserMenu, type UserMenuLink } from "@/app/_components/user-menu";
 import Link from "next/link";
-
-function initials(name: string) {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() ?? "")
-      .join("") || "U"
-  );
-}
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const sb = await createClient();
@@ -42,7 +30,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(isDoctor || isAdmin
           ? [{ href: "/availability", label: "Availability", icon: "clock" as const }]
           : []),
-        { href: "/account", label: "Account", icon: "settings" },
       ];
 
   const adminNav: NavLink[] =
@@ -99,24 +86,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <ClinicSwitcher clinics={clinics} activeClinic={activeClinic} isAdmin={isAdmin} />
   );
 
+  const { data: { user } } = await sb.auth.getUser();
+  const menuLinks: UserMenuLink[] = [
+    { href: "/account", label: "Account settings", icon: "user" },
+    ...(isAdmin ? [{ href: "/admin/billing", label: "Billing", icon: "card" as const }] : []),
+  ];
   const footer = (
-    <>
-      <div className="user-row">
-        <span className="avatar">{initials(name)}</span>
-        <span className="meta">
-          <span className="name">{name}</span>
-        </span>
-      </div>
-      <div className="footer-actions">
-        <ThemeToggle />
-        <form action={signOut} style={{ flex: 1 }}>
-          <button type="submit" className="btn btn-secondary btn-sm" style={{ width: "100%" }} title="Sign out">
-            <Icon name="logout" />
-            <span className="btn-label">Sign out</span>
-          </button>
-        </form>
-      </div>
-    </>
+    <UserMenu
+      name={name}
+      email={user?.email ?? null}
+      role={isPending ? "Pending" : profile.role}
+      links={menuLinks}
+      signOut={signOut}
+    />
   );
 
   return (

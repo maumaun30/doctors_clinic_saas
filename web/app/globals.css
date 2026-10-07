@@ -345,6 +345,7 @@ html.dark {
     flex-direction: column;
     position: sticky;
     top: 0;
+    z-index: 20; /* keep the user menu popover above page content */
     height: 100vh;
     transition: width 200ms ease;
   }
@@ -468,12 +469,6 @@ html.dark {
   .collapse-btn {
     margin-bottom: 8px;
   }
-  .user-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 4px 4px 12px;
-  }
   .avatar {
     width: 30px;
     height: 30px;
@@ -486,26 +481,207 @@ html.dark {
     font-size: 12px;
     font-weight: 600;
   }
-  .user-row .meta {
+  /* ---- settings pages (account) ---- */
+  .settings-section {
+    display: grid;
+    grid-template-columns: minmax(180px, 260px) minmax(0, 640px);
+    gap: 24px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+  }
+  .settings-section:first-of-type {
+    border-top: none;
+    padding-top: 8px;
+  }
+  .settings-intro h2 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .settings-intro p {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+  .settings-card {
+    padding: 20px;
+  }
+  .settings-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .settings-actions > p {
+    margin-right: auto;
+  }
+  .settings-list-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-list-row:first-child {
+    padding-top: 0;
+  }
+  .settings-list-row:last-child {
+    border-bottom: none;
+  }
+  .settings-list-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--fg-muted);
+  }
+  .settings-list-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  @media (max-width: 860px) {
+    .settings-section {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  /* ---- sidebar user menu (app/_components/user-menu.tsx) ---- */
+  .user-menu {
+    position: relative;
+  }
+  .user-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px;
+    border: none;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--fg);
+    text-align: left;
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+  .user-menu-trigger:hover,
+  .user-menu-trigger.open {
+    background: var(--bg-hover);
+  }
+  .user-menu-trigger:focus-visible,
+  .user-menu-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  .user-menu .meta {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     flex: 1;
   }
-  .user-row .meta .name {
+  .user-menu .name {
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .user-row .meta .role {
+  .user-menu .role {
     font-size: 12px;
     color: var(--fg-muted);
     text-transform: capitalize;
   }
-  .footer-actions {
+  .user-menu .email {
+    font-size: 12px;
+    color: var(--fg-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user-menu-trigger .chev {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--fg-subtle);
+  }
+  .user-menu-pop {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + 6px);
+    min-width: 220px;
+    padding: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    z-index: 50;
+    animation: menu-in 140ms ease both;
+  }
+  .user-menu-pop:focus {
+    outline: none;
+  }
+  .user-menu-head {
     display: flex;
-    gap: 8px;
     align-items: center;
+    gap: 10px;
+    padding: 8px;
+  }
+  .user-menu-sep {
+    height: 1px;
+    margin: 6px -6px;
+    background: var(--border);
+  }
+  .user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--fg);
+    font-size: 13.5px;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .user-menu-item svg {
+    width: 16px;
+    height: 16px;
+    color: var(--fg-muted);
+  }
+  .user-menu-item:hover {
+    background: var(--bg-hover);
+  }
+  .user-menu-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    font-size: 13.5px;
+    color: var(--fg-muted);
+  }
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .user-menu-pop {
+      animation: none;
+    }
   }
 
   .theme-toggle {
@@ -1011,7 +1187,8 @@ html.dark {
   .app.collapsed .nav-item .count,
   .app.collapsed .nav-label,
   .app.collapsed .btn-label,
-  .app.collapsed .user-row .meta {
+  .app.collapsed .user-menu-trigger .meta,
+  .app.collapsed .user-menu-trigger .chev {
     display: none;
   }
   .app.collapsed .switcher select {
@@ -1024,28 +1201,15 @@ html.dark {
     padding-right: 0;
     gap: 0;
   }
-  .app.collapsed .user-row {
+  .app.collapsed .user-menu-trigger {
     justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
   }
-  .app.collapsed .footer-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .app.collapsed .footer-actions form {
-    width: 100%;
-  }
-  .app.collapsed .footer-actions .btn {
-    width: 100% !important;
-    padding: 0;
-  }
-  .app.collapsed .theme-toggle {
-    flex-direction: column;
-    width: 100%;
-  }
-  .app.collapsed .theme-toggle button {
-    width: 100%;
+  /* Collapsed rail: open the menu beside the avatar instead of above it. */
+  .app.collapsed .user-menu-pop {
+    left: calc(100% + 10px);
+    right: auto;
+    bottom: 0;
+    width: 240px;
   }
   /* "Admin" group label becomes a divider line when collapsed */
   .app.collapsed .nav-group-label {
