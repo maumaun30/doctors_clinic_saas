@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  images: {
+    // Sign-in page background photo (Unsplash License).
+    remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
+  },
   experimental: {
     serverActions: { bodySizeLimit: "12mb" },
   },
