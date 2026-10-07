@@ -1,4 +1,6 @@
 import { revalidatePath } from "next/cache";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 
@@ -108,18 +110,13 @@ export default async function LibraryAdmin() {
 
   return (
     <>
-      <div className="page-head">
-        <div><h1>Most-used library</h1></div>
-      </div>
-      <p className="hint" style={{ marginBottom: 20 }}>
-        Doctors pick from these tag-style during a visit. Editing or deleting an
-        entry here does not change historical records (visits snapshot the name).
-      </p>
+      <PageHeader icon="settings" title="Most-used library"
+        sub="Quick picks for visits. Edits never change past records — visits keep their own copy." />
 
-      <div className="stack">
+      <div>
         {/* Medications */}
-        <div className="card">
-          <div className="section-bar">Medications <span className="count">· {meds.data?.length ?? 0}</span></div>
+        <Section title={<>Medications <span className="count">· {meds.data?.length ?? 0}</span></>}
+          description="Prefills dosage, frequency and instructions when a doctor adds a prescription." flush>
           {meds.data?.map(m => (
             <form key={m.id} action={saveMed} style={rowWrap}>
               <input type="hidden" name="id" value={m.id} />
@@ -133,18 +130,18 @@ export default async function LibraryAdmin() {
               </div>
             </form>
           ))}
-          <form action={addMed} style={{ padding: "12px 18px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: 6 }}>
+          <form action={addMed} className="settings-add-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: 6 }}>
             <input className="input" name="name" placeholder="Add: name (e.g. Amoxicillin)" required />
             <input className="input" name="default_dosage" placeholder="default dosage" />
             <input className="input" name="default_frequency" placeholder="default frequency" />
             <input className="input" name="default_instructions" placeholder="default instructions" />
             <button type="submit" className="btn btn-primary btn-sm">Add</button>
           </form>
-        </div>
+        </Section>
 
         {/* Lab tests */}
-        <div className="card">
-          <div className="section-bar">Lab tests <span className="count">· {labs.data?.length ?? 0}</span></div>
+        <Section title={<>Lab tests <span className="count">· {labs.data?.length ?? 0}</span></>}
+          description="Tests doctors can order in one tap during a visit." flush>
           {labs.data?.map(l => (
             <form key={l.id} action={saveLab} style={rowWrap}>
               <input type="hidden" name="id" value={l.id} />
@@ -156,16 +153,16 @@ export default async function LibraryAdmin() {
               </div>
             </form>
           ))}
-          <form action={addLab} style={{ padding: "12px 18px", display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: 6 }}>
+          <form action={addLab} className="settings-add-row" style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: 6 }}>
             <input className="input" name="name" placeholder="Add: name (e.g. CBC)" required />
             <input className="input" name="description" placeholder="description" />
             <button type="submit" className="btn btn-primary btn-sm">Add</button>
           </form>
-        </div>
+        </Section>
 
         {/* Conditions */}
-        <div className="card">
-          <div className="section-bar">Conditions <span className="count">· {conds.data?.length ?? 0}</span></div>
+        <Section title={<>Conditions <span className="count">· {conds.data?.length ?? 0}</span></>}
+          description="Diagnoses for the patient problem list, optionally with an ICD code." flush>
           {conds.data?.map(c => (
             <form key={c.id} action={saveCond} style={rowWrap}>
               <input type="hidden" name="id" value={c.id} />
@@ -177,12 +174,12 @@ export default async function LibraryAdmin() {
               </div>
             </form>
           ))}
-          <form action={addCond} style={{ padding: "12px 18px", display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 6 }}>
+          <form action={addCond} className="settings-add-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 6 }}>
             <input className="input" name="name" placeholder="Add: name (e.g. Hypertension)" required />
             <input className="input" name="icd_code" placeholder="ICD code" />
             <button type="submit" className="btn btn-primary btn-sm">Add</button>
           </form>
-        </div>
+        </Section>
       </div>
     </>
   );

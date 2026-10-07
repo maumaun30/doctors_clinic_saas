@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function SecretariesAdmin() {
@@ -10,19 +12,12 @@ export default async function SecretariesAdmin() {
   if (error) throw error;
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Secretaries</h1>
-          <div className="sub">{data.length} {data.length === 1 ? "secretary" : "secretaries"}</div>
-        </div>
-      </div>
+      <PageHeader icon="users" title="Secretaries"
+        sub={`${data.length} ${data.length === 1 ? "secretary" : "secretaries"}`} />
 
-      <p className="hint" style={{ marginBottom: 16 }}>
-        Bind each secretary to (doctor, clinic) pairings on the{" "}
-        <Link href="/admin/assignments" className="link">Assignments</Link> page.
-      </p>
-
-      <div className="card">
+      <Section title="Front desk staff"
+        description={<>Secretaries book and manage appointments for the doctors they’re assigned to. Set pairings on <Link href="/admin/assignments" className="link">Assignments</Link>.</>}
+        flush>
         {data.length === 0
           ? <div className="empty">No secretaries yet.</div>
           : data.map(s => (
@@ -31,7 +26,7 @@ export default async function SecretariesAdmin() {
               {s.phone && <span className="hint">{s.phone}</span>}
             </div>
           ))}
-      </div>
+      </Section>
     </>
   );
 }

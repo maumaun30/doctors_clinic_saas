@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/app/_components/page-header";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
@@ -110,18 +111,12 @@ export default async function TodayPage() {
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Today</h1>
-          <div className="sub">
-            {dateLabel} · {activeClinic ? "Active clinic" : "All clinics"} · {me.full_name ?? "You"}
-          </div>
-        </div>
-        <div className="head-actions">
+      <PageHeader icon="today" title="Today"
+        sub={`${dateLabel} · ${activeClinic ? "Active clinic" : "All clinics"} · ${me.full_name ?? "You"}`}
+        actions={<>
           <Link href="/schedule" className="btn btn-secondary"><Icon name="calendar" /> View schedule</Link>
-          <Link href="/schedule" className="btn btn-primary"><Icon name="plus" /> Book</Link>
-        </div>
-      </div>
+          <Link href="/schedule#book" className="btn btn-primary"><Icon name="plus" /> Book</Link>
+        </>} />
 
       <div className="stats">
         <div className="card stat"><div className="k">Scheduled</div><div className="v">{appts.length}</div></div>

@@ -1,4 +1,6 @@
 import { revalidatePath } from "next/cache";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
@@ -15,7 +17,7 @@ export default async function AvailabilityPage() {
   if (!isAdmin && !isDoctor) {
     return (
       <>
-        <div className="page-head"><div><h1>Availability</h1></div></div>
+        <PageHeader icon="clock" title="Availability" />
         <div className="card empty">Only doctors and admins manage availability.</div>
       </>
     );
@@ -66,16 +68,12 @@ export default async function AvailabilityPage() {
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Availability</h1>
-          <div className="sub">Weekly working hours · times are clinic-local (Asia/Manila)</div>
-        </div>
-      </div>
+      <PageHeader icon="clock" title="Availability" sub="Weekly working hours · times are clinic-local (Asia/Manila)" />
 
-      <div className="stack">
-        <div className="card table-wrap">
-          <div className="section-bar">Current slots <span className="count">· {avail?.length ?? 0}</span></div>
+      <div>
+        <Section title={<>Weekly hours <span className="count">· {avail?.length ?? 0}</span></>}
+          description="Booking only offers times inside these windows — for staff and for online booking." flush>
+          <div className="table-wrap">
           <table className="tbl">
             <thead>
               <tr><th>Doctor @ Clinic</th><th>Day</th><th>Start</th><th>End</th><th></th></tr>
@@ -100,14 +98,14 @@ export default async function AvailabilityPage() {
               )}
             </tbody>
           </table>
-        </div>
+          </div>
+        </Section>
 
-        <div>
-          <div className="section-title" style={{ marginBottom: 12 }}>Add slot</div>
+        <Section title="Add hours" description="Add one window per weekday. Split shifts? Add two windows for the same day.">
           {(!dcs || dcs.length === 0)
             ? <p className="hint">No doctor↔clinic pairings yet — set them up under Admin → Assignments.</p>
             : (
-              <form action={add} className="card" style={{ maxWidth: 560, padding: 24 }}>
+              <form action={add}>
                 <div className="field">
                   <label className="label">Doctor{activeClinic ? "" : " @ clinic"}</label>
                   <select className="select" name="dc" required defaultValue="" style={{ width: "100%" }}>
@@ -135,12 +133,12 @@ export default async function AvailabilityPage() {
                     <input className="input" type="time" name="end_time" defaultValue="17:00" required />
                   </div>
                 </div>
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <button type="submit" className="btn btn-primary">Add slot</button>
+                <div className="settings-actions">
+                  <button type="submit" className="btn btn-primary">Add hours</button>
                 </div>
               </form>
             )}
-        </div>
+        </Section>
       </div>
     </>
   );

@@ -484,7 +484,8 @@ html.dark {
   /* ---- settings pages (account) ---- */
   .settings-section {
     display: grid;
-    grid-template-columns: minmax(180px, 260px) minmax(0, 640px);
+    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+    max-width: 1120px;
     gap: 24px;
     padding: 24px 0;
     border-top: 1px solid var(--border);
@@ -505,6 +506,92 @@ html.dark {
   }
   .settings-card {
     padding: 20px;
+  }
+  .settings-card.flush {
+    padding: 0;
+    overflow: hidden;
+  }
+  .settings-bare {
+    min-width: 0;
+  }
+  /* Blocks inside a settings card, separated by a rule. */
+  .settings-subsection {
+    margin: 20px -20px 0;
+    padding: 18px 20px 0;
+    border-top: 1px solid var(--border);
+  }
+  .settings-danger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  /* Inline "add" row at the bottom of a flush list card. */
+  .settings-add-row {
+    padding: 12px 18px;
+    background: var(--bg-subtle);
+    border-top: 1px solid var(--border);
+  }
+  .row-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .row-check input {
+    margin-top: 3px;
+  }
+  /* Input with a fixed prefix (e.g. https://host/book/) */
+  .input-affix {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+  }
+  .input-affix > span {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-right: none;
+    border-radius: var(--radius) 0 0 var(--radius);
+    background: var(--bg-subtle);
+    color: var(--fg-muted);
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 55%;
+  }
+  .input-affix > .input {
+    flex: 1;
+    min-width: 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .settings-intro .count {
+    font-weight: 400;
+    color: var(--fg-subtle);
+  }
+  /* Page header icon tile (app/_components/page-header.tsx) */
+  .page-head-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+  .page-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: var(--accent-subtle);
+    color: var(--accent);
+  }
+  .page-icon svg {
+    width: 22px;
+    height: 22px;
   }
   .settings-actions {
     display: flex;

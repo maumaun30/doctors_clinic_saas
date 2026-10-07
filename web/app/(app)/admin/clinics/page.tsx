@@ -1,4 +1,7 @@
 import { revalidatePath } from "next/cache";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
+import { Icon } from "@/app/_components/icons";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { listClinics, getMyProfile } from "@/lib/data/queries";
@@ -65,65 +68,98 @@ export default async function ClinicsAdmin() {
 
   return (
     <>
-      <div className="page-head">
-        <div><h1>Clinics</h1><div className="sub">{clinics.length} {clinics.length === 1 ? "clinic" : "clinics"}</div></div>
-      </div>
+      <PageHeader icon="building" title="Clinics"
+        sub={`${clinics.length} ${clinics.length === 1 ? "clinic" : "clinics"}`}
+        actions={<a href="#add-clinic" className="btn btn-primary"><Icon name="plus" /> Add clinic</a>} />
 
-      <div className="stack">
-        <div className="card">
-          <div className="section-bar">All clinics</div>
-          {clinics.length === 0
-            ? <div className="empty">No clinics yet.</div>
-            : clinics.map(c => (
-              <div key={c.id} className="queue-row" style={{ gridTemplateColumns: "1fr auto" }}>
-                <form action={update} style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: 1 }}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <input className="input" name="name" defaultValue={c.name} required style={{ flex: 1, minWidth: 160 }} />
-                  <input className="input" name="address" defaultValue={c.address ?? ""} placeholder="Address" style={{ flex: 1, minWidth: 160 }} />
-                  <button type="submit" className="btn btn-secondary btn-sm">Save</button>
-                </form>
-                <form action={remove}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <button type="submit" className="btn btn-ghost btn-sm">Delete</button>
-                </form>
-                <form action={updateBooking}
-                      style={{ gridColumn: "1 / -1", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13 }}>
-                    <input type="checkbox" name="online_booking" defaultChecked={c.online_booking} />
-                    Online booking
-                  </label>
-                  <span className="hint">{origin}/book/</span>
-                  <input className="input" name="booking_slug" aria-label="Booking link"
-                         defaultValue={c.booking_slug ?? suggestSlug(c.name)}
-                         style={{ flex: 1, minWidth: 140, maxWidth: 260 }} />
-                  <button type="submit" className="btn btn-secondary btn-sm">Save</button>
-                  {c.online_booking && c.booking_slug && (
-                    <a className="link" href={`/book/${c.booking_slug}`} target="_blank" rel="noreferrer"
-                       style={{ fontSize: 13 }}>Open booking page ↗</a>
-                  )}
-                </form>
+      {clinics.map(c => (
+        <Section key={c.id} title={c.name}
+          description={<>
+            {c.address ?? "No address yet"}
+            <span style={{ display: "block", marginTop: 8 }}>
+              {c.online_booking && c.booking_slug
+                ? <span className="badge badge-green"><span className="dot" />Online booking on</span>
+                : <span className="badge"><span className="dot" />Online booking off</span>}
+            </span>
+          </>}>
+          <form action={update}>
+            <input type="hidden" name="id" value={c.id} />
+            <div className="grid-2">
+              <div className="field">
+                <label className="label" htmlFor={`name-${c.id}`}>Name</label>
+                <input id={`name-${c.id}`} className="input" name="name" defaultValue={c.name} required />
               </div>
-            ))}
-        </div>
-
-        <div>
-          <div className="section-title" style={{ marginBottom: 12 }}>Add clinic</div>
-          <form action={add} className="card" style={{ maxWidth: 560, padding: 24 }}>
-            <div className="field">
-              <label className="label">Name</label>
-              <input className="input" name="name" required />
+              <div className="field">
+                <label className="label" htmlFor={`addr-${c.id}`}>Address</label>
+                <input id={`addr-${c.id}`} className="input" name="address" defaultValue={c.address ?? ""} />
+              </div>
             </div>
-            <div className="field">
-              <label className="label">Address</label>
-              <input className="input" name="address" />
-            </div>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button type="submit" className="btn btn-primary">Add clinic</button>
+            <div className="settings-actions" style={{ marginTop: 0 }}>
+              <button type="submit" className="btn btn-secondary btn-sm">Save details</button>
             </div>
           </form>
-        </div>
-      </div>
+
+          <div className="settings-subsection">
+            <form action={updateBooking}>
+              <input type="hidden" name="id" value={c.id} />
+              <label className="row-check">
+                <input type="checkbox" name="online_booking" defaultChecked={c.online_booking} />
+                <span>
+                  <span className="strong">Online booking</span>
+                  <span className="hint" style={{ display: "block" }}>Patients can book open slots at this link without an account.</span>
+                </span>
+              </label>
+              <div className="field" style={{ marginTop: 12 }}>
+                <label className="label" htmlFor={`slug-${c.id}`}>Booking link</label>
+                <div className="input-affix">
+                  <span>{origin}/book/</span>
+                  <input id={`slug-${c.id}`} className="input" name="booking_slug"
+                         defaultValue={c.booking_slug ?? suggestSlug(c.name)} />
+                </div>
+              </div>
+              <div className="settings-actions" style={{ marginTop: 0 }}>
+                {c.online_booking && c.booking_slug && (
+                  <a className="link" href={`/book/${c.booking_slug}`} target="_blank" rel="noreferrer"
+                     style={{ fontSize: 13, marginRight: "auto" }}>Open booking page ↗</a>
+                )}
+                <button type="submit" className="btn btn-secondary btn-sm">Save booking</button>
+              </div>
+            </form>
+          </div>
+
+          <div className="settings-subsection settings-danger">
+            <span className="hint">Deleting fails while the clinic still has appointments.</span>
+            <form action={remove}>
+              <input type="hidden" name="id" value={c.id} />
+              <button type="submit" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }}>Delete clinic</button>
+            </form>
+          </div>
+        </Section>
+      ))}
+
+      {clinics.length === 0 && (
+        <Section title="No clinics yet" description="Add your first clinic below.">
+          <div className="empty">No clinics yet.</div>
+        </Section>
+      )}
+
+      <Section id="add-clinic" title="Add clinic" description="Each clinic has its own doctors, secretaries, patients and booking link.">
+        <form action={add}>
+          <div className="grid-2">
+            <div className="field">
+              <label className="label" htmlFor="new-name">Name</label>
+              <input id="new-name" className="input" name="name" required />
+            </div>
+            <div className="field">
+              <label className="label" htmlFor="new-address">Address</label>
+              <input id="new-address" className="input" name="address" />
+            </div>
+          </div>
+          <div className="settings-actions">
+            <button type="submit" className="btn btn-primary">Add clinic</button>
+          </div>
+        </form>
+      </Section>
     </>
   );
 }

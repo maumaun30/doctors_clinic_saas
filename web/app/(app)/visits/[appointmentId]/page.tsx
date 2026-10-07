@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { setAppointmentStatus } from "@/lib/actions/appointments";
@@ -22,7 +24,7 @@ export default async function VisitPage({
   const sb = await createClient();
 
   const [apptRes, meds, labs, conds] = await Promise.all([
-    sb.from("appointments").select("*").eq("id", appointmentId).single(),
+    sb.from("appointments").select("*, patient:patients(id, full_name)").eq("id", appointmentId).single(),
     sb.from("common_medications").select("*").order("name"),
     sb.from("common_lab_tests").select("*").order("name"),
     sb.from("common_conditions").select("*").order("name"),
@@ -75,33 +77,34 @@ export default async function VisitPage({
 
   return (
     <>
-      <div className="page-head">
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <Link href="/schedule" className="btn btn-ghost btn-icon" aria-label="Back"><Icon name="back" /></Link>
-          <div>
-            <h1 style={{ fontSize: 20 }}>Visit</h1>
-            <div className="sub">{fmt(appt.scheduled_at)} · {appt.duration_minutes} min</div>
-          </div>
-        </div>
-        <div className="head-actions">
+      <PageHeader
+        leading={<>
+          <Link href="/schedule" className="btn btn-ghost btn-icon" aria-label="Back to schedule"><Icon name="back" /></Link>
+          <span className="page-icon"><Icon name="calendar" /></span>
+        </>}
+        title={appt.patient
+          ? <Link href={`/patients/${appt.patient.id}`} style={{ color: "inherit", textDecoration: "none" }}>{appt.patient.full_name}</Link>
+          : "Visit"}
+        sub={`Visit · ${fmt(appt.scheduled_at)} · ${appt.duration_minutes} min`}
+        actions={<>
           <span className={badge.cls}><span className="dot" />{badge.label}</span>
-        </div>
-      </div>
+          {closed && record && (
+            <Link href={`/visits/${appointmentId}/rx`} className="btn btn-secondary"><Icon name="print" /> Print prescription</Link>
+          )}
+        </>} />
 
       {!closed && (
-        <div className="stack">
-          <div className="card" style={{ padding: 20 }}>
-            <div className="section-title">Reschedule</div>
+        <div>
+          <Section title="Reschedule" description="Pick a new open slot. The patient’s reminders follow the new time.">
             <RescheduleForm
               appointmentId={appointmentId}
               doctorId={appt.doctor_id}
               clinicId={appt.clinic_id}
               currentDuration={appt.duration_minutes}
             />
-          </div>
+          </Section>
 
-          <div className="card" style={{ padding: 20 }}>
-            <div className="section-title">Status</div>
+          <Section title="Status" description="Confirm, cancel or mark as no-show. Completing happens below.">
             <form action={changeStatus} style={{ display: "flex", gap: 8 }}>
               <select name="status" defaultValue={appt.status} className="select">
                 <option value="scheduled">Scheduled</option>
@@ -111,17 +114,16 @@ export default async function VisitPage({
               </select>
               <button type="submit" className="btn btn-secondary">Update</button>
             </form>
-          </div>
+          </Section>
 
-          <div className="card" style={{ padding: 20 }}>
-            <div className="section-title">Complete visit</div>
+          <Section title="Complete visit" description="Vitals, diagnosis, prescriptions and labs. Saving closes the visit and writes the medical record.">
             <VisitForm
               appointmentId={appointmentId}
               meds={meds.data ?? []}
               labs={labs.data ?? []}
               conditions={conds.data ?? []}
             />
-          </div>
+          </Section>
         </div>
       )}
 
@@ -133,36 +135,29 @@ export default async function VisitPage({
             </div>
           )}
           {record && (
-            <div className="stack">
-              <div className="head-actions">
-                <Link href={`/visits/${appointmentId}/rx`} className="btn btn-secondary"><Icon name="print" /> Print prescription</Link>
-              </div>
+            <div>
 
               {record.vitals && Object.keys(record.vitals).length > 0 && (
-                <div className="card" style={{ padding: 20 }}>
-                  <div className="section-title">Vitals</div>
+                <Section title="Vitals">
                   <dl className="kv">
                     {Object.entries(record.vitals).map(([k, v]) => (
                       <div key={k} style={{ display: "contents" }}><dt>{k}</dt><dd>{String(v)}</dd></div>
                     ))}
                   </dl>
-                </div>
+                </Section>
               )}
               {record.chief_complaint && (
-                <div className="card" style={{ padding: 20 }}>
-                  <div className="section-title">Chief complaint</div>
+                <Section title="Chief complaint">
                   <p style={{ margin: 0 }}>{record.chief_complaint}</p>
-                </div>
+                </Section>
               )}
               {record.diagnosis && (
-                <div className="card" style={{ padding: 20 }}>
-                  <div className="section-title">Diagnosis</div>
+                <Section title="Diagnosis">
                   <p style={{ margin: 0 }}>{record.diagnosis}</p>
-                </div>
+                </Section>
               )}
               {prescriptions.length > 0 && (
-                <div className="card">
-                  <div className="section-bar">Prescriptions <span className="count">· {prescriptions.length}</span></div>
+                <Section title={<>Prescriptions <span className="count">· {prescriptions.length}</span></>} flush>
                   {prescriptions.map(p => (
                     <div key={p.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
                       <div>
@@ -176,11 +171,10 @@ export default async function VisitPage({
                       </div>
                     </div>
                   ))}
-                </div>
+                </Section>
               )}
               {labOrders.length > 0 && (
-                <div className="card">
-                  <div className="section-bar">Lab orders <span className="count">· {labOrders.length}</span></div>
+                <Section title={<>Lab orders <span className="count">· {labOrders.length}</span></>} flush>
                   {labOrders.map(l => (
                     <div key={l.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
                       <div>
@@ -192,13 +186,12 @@ export default async function VisitPage({
                       </div>
                     </div>
                   ))}
-                </div>
+                </Section>
               )}
               {record.notes && (
-                <div className="card" style={{ padding: 20 }}>
-                  <div className="section-title">Notes</div>
+                <Section title="Notes">
                   <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{record.notes}</p>
-                </div>
+                </Section>
               )}
             </div>
           )}

@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { getMyProfile } from "@/lib/data/queries";
 import { openPortal, startCheckout } from "@/lib/actions/billing";
 import { syncSeats } from "@/lib/billing";
@@ -42,20 +44,17 @@ export default async function BillingPage({
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Billing</h1>
-          <div className="sub">Billed per doctor, monthly</div>
-        </div>
-      </div>
+      <PageHeader icon="card" title="Billing" sub="Billed per doctor, monthly"
+        actions={<span className={badge.cls}><span className="dot" />{badge.label}</span>} />
 
       {checkout === "success" && (
-        <div className="card" role="status" style={{ padding: 16, marginBottom: 16 }}>
+        <div className="card" role="status" style={{ padding: 16, marginBottom: 8, maxWidth: 1120 }}>
           Thanks — your subscription is being set up. This page updates once Stripe confirms (usually a few seconds).
         </div>
       )}
 
-      <div className="card" style={{ padding: 24, maxWidth: 640 }}>
+      <Section title="Subscription"
+        description="Seats follow the number of doctors in your account and are prorated automatically when you add or remove one.">
         <dl className="kv">
           <dt>Status</dt><dd><span className={badge.cls}><span className="dot" />{badge.label}</span></dd>
           {!live && (
@@ -74,7 +73,11 @@ export default async function BillingPage({
           </p>
         )}
 
-        <div style={{ display: "flex", gap: 8, marginTop: 20, flexWrap: "wrap" }}>
+      </Section>
+
+      <Section title="Payment & invoices"
+        description="Cards, invoices and cancellation are handled securely by Stripe.">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           {!stripeConfigured() ? (
             <p className="hint">Billing isn’t configured on this server (STRIPE_SECRET_KEY / STRIPE_PRICE_ID).</p>
           ) : live ? (
@@ -86,10 +89,7 @@ export default async function BillingPage({
             </>
           )}
         </div>
-        <p className="hint" style={{ marginTop: 14 }}>
-          Seats follow the number of doctors in your account and are prorated automatically when you add or remove one.
-        </p>
-      </div>
+      </Section>
     </>
   );
 }

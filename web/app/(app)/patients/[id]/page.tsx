@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getPatient, listMedicalRecords, getMyProfile } from "@/lib/data/queries";
@@ -97,24 +99,18 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
 
   return (
     <>
-      <div className="page-head">
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <Link href="/patients" className="btn btn-ghost btn-icon" aria-label="Back"><Icon name="back" /></Link>
-          <span className="avatar" style={{ width: 44, height: 44, fontSize: 15 }}>{initials(patient.full_name)}</span>
-          <div>
-            <h1 style={{ fontSize: 20 }}>{patient.full_name}</h1>
-            <div className="sub">{sub}</div>
-          </div>
-        </div>
-        <div className="head-actions">
-          <Link href="/schedule#book" className="btn btn-primary"><Icon name="plus" /> New visit</Link>
-        </div>
-      </div>
+      <PageHeader
+        leading={<>
+          <Link href="/patients" className="btn btn-ghost btn-icon" aria-label="Back to patients"><Icon name="back" /></Link>
+          <span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(patient.full_name)}</span>
+        </>}
+        title={patient.full_name}
+        sub={sub}
+        actions={<Link href="/schedule#book" className="btn btn-primary"><Icon name="plus" /> New visit</Link>} />
 
-      <div className="stack">
+      <div>
         {/* Demographics */}
-        <div className="card" style={{ padding: 20 }}>
-          <div className="section-title">Demographics</div>
+        <Section title="Demographics" description="Contact details also power appointment reminders.">
           <dl className="kv">
             <dt>Age</dt><dd>{ageVerbose(patient.date_of_birth) ?? "—"}</dd>
             <dt>Sex</dt><dd>{patient.sex ?? "—"}</dd>
@@ -163,11 +159,10 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
               </div>
             </form>
           </details>
-        </div>
+        </Section>
 
         {/* Clinics */}
-        <div className="card" style={{ padding: 20 }}>
-          <div className="section-title">Clinics</div>
+        <Section title="Clinics" description="Clinics where this patient can be booked.">
           {links.length === 0
             ? <p className="hint">Not linked to any clinic.</p>
             : (
@@ -195,11 +190,10 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
               <button type="submit" className="btn btn-secondary">Link</button>
             </form>
           )}
-        </div>
+        </Section>
 
         {/* Active problems */}
-        <div className="card" style={{ padding: 20 }}>
-          <div className="section-title">Active problems</div>
+        <Section title="Active problems" description="Recorded at visits by the treating doctor.">
           {conditions.length === 0
             ? <p className="hint">No conditions recorded.</p>
             : (
@@ -211,11 +205,10 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                 ))}
               </div>
             )}
-        </div>
+        </Section>
 
         {/* Upcoming */}
-        <div className="card">
-          <div className="section-bar">Upcoming <span className="count">· {upcomingRes.data?.length ?? 0}</span></div>
+        <Section title={<>Upcoming <span className="count">· {upcomingRes.data?.length ?? 0}</span></>} description="Scheduled and confirmed appointments." flush>
           {!upcomingRes.data || upcomingRes.data.length === 0
             ? <div className="empty">None.</div>
             : (
@@ -231,11 +224,10 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                 </tbody>
               </table>
             )}
-        </div>
+        </Section>
 
         {/* Past */}
-        <div className="card">
-          <div className="section-bar">Past visits <span className="count">· {pastRes.data?.length ?? 0}</span></div>
+        <Section title={<>Past visits <span className="count">· {pastRes.data?.length ?? 0}</span></>} description="Completed, cancelled and missed appointments." flush>
           {!pastRes.data || pastRes.data.length === 0
             ? <div className="empty">None.</div>
             : (
@@ -251,11 +243,10 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                 </tbody>
               </table>
             )}
-        </div>
+        </Section>
 
         {/* Medical records */}
-        <div className="card">
-          <div className="section-bar">Medical records <span className="count">· {records.length}</span></div>
+        <Section title={<>Medical records <span className="count">· {records.length}</span></>} description="Diagnoses and notes from completed visits. Not visible to secretaries." flush>
           {records.length === 0
             ? <div className="empty">No records visible to you.</div>
             : records.map(r => (
@@ -266,11 +257,10 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                 </div>
               </div>
             ))}
-        </div>
+        </Section>
 
         {/* Prescriptions */}
-        <div className="card">
-          <div className="section-bar">Prescriptions <span className="count">· {prescriptions.length}</span></div>
+        <Section title={<>Prescriptions <span className="count">· {prescriptions.length}</span></>} description="Medications issued at visits." flush>
           {prescriptions.length === 0
             ? <div className="empty">None.</div>
             : prescriptions.map(p => (
@@ -286,11 +276,10 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                 </div>
               </div>
             ))}
-        </div>
+        </Section>
 
         {/* Lab orders */}
-        <div className="card">
-          <div className="section-bar">Lab orders <span className="count">· {labs.length}</span></div>
+        <Section title={<>Lab orders <span className="count">· {labs.length}</span></>} description="Tests ordered at visits, with attached result files." flush>
           {labs.length === 0
             ? <div className="empty">None.</div>
             : labs.map(l => (
@@ -304,7 +293,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                 </div>
               </div>
             ))}
-        </div>
+        </Section>
       </div>
     </>
   );

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
@@ -66,15 +68,9 @@ export default async function PatientsPage({
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Patients</h1>
-          <div className="sub">{patients.length} {patients.length === 1 ? "patient" : "patients"}{activeClinic ? " · active clinic" : ""}</div>
-        </div>
-        <div className="head-actions">
-          {activeClinic && <a href="#add" className="btn btn-primary"><Icon name="plus" /> Add patient</a>}
-        </div>
-      </div>
+      <PageHeader icon="users" title="Patients"
+        sub={`${patients.length} ${patients.length === 1 ? "patient" : "patients"}${activeClinic ? " · active clinic" : ""}`}
+        actions={activeClinic && <a href="#add" className="btn btn-primary"><Icon name="plus" /> Add patient</a>} />
 
       <form method="get" className="filters">
         <div className="search" style={{ maxWidth: 420 }}>
@@ -105,11 +101,9 @@ export default async function PatientsPage({
       {!activeClinic ? (
         <p className="hint" style={{ marginTop: 20 }}>Pick an active clinic in the sidebar to add a patient.</p>
       ) : (
-        <>
-          <div id="add" className="page-head" style={{ marginTop: 32, marginBottom: 16 }}>
-            <div><h1 style={{ fontSize: 18 }}>Add patient</h1></div>
-          </div>
-          <form action={add} className="card" style={{ maxWidth: 560, padding: 24 }}>
+        <Section id="add" title="Add patient"
+          description="Adds the patient to the active clinic. An email or mobile number enables appointment reminders.">
+          <form action={add}>
             <div className="field">
               <label className="label">Full name</label>
               <input className="input" name="full_name" required />
@@ -143,11 +137,11 @@ export default async function PatientsPage({
               <label className="label">Address</label>
               <input className="input" name="address" />
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+            <div className="settings-actions">
               <button type="submit" className="btn btn-primary">Add patient</button>
             </div>
           </form>
-        </>
+        </Section>
       )}
     </>
   );
