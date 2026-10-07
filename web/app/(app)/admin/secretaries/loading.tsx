@@ -1,5 +1,5 @@
-import { ListSkeleton } from "@/app/_components/skeleton";
+import { SectionsSkeleton } from "@/app/_components/skeleton";
 
 export default function Loading() {
-  return <ListSkeleton rows={5} avatar />;
+  return <SectionsSkeleton sections={1} rows={4} />;
 }

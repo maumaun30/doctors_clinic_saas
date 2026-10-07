@@ -9,6 +9,8 @@ import { ProviderLogo } from "@/app/_components/brand-icons";
 import { Skeleton } from "@/app/_components/skeleton";
 import { ThemeToggle } from "@/app/_components/theme-toggle";
 import { Icon } from "@/app/_components/icons";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable, add the
 // provider back to this list — the ProviderLogo + link/unlink code already
@@ -31,20 +33,6 @@ function StatusLine({ status }: { status: Status }) {
        style={{ fontSize: 13, margin: 0, color: status.kind === "ok" ? "var(--success)" : "var(--danger)" }}>
       {status.text}
     </p>
-  );
-}
-
-function Section({ title, description, children }: {
-  title: string; description: string; children: React.ReactNode;
-}) {
-  return (
-    <section className="settings-section">
-      <div className="settings-intro">
-        <h2>{title}</h2>
-        <p>{description}</p>
-      </div>
-      <div className="card settings-card">{children}</div>
-    </section>
   );
 }
 
@@ -171,18 +159,14 @@ export default function AccountPage() {
 
   return (
     <>
-      <div className="page-head">
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(name)}</span>
-          <div>
-            <h1 style={{ fontSize: 20 }}>{name}</h1>
-            <div className="sub" style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              {email}
-              {role && <span className="badge" style={{ textTransform: "capitalize" }}>{role}</span>}
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        leading={<span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(name)}</span>}
+        title={name}
+        sub={<span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          {email}
+          {role && <span className="badge" style={{ textTransform: "capitalize" }}>{role}</span>}
+        </span>}
+      />
 
       <Section title="Profile" description="Your name appears on visits, prescriptions and the audit log.">
         <form onSubmit={saveProfile}>

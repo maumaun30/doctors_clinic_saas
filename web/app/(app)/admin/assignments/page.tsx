@@ -1,4 +1,6 @@
 import { revalidatePath } from "next/cache";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 
@@ -18,7 +20,7 @@ export default async function AssignmentsAdmin({
   if (!clinicId) {
     return (
       <>
-        <div className="page-head"><div><h1>Assignments</h1></div></div>
+        <PageHeader icon="shield" title="Assignments" />
         <div className="card empty">Create a clinic first.</div>
       </>
     );
@@ -84,9 +86,7 @@ export default async function AssignmentsAdmin({
 
   return (
     <>
-      <div className="page-head">
-        <div><h1>Assignments</h1><div className="sub">Link doctors and secretaries to a clinic</div></div>
-      </div>
+      <PageHeader icon="shield" title="Assignments" sub="Link doctors and secretaries to a clinic" />
 
       <form method="get" className="filters">
         <label className="field" style={{ margin: 0 }}>
@@ -98,24 +98,21 @@ export default async function AssignmentsAdmin({
         <button type="submit" className="btn btn-secondary" style={{ alignSelf: "flex-end" }}>Switch</button>
       </form>
 
-      <div className="stack">
-        {docsHere.length === 0 && <div className="card empty">No doctors at this clinic yet.</div>}
+      <div>
+        {docsHere.length === 0 && (
+          <Section title="No doctors yet" description="Add a doctor to this clinic below.">
+            <div className="empty">No doctors at this clinic yet.</div>
+          </Section>
+        )}
         {docsHere.map((d: any) => {
           const dcRow = dcs.find(x => x.doctor_id === d.doctor_id)!;
           const secsHere = cas.filter((c: any) => c.doctor_clinic_id === dcRow.id);
           const secIdsHere = new Set(secsHere.map((c: any) => c.secretary_id));
           const addableSecs = allSecs.filter(s => !secIdsHere.has(s.id));
           return (
-            <div key={dcRow.id} className="card" style={{ padding: 20 }}>
-              <div className="row-between">
-                <strong style={{ fontSize: 15 }}>{d.doctor.profiles.full_name}</strong>
-                <form action={removeDoctor}>
-                  <input type="hidden" name="id" value={dcRow.id} />
-                  <button type="submit" className="btn btn-ghost btn-sm" title="Remove from clinic">Remove</button>
-                </form>
-              </div>
-
-              <div className="section-title" style={{ marginTop: 16, marginBottom: 8 }}>Secretaries</div>
+            <Section key={dcRow.id} title={d.doctor.profiles.full_name}
+              description={`${secsHere.length} ${secsHere.length === 1 ? "secretary" : "secretaries"} can book and manage this doctor’s appointments here.`}>
+              <div className="section-title" style={{ marginBottom: 8 }}>Secretaries</div>
               {secsHere.length === 0
                 ? <p className="hint">None assigned.</p>
                 : (
@@ -143,12 +140,19 @@ export default async function AssignmentsAdmin({
                   <button type="submit" className="btn btn-secondary btn-sm">Add</button>
                 </form>
               )}
-            </div>
+
+              <div className="settings-subsection settings-danger">
+                <span className="hint">Past appointments stay; this doctor’s secretary assignments here are removed.</span>
+                <form action={removeDoctor}>
+                  <input type="hidden" name="id" value={dcRow.id} />
+                  <button type="submit" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }}>Remove from clinic</button>
+                </form>
+              </div>
+            </Section>
           );
         })}
 
-        <div>
-          <div className="section-title" style={{ marginBottom: 12 }}>Add doctor to this clinic</div>
+        <Section title="Add doctor" description="Doctors must first be approved under Pending users.">
           {addableDocs.length === 0
             ? <p className="hint">All doctors are already at this clinic.</p>
             : (
@@ -163,7 +167,7 @@ export default async function AssignmentsAdmin({
                 <button type="submit" className="btn btn-secondary">Add</button>
               </form>
             )}
-        </div>
+        </Section>
       </div>
     </>
   );

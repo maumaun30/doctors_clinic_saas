@@ -25,15 +25,32 @@ function Busy({ children }: { children: React.ReactNode }) {
   );
 }
 
-function HeadSkeleton({ action = false }: { action?: boolean }) {
+function HeadSkeleton({ action = false, round = false }: { action?: boolean; round?: boolean }) {
   return (
     <div className="page-head">
-      <div>
-        <Skeleton w={170} h={24} />
-        <Skeleton w={240} h={14} style={{ marginTop: 9 }} />
+      <div className="page-head-main">
+        <Skeleton w={44} h={44} r={round ? 999 : 12} />
+        <div>
+          <Skeleton w={170} h={22} />
+          <Skeleton w={240} h={13} style={{ marginTop: 9 }} />
+        </div>
       </div>
       {action && <Skeleton w={120} h={34} r={8} />}
     </div>
+  );
+}
+
+/** One settings-style section: intro column + card. */
+function SectionSkel({ children, flush = false }: { children: React.ReactNode; flush?: boolean }) {
+  return (
+    <section className="settings-section">
+      <div className="settings-intro">
+        <Skeleton w={120} h={15} />
+        <Skeleton w="92%" h={12} style={{ marginTop: 10 }} />
+        <Skeleton w="64%" h={12} style={{ marginTop: 6 }} />
+      </div>
+      <div className={`card settings-card${flush ? " flush" : ""}`}>{children}</div>
+    </section>
   );
 }
 
@@ -153,25 +170,10 @@ export function StatsListSkeleton() {
 export function DetailSkeleton() {
   return (
     <Busy>
-      <div className="page-head">
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <Skeleton w={36} h={36} r={6} />
-          <Skeleton w={44} h={44} r={999} />
-          <div>
-            <Skeleton w={180} h={22} />
-            <Skeleton w={150} h={13} style={{ marginTop: 8 }} />
-          </div>
-        </div>
-      </div>
-      <div className="stack">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: 20 }}>
-            <Skeleton w={120} h={12} />
-            <Skeleton w="100%" h={14} style={{ marginTop: 14 }} />
-            <Skeleton w="80%" h={14} style={{ marginTop: 10 }} />
-          </div>
-        ))}
-      </div>
+      <HeadSkeleton action round />
+      <SectionSkel><KvSkeleton rows={4} /></SectionSkel>
+      <SectionSkel><FieldsSkeleton count={1} /></SectionSkel>
+      <SectionSkel flush><Rows count={3} /></SectionSkel>
     </Busy>
   );
 }
@@ -194,14 +196,9 @@ export function SectionsSkeleton({ sections = 3, rows = 3 }: { sections?: number
   return (
     <Busy>
       <HeadSkeleton />
-      <div className="stack">
-        {Array.from({ length: sections }).map((_, i) => (
-          <div key={i} className="card">
-            <div className="section-bar"><Skeleton w={140} h={12} /></div>
-            <Rows count={rows} />
-          </div>
-        ))}
-      </div>
+      {Array.from({ length: sections }).map((_, i) => (
+        <SectionSkel key={i} flush><Rows count={rows} /></SectionSkel>
+      ))}
     </Busy>
   );
 }
@@ -211,12 +208,8 @@ export function TableFormSkeleton({ rows = 5, fields = 4 }: { rows?: number; fie
   return (
     <Busy>
       <HeadSkeleton />
-      <div className="card">
-        <Rows count={rows} />
-      </div>
-      <div className="card" style={{ maxWidth: 560, padding: 24, marginTop: 24 }}>
-        <FieldsSkeleton count={fields} />
-      </div>
+      <SectionSkel flush><Rows count={rows} /></SectionSkel>
+      <SectionSkel><FieldsSkeleton count={fields} /></SectionSkel>
     </Busy>
   );
 }
@@ -225,14 +218,10 @@ export function TableFormSkeleton({ rows = 5, fields = 4 }: { rows?: number; fie
 export function CardsSkeleton({ cards = 3, rows = 4, maxWidth }: { cards?: number; rows?: number; maxWidth?: number }) {
   return (
     <Busy>
-      <HeadSkeleton />
-      <div className="stack">
-        {Array.from({ length: cards }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: 24, maxWidth }}>
-            <KvSkeleton rows={rows} />
-          </div>
-        ))}
-      </div>
+      <HeadSkeleton action={maxWidth !== undefined} />
+      {Array.from({ length: cards }).map((_, i) => (
+        <SectionSkel key={i}><KvSkeleton rows={rows} /></SectionSkel>
+      ))}
     </Busy>
   );
 }

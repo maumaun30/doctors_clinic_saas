@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/app/_components/page-header";
 
 const TABLES = [
   "patients", "medical_records", "prescriptions", "lab_orders",
@@ -53,12 +54,8 @@ export default async function AuditPage({
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Audit log</h1>
-          <div className="sub">{events?.length ?? 0} events · last {days}d · max 500</div>
-        </div>
-      </div>
+      <PageHeader icon="shield" title="Audit log"
+        sub={`${events?.length ?? 0} events · last ${days}d · max 500 · every clinical write, who and when`} />
 
       <form method="get" className="filters">
         <label className="field" style={{ margin: 0 }}>

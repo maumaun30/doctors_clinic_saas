@@ -1,4 +1,6 @@
 import { revalidatePath } from "next/cache";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { assignUser } from "@/lib/actions/admin";
 
@@ -22,14 +24,11 @@ export default async function PendingUsersPage() {
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Pending users</h1>
-          <div className="sub">{pending.length} awaiting a role</div>
-        </div>
-      </div>
+      <PageHeader icon="user" title="Pending users" sub={`${pending.length} awaiting a role`} />
 
-      <div className="card">
+      <Section title="Awaiting access"
+        description="New sign-ins land here with no access. Pick a role to let them in — doctors add a billing seat."
+        flush>
         {pending.length === 0
           ? <div className="empty">None waiting.</div>
           : pending.map((u: any) => (
@@ -52,7 +51,7 @@ export default async function PendingUsersPage() {
               </form>
             </div>
           ))}
-      </div>
+      </Section>
     </>
   );
 }

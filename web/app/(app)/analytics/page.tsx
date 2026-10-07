@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/app/_components/page-header";
 import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { PrintButton } from "@/app/_components/print-button";
@@ -117,15 +118,8 @@ export default async function AnalyticsPage({
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Analytics</h1>
-          <div className="sub">{clinicName} · {rangeLabel}</div>
-        </div>
-        <div className="head-actions">
-          <PrintButton label="Print report" />
-        </div>
-      </div>
+      <PageHeader icon="chart" title="Analytics" sub={`${clinicName} · ${rangeLabel}`}
+        actions={<PrintButton label="Print report" />} />
 
       {/* Printed hard-copy header (hidden on screen) */}
       <div className="print-only print-report-head">

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PageHeader } from "@/app/_components/page-header";
+import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { listPatients } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
@@ -77,18 +79,12 @@ export default async function SchedulePage({
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Schedule</h1>
-          <div className="sub">
-            {activeClinic ? "Manage appointments for the active clinic" : "Showing all clinics — pick one in the sidebar to scope"}
-          </div>
-        </div>
-        <div className="head-actions">
+      <PageHeader icon="calendar" title="Schedule"
+        sub={activeClinic ? "Manage appointments for the active clinic" : "Showing all clinics — pick one in the sidebar to scope"}
+        actions={<>
           <PrintButton label="Print" />
           <a href="#book" className="btn btn-primary"><Icon name="plus" /> Book appointment</a>
-        </div>
-      </div>
+        </>} />
 
       {/* Printed hard-copy header (hidden on screen) */}
       <div className="print-only print-report-head">
@@ -164,11 +160,11 @@ export default async function SchedulePage({
         </table>
       </div>
 
-      <div className="no-print">
-        <div id="book" className="page-head" style={{ marginTop: 32, marginBottom: 16 }}>
-          <div><h1 style={{ fontSize: 18 }}>Book appointment</h1></div>
-        </div>
-        <BookingForm patients={patientOpts} doctorClinics={doctorClinics} />
+      <div className="no-print" style={{ marginTop: 32 }}>
+        <Section id="book" title="Book appointment"
+          description="Only open slots inside the doctor’s hours are offered, so double-booking can’t happen." bare>
+          <BookingForm patients={patientOpts} doctorClinics={doctorClinics} />
+        </Section>
       </div>
     </>
   );
