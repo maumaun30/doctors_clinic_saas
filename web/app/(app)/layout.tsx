@@ -6,12 +6,18 @@ import { signOut } from "@/lib/actions/auth";
 import { AppShell, type NavLink } from "@/app/_components/app-shell";
 import { ClinicSwitcher } from "@/app/_components/clinic-switcher";
 import { UserMenu, type UserMenuLink } from "@/app/_components/user-menu";
+import { SentryUser } from "@/app/_components/sentry-user";
+import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const sb = await createClient();
   const profile = await getMyProfile(sb);
   if (!profile) redirect("/login");
+
+  // Server-side errors for this request carry an opaque id + role only.
+  Sentry.setUser({ id: profile.id });
+  Sentry.setTag("role", profile.role);
 
   const isPending = profile.role === "pending" || !profile.account_id;
   const isAdmin = profile.role === "admin";
@@ -103,6 +109,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <AppShell switcher={switcher} nav={nav} adminNav={adminNav} footer={footer}>
+      <SentryUser id={profile.id} role={profile.role} />
       {banner}
       {children}
     </AppShell>

@@ -91,6 +91,8 @@ npm run dev                  # http://localhost:3000
 | `STRIPE_SECRET_KEY` | **server-only** — billing (Checkout, Portal, seat sync) |
 | `STRIPE_PRICE_ID` | **server-only** — recurring monthly price, billed per doctor |
 | `STRIPE_WEBHOOK_SECRET` | **server-only** — verifies `/api/stripe/webhook` |
+| `NEXT_PUBLIC_SENTRY_DSN` | optional — error monitoring (browser + server); unset = off |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | optional, build-time — upload source maps so stack traces are readable |
 
 ### Bootstrap the first admin
 
@@ -122,6 +124,22 @@ prints a `whsec_…` to use as `STRIPE_WEBHOOK_SECRET`.
 
 Existing accounts get a fresh 14-day trial from the moment migration
 `0018` is applied.
+
+## Error monitoring (Sentry)
+
+1. Create a free project at sentry.io → platform **Next.js**. Copy its
+   DSN into `NEXT_PUBLIC_SENTRY_DSN` (Vercel → Environment Variables).
+2. Optional, for readable stack traces: create an auth token
+   (Settings → Auth Tokens, scope `project:releases`) and set
+   `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
+3. Redeploy. Errors in pages, Server Actions, route handlers and the
+   browser now show up in Sentry, tagged with an opaque user id + role.
+
+**Patient data never leaves the app:** `lib/sentry-scrub.ts` drops request
+bodies, cookies, headers, query strings, input breadcrumbs and user
+names/emails before anything is sent; no session replay or performance
+tracing. Users see a friendly error page with an **Error ID** you can
+search for in Sentry or Vercel logs.
 
 ## Testing
 
