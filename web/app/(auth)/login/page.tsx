@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { GoogleLogo } from "@/app/_components/brand-icons";
@@ -19,6 +19,13 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // /auth/confirm sends people here when an email link is expired or used.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("error") === "link_invalid") {
+      setMsg("That link is invalid or has expired. Sign in below, or ask your admin to resend the invite.");
+    }
+  }, []);
 
   const oauth = async (provider: Provider) => {
     const redirectTo = `${window.location.origin}/auth/callback`;

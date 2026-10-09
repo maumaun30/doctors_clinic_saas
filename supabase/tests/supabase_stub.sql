@@ -34,6 +34,7 @@ create table if not exists auth.users (
   aud                text,
   role               text,
   email              varchar(255),  -- matches Supabase; RPCs returning it must cast
+  email_confirmed_at timestamptz,
   raw_user_meta_data jsonb default '{}'::jsonb,
   raw_app_meta_data  jsonb default '{}'::jsonb,
   created_at         timestamptz default now()

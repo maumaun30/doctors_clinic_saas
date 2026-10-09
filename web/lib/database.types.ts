@@ -916,6 +916,67 @@ export type Database = {
           },
         ]
       }
+      staff_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          account_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          account_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          revoked_at?: string | null
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          account_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: [
+          {
+            columns: ["accepted_by"]
+            foreignKeyName: "staff_invites_accepted_by_fkey"
+            isOneToOne: false
+            referencedColumns: ["id"]
+            referencedRelation: "profiles"
+          },
+          {
+            columns: ["account_id"]
+            foreignKeyName: "staff_invites_account_id_fkey"
+            isOneToOne: false
+            referencedColumns: ["id"]
+            referencedRelation: "accounts"
+          },
+          {
+            columns: ["invited_by"]
+            foreignKeyName: "staff_invites_invited_by_fkey"
+            isOneToOne: false
+            referencedColumns: ["id"]
+            referencedRelation: "profiles"
+          },
+        ]
+      }
       stripe_events: {
         Row: {
           id: string
@@ -945,6 +1006,13 @@ export type Database = {
           p_table: string
         }
         Returns: string
+      }
+      accept_pending_invite: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          account_id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }[]
       }
       account_is_active: {
         Args: {
