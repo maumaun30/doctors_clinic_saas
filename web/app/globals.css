@@ -481,6 +481,36 @@ html.dark {
     font-size: 12px;
     font-weight: 600;
   }
+  /* ---- route error boundary (app/_components/error-view.tsx) ---- */
+  .error-view {
+    max-width: 460px;
+    margin: 64px auto;
+    text-align: center;
+  }
+  .error-view .page-icon {
+    margin: 0 auto 16px;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .error-view h1 {
+    font-size: 20px;
+  }
+  .error-view p {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+  .error-id {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+
   /* ---- settings pages (account) ---- */
   .settings-section {
     display: grid;
