@@ -54,7 +54,7 @@ web/                     Next.js app (deploy this on Vercel)
   lib/                   Supabase clients, queries, Zod schemas, Server Actions
   lib/database.types.ts  generated from the DB schema (source of truth)
 supabase/
-  migrations/            0001–0018: schema, RLS, RPCs, clinical extensions,
+  migrations/            0001–0020: schema, RLS, RPCs, clinical extensions,
                          lab files + storage policy, audit log, grant
                          lockdown, reminder delivery log, online booking, billing
   functions/             Edge Functions (appointment reminders: Resend + Semaphore)
@@ -140,6 +140,30 @@ bodies, cookies, headers, query strings, input breadcrumbs and user
 names/emails before anything is sent; no session replay or performance
 tracing. Users see a friendly error page with an **Error ID** you can
 search for in Sentry or Vercel logs.
+
+## Staff invites (one-time Supabase setup)
+
+Admins invite staff under **Admin → Team & invites**; the invitee clicks
+the email link and lands in the app with the preset role. Invites expire
+after 7 days.
+
+1. **Email templates** — Supabase → Authentication → Email Templates.
+   Change the link in both templates so the server can verify it:
+   - **Invite user:**
+     `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite`
+   - **Magic Link:**
+     `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink`
+2. **URL configuration** — Site URL = your production domain; add
+   `https://<domain>/auth/confirm` to Redirect URLs (next to
+   `/auth/callback`).
+3. **SMTP** — Supabase's built-in mailer only sends a handful of emails
+   per hour. For real use, set a custom SMTP (e.g. Resend: host
+   `smtp.resend.com`, user `resend`, password = API key) under
+   Authentication → Emails → SMTP Settings.
+
+Invitees who already have an account get a magic link instead; signing in
+with the invited (verified) email by any method — password, Google — also
+accepts the invite.
 
 ## Testing
 

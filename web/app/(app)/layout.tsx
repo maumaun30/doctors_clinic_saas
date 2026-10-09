@@ -6,8 +6,11 @@ import { signOut } from "@/lib/actions/auth";
 import { AppShell, type NavLink } from "@/app/_components/app-shell";
 import { ClinicSwitcher } from "@/app/_components/clinic-switcher";
 import { UserMenu, type UserMenuLink } from "@/app/_components/user-menu";
+
 import { SentryUser } from "@/app/_components/sentry-user";
 import * as Sentry from "@sentry/nextjs";
+import { syncSeats } from "@/lib/billing";
+
 import Link from "next/link";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +21,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Server-side errors for this request carry an opaque id + role only.
   Sentry.setUser({ id: profile.id });
   Sentry.setTag("role", profile.role);
+  // A pending user with an open invite for their verified email gets their
+  // role on first load — no admin approval step needed.
+  if (profile.role === "pending" || !profile.account_id) {
+    const { data: accepted } = await sb.rpc("accept_pending_invite");
+    if (accepted?.[0]) {
+      if (accepted[0].role === "doctor") await syncSeats(accepted[0].account_id);
+      redirect("/");
+    }
+  }
 
   const isPending = profile.role === "pending" || !profile.account_id;
   const isAdmin = profile.role === "admin";
@@ -46,7 +58,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           { href: "/admin/secretaries", label: "Secretaries", icon: "users" },
           { href: "/admin/assignments", label: "Assignments", icon: "shield" },
           { href: "/admin/library", label: "Library", icon: "settings" },
-          { href: "/admin/users", label: "Pending users", icon: "user" },
+          { href: "/admin/users", label: "Team & invites", icon: "user" },
           { href: "/admin/audit", label: "Audit log", icon: "shield" },
           { href: "/admin/billing", label: "Billing", icon: "card" },
         ]
