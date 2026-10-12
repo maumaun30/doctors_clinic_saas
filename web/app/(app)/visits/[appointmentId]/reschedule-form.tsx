@@ -4,6 +4,10 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { rescheduleAppointment } from "@/lib/actions/appointments";
+import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const fmtSlot = (iso: string) =>
   new Date(iso).toLocaleString("en-PH", {
@@ -64,25 +68,40 @@ export default function RescheduleForm({
   return (
     <form onSubmit={submit} style={{ display: "flex", gap: 8, alignItems: "flex-end", flexWrap: "wrap" }}>
       <div className="field" style={{ margin: 0 }}>
-        <label className="label">Date</label>
-        <input className="input" type="date" value={date} onChange={e => setDate(e.target.value)} min={todayPhIso()} required style={{ width: 170 }} />
+        <Label>Date</Label>
+        <Input
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
+          min={todayPhIso()}
+          required
+          style={{ width: 170 }} />
       </div>
       <div className="field" style={{ margin: 0 }}>
-        <label className="label">Duration</label>
-        <input className="input" type="number" min={5} max={480} value={duration}
-               onChange={e => setDuration(Number(e.target.value) || currentDuration)} style={{ width: 110 }} />
+        <Label>Duration</Label>
+        <Input
+          type="number"
+          min={5}
+          max={480}
+          value={duration}
+          onChange={e => setDuration(Number(e.target.value) || currentDuration)}
+          style={{ width: 110 }} />
       </div>
       <div className="field" style={{ margin: 0 }}>
-        <label className="label">Slot</label>
-        <select className="select" value={slot} onChange={e => setSlot(e.target.value)} required
-                disabled={loading || slots.length === 0} style={{ minWidth: 180 }}>
-          <option value="">
+        <Label>Slot</Label>
+        <NativeSelect
+          value={slot}
+          onChange={e => setSlot(e.target.value)}
+          required
+          disabled={loading || slots.length === 0}
+          style={{ minWidth: 180 }}>
+          <NativeSelectOption value="">
             {loading ? "loading…" : slots.length === 0 ? "no slots" : "— pick —"}
-          </option>
-          {slots.map(s => <option key={s} value={s}>{fmtSlot(s)}</option>)}
-        </select>
+          </NativeSelectOption>
+          {slots.map(s => <NativeSelectOption key={s} value={s}>{fmtSlot(s)}</NativeSelectOption>)}
+        </NativeSelect>
       </div>
-      <button type="submit" className="btn btn-secondary" disabled={busy || !slot}>{busy ? "…" : "Reschedule"}</button>
+      <Button variant="outline" type="submit" disabled={busy || !slot}>{busy ? "…" : "Reschedule"}</Button>
       {msg && <span style={{ fontSize: 13, color: msg === "Rescheduled." ? "var(--success)" : "var(--danger)" }}>{msg}</span>}
     </form>
   );

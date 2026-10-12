@@ -8,6 +8,13 @@ import { linkPatientToClinic, unlinkPatientFromClinic, updatePatient } from "@/l
 import LabFiles from "@/app/(app)/visits/[appointmentId]/lab-files";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths, ageVerbose } from "@/app/_components/age";
+import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { XIcon } from "lucide-react";
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?";
@@ -101,12 +108,12 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
     <>
       <PageHeader
         leading={<>
-          <Link href="/patients" className="btn btn-ghost btn-icon" aria-label="Back to patients"><Icon name="back" /></Link>
+          <Button asChild variant="ghost" size="icon"><Link href="/patients" aria-label="Back to patients"><Icon name="back" /></Link></Button>
           <span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(patient.full_name)}</span>
         </>}
         title={patient.full_name}
         sub={sub}
-        actions={<Link href="/schedule#book" className="btn btn-primary"><Icon name="plus" /> New visit</Link>} />
+        actions={<Button asChild><Link href="/schedule#book"><Icon name="plus" /> New visit</Link></Button>} />
 
       <div>
         {/* Demographics */}
@@ -122,40 +129,43 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             <summary className="link" style={{ fontSize: 13 }}>Edit demographics</summary>
             <form action={saveEdit} style={{ marginTop: 14 }}>
               <div className="field">
-                <label className="label">Full name</label>
-                <input className="input" name="full_name" defaultValue={patient.full_name} required />
+                <Label>Full name</Label>
+                <Input name="full_name" defaultValue={patient.full_name} required />
               </div>
               <div className="grid-2">
                 <div className="field">
-                  <label className="label">Date of birth</label>
-                  <input className="input" name="date_of_birth" type="date" defaultValue={patient.date_of_birth ?? ""} />
+                  <Label>Date of birth</Label>
+                  <Input
+                    name="date_of_birth"
+                    type="date"
+                    defaultValue={patient.date_of_birth ?? ""} />
                 </div>
                 <div className="field">
-                  <label className="label">Sex</label>
-                  <select className="select" name="sex" defaultValue={patient.sex ?? ""} style={{ width: "100%" }}>
-                    <option value="">—</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <Label>Sex</Label>
+                  <NativeSelect name="sex" defaultValue={patient.sex ?? ""} className="w-full">
+                    <NativeSelectOption value="">—</NativeSelectOption>
+                    <NativeSelectOption value="male">Male</NativeSelectOption>
+                    <NativeSelectOption value="female">Female</NativeSelectOption>
+                    <NativeSelectOption value="other">Other</NativeSelectOption>
+                  </NativeSelect>
                 </div>
               </div>
               <div className="grid-2">
                 <div className="field">
-                  <label className="label">Phone</label>
-                  <input className="input" name="phone" defaultValue={patient.phone ?? ""} />
+                  <Label>Phone</Label>
+                  <Input name="phone" defaultValue={patient.phone ?? ""} />
                 </div>
                 <div className="field">
-                  <label className="label">Email</label>
-                  <input className="input" name="email" type="email" defaultValue={patient.email ?? ""} />
+                  <Label>Email</Label>
+                  <Input name="email" type="email" defaultValue={patient.email ?? ""} />
                 </div>
               </div>
               <div className="field">
-                <label className="label">Address</label>
-                <input className="input" name="address" defaultValue={patient.address ?? ""} />
+                <Label>Address</Label>
+                <Input name="address" defaultValue={patient.address ?? ""} />
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button type="submit" className="btn btn-primary btn-sm">Save</button>
+                <Button size="sm" type="submit">Save</Button>
               </div>
             </form>
           </details>
@@ -168,26 +178,26 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             : (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: unlinkedClinics.length ? 14 : 0 }}>
                 {links.map((l: any) => (
-                  <span key={l.id} className="badge">
+                  <Badge variant="secondary" key={l.id}>
                     {l.clinic.name}
                     {me?.role === "admin" && (
                       <form action={removeLink} style={{ display: "inline-flex" }}>
                         <input type="hidden" name="link_id" value={l.id} />
-                        <button type="submit" title="Unlink"
-                                style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
+                        <Button type="submit" variant="ghost" size="icon-xs" title="Unlink" aria-label="Unlink"
+                                className="-mr-1 size-4 rounded-full text-muted-foreground"><XIcon /></Button>
                       </form>
                     )}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             )}
           {unlinkedClinics.length > 0 && (
             <form action={addLink} style={{ display: "flex", gap: 8 }}>
-              <select className="select" name="clinic_id" required defaultValue="">
-                <option value="" disabled>— link clinic —</option>
-                {unlinkedClinics.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-              <button type="submit" className="btn btn-secondary">Link</button>
+              <NativeSelect name="clinic_id" required defaultValue="">
+                <NativeSelectOption value="" disabled>— link clinic —</NativeSelectOption>
+                {unlinkedClinics.map(c => <NativeSelectOption key={c.id} value={c.id}>{c.name}</NativeSelectOption>)}
+              </NativeSelect>
+              <Button variant="outline" type="submit">Link</Button>
             </form>
           )}
         </Section>
@@ -199,9 +209,9 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             : (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {conditions.map(c => (
-                  <span key={c.id} className={`badge ${c.status === "active" ? "badge-amber" : ""}`}>
+                  <Badge key={c.id} variant={c.status === "active" ? "warning" : "secondary"}>
                     <span className="dot" />{c.name}{c.since ? ` · since ${c.since}` : ""}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             )}
@@ -212,17 +222,17 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
           {!upcomingRes.data || upcomingRes.data.length === 0
             ? <div className="empty">None.</div>
             : (
-              <table className="tbl">
-                <tbody>
+              <Table>
+                <TableBody>
                   {upcomingRes.data.map(a => (
-                    <tr key={a.id}>
-                      <td className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</td>
-                      <td style={{ color: "var(--fg-muted)" }}>{a.status} · {a.duration_minutes} min</td>
-                      <td style={{ textAlign: "right" }}><Link href={`/visits/${a.id}`} className="btn btn-ghost btn-sm">Open</Link></td>
-                    </tr>
+                    <TableRow key={a.id}>
+                      <TableCell className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</TableCell>
+                      <TableCell style={{ color: "var(--fg-muted)" }}>{a.status} · {a.duration_minutes} min</TableCell>
+                      <TableCell style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             )}
         </Section>
 
@@ -231,17 +241,17 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
           {!pastRes.data || pastRes.data.length === 0
             ? <div className="empty">None.</div>
             : (
-              <table className="tbl">
-                <tbody>
+              <Table>
+                <TableBody>
                   {pastRes.data.map(a => (
-                    <tr key={a.id}>
-                      <td className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</td>
-                      <td style={{ color: "var(--fg-muted)" }}>{a.status}</td>
-                      <td style={{ textAlign: "right" }}><Link href={`/visits/${a.id}`} className="btn btn-ghost btn-sm">Open</Link></td>
-                    </tr>
+                    <TableRow key={a.id}>
+                      <TableCell className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</TableCell>
+                      <TableCell style={{ color: "var(--fg-muted)" }}>{a.status}</TableCell>
+                      <TableCell style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             )}
         </Section>
 
@@ -285,7 +295,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             : labs.map(l => (
               <div key={l.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
                 <div>
-                  <div className="strong">{l.name} <span className="badge" style={{ marginLeft: 6 }}>{l.status}</span></div>
+                  <div className="strong">{l.name} <Badge variant="secondary" style={{ marginLeft: 6 }}>{l.status}</Badge></div>
                   {l.result && <div className="hint" style={{ marginTop: 2 }}>Result: {l.result}</div>}
                   <div style={{ marginTop: 8 }}>
                     <LabFiles labOrderId={l.id} files={labFilesByOrder[l.id] ?? []} />

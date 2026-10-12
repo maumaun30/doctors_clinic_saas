@@ -3,6 +3,11 @@ import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
+import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Badge } from "@/components/ui/badge";
+import { XIcon } from "lucide-react";
 
 export default async function AssignmentsAdmin({
   searchParams,
@@ -91,11 +96,11 @@ export default async function AssignmentsAdmin({
       <form method="get" className="filters">
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Clinic</span>
-          <select name="clinic" defaultValue={clinicId} className="select" style={{ minWidth: 200 }}>
-            {clinics?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <NativeSelect name="clinic" defaultValue={clinicId} style={{ minWidth: 200 }}>
+            {clinics?.map(c => <NativeSelectOption key={c.id} value={c.id}>{c.name}</NativeSelectOption>)}
+          </NativeSelect>
         </label>
-        <button type="submit" className="btn btn-secondary" style={{ alignSelf: "flex-end" }}>Switch</button>
+        <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Switch</Button>
       </form>
 
       <div>
@@ -118,14 +123,14 @@ export default async function AssignmentsAdmin({
                 : (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {secsHere.map((c: any) => (
-                      <span key={c.id} className="badge">
+                      <Badge variant="secondary" key={c.id}>
                         <span className="dot" />{c.secretary.full_name}
                         <form action={removeSec} style={{ display: "inline-flex" }}>
                           <input type="hidden" name="id" value={c.id} />
-                          <button type="submit" title="Unassign"
-                                  style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
+                          <Button type="submit" variant="ghost" size="icon-xs" title="Unassign" aria-label="Unassign"
+                                  className="-mr-1 size-4 rounded-full text-muted-foreground"><XIcon /></Button>
                         </form>
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 )}
@@ -133,20 +138,22 @@ export default async function AssignmentsAdmin({
               {addableSecs.length > 0 && (
                 <form action={addSec} style={{ display: "flex", gap: 8, marginTop: 12 }}>
                   <input type="hidden" name="doctor_clinic_id" value={dcRow.id} />
-                  <select name="secretary_id" required defaultValue="" className="select">
-                    <option value="" disabled>— add secretary —</option>
-                    {addableSecs.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
-                  </select>
-                  <button type="submit" className="btn btn-secondary btn-sm">Add</button>
+                  <NativeSelect name="secretary_id" required defaultValue="">
+                    <NativeSelectOption value="" disabled>— add secretary —</NativeSelectOption>
+                    {addableSecs.map(s => <NativeSelectOption key={s.id} value={s.id}>{s.full_name}</NativeSelectOption>)}
+                  </NativeSelect>
+                  <Button variant="outline" size="sm" type="submit">Add</Button>
                 </form>
               )}
 
               <div className="settings-subsection settings-danger">
                 <span className="hint">Past appointments stay; this doctor’s secretary assignments here are removed.</span>
-                <form action={removeDoctor}>
-                  <input type="hidden" name="id" value={dcRow.id} />
-                  <button type="submit" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }}>Remove from clinic</button>
-                </form>
+                <ConfirmAction action={removeDoctor} fields={{ id: dcRow.id }} label="Remove from clinic"
+                  title="Remove this doctor from the clinic?"
+                  description="Past appointments stay. This doctor’s secretary assignments at this clinic are removed."
+                  confirmLabel="Remove"
+                  success="Doctor removed from clinic"
+                  error="Couldn’t remove the doctor. Please try again." />
               </div>
             </Section>
           );
@@ -158,13 +165,13 @@ export default async function AssignmentsAdmin({
             : (
               <form action={addDoctor} style={{ display: "flex", gap: 8 }}>
                 <input type="hidden" name="clinic_id" value={clinicId} />
-                <select name="doctor_id" required defaultValue="" className="select">
-                  <option value="" disabled>— doctor —</option>
+                <NativeSelect name="doctor_id" required defaultValue="">
+                  <NativeSelectOption value="" disabled>— doctor —</NativeSelectOption>
                   {addableDocs.map((d: any) => (
-                    <option key={d.profile_id} value={d.profile_id}>{d.profiles.full_name}</option>
+                    <NativeSelectOption key={d.profile_id} value={d.profile_id}>{d.profiles.full_name}</NativeSelectOption>
                   ))}
-                </select>
-                <button type="submit" className="btn btn-secondary">Add</button>
+                </NativeSelect>
+                <Button variant="outline" type="submit">Add</Button>
               </form>
             )}
         </Section>

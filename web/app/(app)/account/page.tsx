@@ -11,6 +11,10 @@ import { ThemeToggle } from "@/app/_components/theme-toggle";
 import { Icon } from "@/app/_components/icons";
 import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable, add the
 // provider back to this list — the ProviderLogo + link/unlink code already
@@ -164,34 +168,42 @@ export default function AccountPage() {
         title={name}
         sub={<span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           {email}
-          {role && <span className="badge" style={{ textTransform: "capitalize" }}>{role}</span>}
+          {role && <Badge variant="secondary" style={{ textTransform: "capitalize" }}>{role}</Badge>}
         </span>}
       />
 
       <Section title="Profile" description="Your name appears on visits, prescriptions and the audit log.">
         <form onSubmit={saveProfile}>
           <div className="field">
-            <label className="label" htmlFor="full_name">Full name</label>
-            <input id="full_name" className="input" value={fullName} autoComplete="name"
-                   onChange={e => setFullName(e.target.value)} required />
+            <Label htmlFor="full_name">Full name</Label>
+            <Input
+              id="full_name"
+              value={fullName}
+              autoComplete="name"
+              onChange={e => setFullName(e.target.value)}
+              required />
           </div>
           <div className="grid-2">
             <div className="field">
-              <label className="label" htmlFor="phone">Phone</label>
-              <input id="phone" className="input" type="tel" value={phone} autoComplete="tel"
-                     onChange={e => setPhone(e.target.value)} />
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                autoComplete="tel"
+                onChange={e => setPhone(e.target.value)} />
             </div>
             <div className="field">
-              <label className="label" htmlFor="email">Email</label>
-              <input id="email" className="input" value={email} readOnly aria-describedby="email-hint" />
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" value={email} readOnly aria-describedby="email-hint" />
               <span id="email-hint" className="hint">Used to sign in. Can’t be changed here.</span>
             </div>
           </div>
           <div className="settings-actions">
             <StatusLine status={profileStatus} />
-            <button type="submit" className="btn btn-primary" disabled={!dirty || saving}>
+            <Button type="submit" disabled={!dirty || saving}>
               {saving ? "Saving…" : "Save changes"}
-            </button>
+            </Button>
           </div>
         </form>
       </Section>
@@ -216,20 +228,34 @@ export default function AccountPage() {
                 </span>
                 {p === "email" ? (
                   hasEmail && (
-                    <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={sendPasswordReset}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      disabled={busy}
+                      onClick={sendPasswordReset}>
                       {busy ? "Sending…" : "Change password"}
-                    </button>
+                    </Button>
                   )
                 ) : identity ? (
-                  <button type="button" className="btn btn-ghost btn-sm" disabled={busy || identities.length <= 1}
-                          title={identities.length <= 1 ? "You can’t remove your only sign-in method" : undefined}
-                          onClick={() => unlink(identity)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    disabled={busy || identities.length <= 1}
+                    title={identities.length <= 1 ? "You can’t remove your only sign-in method" : undefined}
+                    onClick={() => unlink(identity)}>
                     {busy ? "Disconnecting…" : "Disconnect"}
-                  </button>
+                  </Button>
                 ) : (
-                  <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => link(p)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    disabled={busy}
+                    onClick={() => link(p)}>
                     {busy ? "Redirecting…" : "Connect"}
-                  </button>
+                  </Button>
                 )}
               </div>
             );
@@ -249,9 +275,9 @@ export default function AccountPage() {
 
       <Section title="Session" description="Sign out of this browser.">
         <form action={signOut}>
-          <button type="submit" className="btn btn-secondary">
+          <Button variant="outline" type="submit">
             <Icon name="logout" /> Sign out
-          </button>
+          </Button>
         </form>
       </Section>
     </>

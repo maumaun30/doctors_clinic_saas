@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
+import { Badge } from "@/components/ui/badge";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -42,7 +43,7 @@ export default async function DoctorsAdmin() {
                   {slots.length === 0 ? <span className="hint">none</span> : (
                     <span style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {slots.map((s, i) => (
-                        <span key={i} className="badge"><span className="num">{DAYS[s.weekday]} {s.start_time}–{s.end_time}</span></span>
+                        <Badge variant="secondary" key={i}><span className="num">{DAYS[s.weekday]} {s.start_time}–{s.end_time}</span></Badge>
                       ))}
                     </span>
                   )}

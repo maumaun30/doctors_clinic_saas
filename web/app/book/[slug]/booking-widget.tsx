@@ -4,6 +4,10 @@ import { useEffect, useState, useTransition } from "react";
 import {
   bookPublicAppointment, getPublicSlots, type PublicDoctor,
 } from "@/lib/actions/public-booking";
+import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const TZ = "Asia/Manila";
 
@@ -84,10 +88,10 @@ export default function BookingWidget({
           {clinicName} will confirm your appointment. If you gave an email,
           you’ll get a reminder the day before.
         </p>
-        <button type="button" className="btn btn-secondary" style={{ marginTop: 18 }}
+        <Button variant="outline" type="button" style={{ marginTop: 18 }}
                 onClick={() => { setBooked(null); setSlot(""); setDate(todayPh()); }}>
           Book another
-        </button>
+        </Button>
       </div>
     );
   }
@@ -95,23 +99,32 @@ export default function BookingWidget({
   return (
     <form onSubmit={submit}>
       <div className="field">
-        <label className="label" htmlFor="doctor">Doctor</label>
-        <select id="doctor" className="select" style={{ width: "100%" }} required
-                value={doctorId} onChange={e => setDoctorId(e.target.value)}>
-          <option value="">Choose a doctor</option>
+        <Label htmlFor="doctor">Doctor</Label>
+        <NativeSelect
+          id="doctor"
+          required
+          value={doctorId}
+          onChange={e => setDoctorId(e.target.value)}
+          className="w-full">
+          <NativeSelectOption value="">Choose a doctor</NativeSelectOption>
           {doctors.map(d => (
-            <option key={d.id} value={d.id}>
+            <NativeSelectOption key={d.id} value={d.id}>
               {d.name}{d.specialization ? ` — ${d.specialization}` : ""}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       <div className="field">
-        <label className="label" htmlFor="date">Date</label>
-        <input id="date" className="input" type="date" required
-               min={todayPh()} max={addDays(todayPh(), 60)}
-               value={date} onChange={e => setDate(e.target.value)} />
+        <Label htmlFor="date">Date</Label>
+        <Input
+          id="date"
+          type="date"
+          required
+          min={todayPh()}
+          max={addDays(todayPh(), 60)}
+          value={date}
+          onChange={e => setDate(e.target.value)} />
       </div>
 
       <div className="field">
@@ -122,33 +135,48 @@ export default function BookingWidget({
           : (
             <div className="slot-grid" role="group" aria-label="Available times">
               {slots.map(s => (
-                <button key={s} type="button" className="btn btn-secondary btn-sm"
-                        aria-pressed={slot === s} onClick={() => setSlot(s)}>
+                <Button
+                  variant={slot === s ? "default" : "outline"}
+                  size="sm"
+                  key={s}
+                  type="button"
+                  aria-pressed={slot === s}
+                  onClick={() => setSlot(s)}>
                   {fmtTime(s)}
-                </button>
+                </Button>
               ))}
             </div>
           )}
       </div>
 
       <div className="field">
-        <label className="label" htmlFor="full_name">Full name</label>
-        <input id="full_name" name="full_name" className="input" autoComplete="name" required minLength={2} />
+        <Label htmlFor="full_name">Full name</Label>
+        <Input
+          id="full_name"
+          name="full_name"
+          autoComplete="name"
+          required
+          minLength={2} />
       </div>
       <div className="grid-2">
         <div className="field">
-          <label className="label" htmlFor="phone">Mobile number</label>
-          <input id="phone" name="phone" className="input" type="tel" autoComplete="tel" required
-                 placeholder="0917 123 4567" />
+          <Label htmlFor="phone">Mobile number</Label>
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            required
+            placeholder="0917 123 4567" />
         </div>
         <div className="field">
-          <label className="label" htmlFor="date_of_birth">Date of birth <span className="hint">(optional)</span></label>
-          <input id="date_of_birth" name="date_of_birth" className="input" type="date" max={todayPh()} />
+          <Label htmlFor="date_of_birth">Date of birth <span className="hint">(optional)</span></Label>
+          <Input id="date_of_birth" name="date_of_birth" type="date" max={todayPh()} />
         </div>
       </div>
       <div className="field">
-        <label className="label" htmlFor="email">Email <span className="hint">(optional, for a reminder)</span></label>
-        <input id="email" name="email" className="input" type="email" autoComplete="email" />
+        <Label htmlFor="email">Email <span className="hint">(optional, for a reminder)</span></Label>
+        <Input id="email" name="email" type="email" autoComplete="email" />
       </div>
 
       <div className="honeypot" aria-hidden="true">
@@ -160,10 +188,9 @@ export default function BookingWidget({
         <p role="alert" style={{ color: "var(--danger)", fontSize: 13, margin: "4px 0 12px" }}>{error}</p>
       )}
 
-      <button type="submit" className="btn btn-primary" style={{ width: "100%" }}
-              disabled={pending || !slot}>
+      <Button type="submit" style={{ width: "100%" }} disabled={pending || !slot}>
         {pending ? "Booking…" : slot ? `Book ${fmtTime(slot)}` : "Book appointment"}
-      </button>
+      </Button>
     </form>
   );
 }

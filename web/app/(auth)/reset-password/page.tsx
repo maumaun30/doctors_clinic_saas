@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 // User lands here from the password-reset email after Supabase exchanges
 // the recovery code (via the PASSWORD_RECOVERY auth event in the
@@ -52,18 +55,29 @@ export default function ResetPasswordPage() {
             <p className="sub">Choose a strong password you haven&apos;t used before.</p>
             <form onSubmit={submit}>
               <div className="field">
-                <label className="label" htmlFor="pw">New password</label>
-                <input id="pw" className="input" type="password" minLength={8} placeholder="At least 8 characters"
-                       value={password} onChange={e => setPassword(e.target.value)} required />
+                <Label htmlFor="pw">New password</Label>
+                <Input
+                  id="pw"
+                  type="password"
+                  minLength={8}
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required />
               </div>
               <div className="field">
-                <label className="label" htmlFor="pw2">Confirm password</label>
-                <input id="pw2" className="input" type="password" minLength={8}
-                       value={confirm} onChange={e => setConfirm(e.target.value)} required />
+                <Label htmlFor="pw2">Confirm password</Label>
+                <Input
+                  id="pw2"
+                  type="password"
+                  minLength={8}
+                  value={confirm}
+                  onChange={e => setConfirm(e.target.value)}
+                  required />
               </div>
-              <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: "100%" }}>
+              <Button type="submit" disabled={busy} style={{ width: "100%" }}>
                 {busy ? <span className="spinner" /> : "Update password"}
-              </button>
+              </Button>
             </form>
           </>
         )}

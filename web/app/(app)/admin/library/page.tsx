@@ -3,6 +3,9 @@ import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
+import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default async function LibraryAdmin() {
   const sb = await createClient();
@@ -121,21 +124,33 @@ export default async function LibraryAdmin() {
             <form key={m.id} action={saveMed} style={rowWrap}>
               <input type="hidden" name="id" value={m.id} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto auto", gap: 6, alignItems: "center" }}>
-                <input className="input" name="name" defaultValue={m.name} required placeholder="name" />
-                <input className="input" name="default_dosage" defaultValue={m.default_dosage ?? ""} placeholder="dosage" />
-                <input className="input" name="default_frequency" defaultValue={m.default_frequency ?? ""} placeholder="frequency" />
-                <input className="input" name="default_instructions" defaultValue={m.default_instructions ?? ""} placeholder="instructions" />
-                <button type="submit" className="btn btn-secondary btn-sm">Save</button>
-                <button type="submit" formAction={delMed} className="btn btn-ghost btn-sm">Delete</button>
+                <Input name="name" defaultValue={m.name} required placeholder="name" />
+                <Input
+                  name="default_dosage"
+                  defaultValue={m.default_dosage ?? ""}
+                  placeholder="dosage" />
+                <Input
+                  name="default_frequency"
+                  defaultValue={m.default_frequency ?? ""}
+                  placeholder="frequency" />
+                <Input
+                  name="default_instructions"
+                  defaultValue={m.default_instructions ?? ""}
+                  placeholder="instructions" />
+                <Button variant="outline" size="sm" type="submit">Save</Button>
+                <ConfirmAction action={delMed} fields={{ id: m.id }} label="Delete"
+                  title={`Delete ${m.name}?`}
+                  description="It’s removed from quick picks. Past prescriptions keep their own copy."
+                  success="Medication deleted" error="Couldn’t delete the medication. Please try again." />
               </div>
             </form>
           ))}
           <form action={addMed} className="settings-add-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: 6 }}>
-            <input className="input" name="name" placeholder="Add: name (e.g. Amoxicillin)" required />
-            <input className="input" name="default_dosage" placeholder="default dosage" />
-            <input className="input" name="default_frequency" placeholder="default frequency" />
-            <input className="input" name="default_instructions" placeholder="default instructions" />
-            <button type="submit" className="btn btn-primary btn-sm">Add</button>
+            <Input name="name" placeholder="Add: name (e.g. Amoxicillin)" required />
+            <Input name="default_dosage" placeholder="default dosage" />
+            <Input name="default_frequency" placeholder="default frequency" />
+            <Input name="default_instructions" placeholder="default instructions" />
+            <Button size="sm" type="submit">Add</Button>
           </form>
         </Section>
 
@@ -146,17 +161,23 @@ export default async function LibraryAdmin() {
             <form key={l.id} action={saveLab} style={rowWrap}>
               <input type="hidden" name="id" value={l.id} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto auto", gap: 6, alignItems: "center" }}>
-                <input className="input" name="name" defaultValue={l.name} required placeholder="name" />
-                <input className="input" name="description" defaultValue={l.description ?? ""} placeholder="description" />
-                <button type="submit" className="btn btn-secondary btn-sm">Save</button>
-                <button type="submit" formAction={delLab} className="btn btn-ghost btn-sm">Delete</button>
+                <Input name="name" defaultValue={l.name} required placeholder="name" />
+                <Input
+                  name="description"
+                  defaultValue={l.description ?? ""}
+                  placeholder="description" />
+                <Button variant="outline" size="sm" type="submit">Save</Button>
+                <ConfirmAction action={delLab} fields={{ id: l.id }} label="Delete"
+                  title={`Delete ${l.name}?`}
+                  description="It’s removed from quick picks. Past lab orders keep their own copy."
+                  success="Lab test deleted" error="Couldn’t delete the lab test. Please try again." />
               </div>
             </form>
           ))}
           <form action={addLab} className="settings-add-row" style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: 6 }}>
-            <input className="input" name="name" placeholder="Add: name (e.g. CBC)" required />
-            <input className="input" name="description" placeholder="description" />
-            <button type="submit" className="btn btn-primary btn-sm">Add</button>
+            <Input name="name" placeholder="Add: name (e.g. CBC)" required />
+            <Input name="description" placeholder="description" />
+            <Button size="sm" type="submit">Add</Button>
           </form>
         </Section>
 
@@ -167,17 +188,20 @@ export default async function LibraryAdmin() {
             <form key={c.id} action={saveCond} style={rowWrap}>
               <input type="hidden" name="id" value={c.id} />
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto auto", gap: 6, alignItems: "center" }}>
-                <input className="input" name="name" defaultValue={c.name} required placeholder="name" />
-                <input className="input" name="icd_code" defaultValue={c.icd_code ?? ""} placeholder="ICD code" />
-                <button type="submit" className="btn btn-secondary btn-sm">Save</button>
-                <button type="submit" formAction={delCond} className="btn btn-ghost btn-sm">Delete</button>
+                <Input name="name" defaultValue={c.name} required placeholder="name" />
+                <Input name="icd_code" defaultValue={c.icd_code ?? ""} placeholder="ICD code" />
+                <Button variant="outline" size="sm" type="submit">Save</Button>
+                <ConfirmAction action={delCond} fields={{ id: c.id }} label="Delete"
+                  title={`Delete ${c.name}?`}
+                  description="It’s removed from quick picks. Existing patient problem lists keep their own copy."
+                  success="Condition deleted" error="Couldn’t delete the condition. Please try again." />
               </div>
             </form>
           ))}
           <form action={addCond} className="settings-add-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 6 }}>
-            <input className="input" name="name" placeholder="Add: name (e.g. Hypertension)" required />
-            <input className="input" name="icd_code" placeholder="ICD code" />
-            <button type="submit" className="btn btn-primary btn-sm">Add</button>
+            <Input name="name" placeholder="Add: name (e.g. Hypertension)" required />
+            <Input name="icd_code" placeholder="ICD code" />
+            <Button size="sm" type="submit">Add</Button>
           </form>
         </Section>
       </div>

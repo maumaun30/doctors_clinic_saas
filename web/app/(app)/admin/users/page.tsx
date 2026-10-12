@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { assignUser } from "@/lib/actions/admin";
 import { resendInvite, revokeInvite } from "@/lib/actions/invites";
 import { InviteForm } from "./invite-form";
+import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 const ROLE_LABEL: Record<string, string> = { admin: "Admin", doctor: "Doctor", secretary: "Secretary" };
 const fmtDate = (iso: string) =>
@@ -69,12 +72,13 @@ export default async function TeamPage() {
                 <div style={{ display: "flex", gap: 6 }}>
                   <form action={resendInvite}>
                     <input type="hidden" name="id" value={i.id} />
-                    <button type="submit" className="btn btn-secondary btn-sm">Resend</button>
+                    <Button variant="outline" size="sm" type="submit">Resend</Button>
                   </form>
-                  <form action={revokeInvite}>
-                    <input type="hidden" name="id" value={i.id} />
-                    <button type="submit" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }}>Revoke</button>
-                  </form>
+                  <ConfirmAction action={revokeInvite} fields={{ id: i.id }} label="Revoke"
+                    title="Revoke this invite?"
+                    description={<>The link sent to <strong>{i.email}</strong> stops working. You can invite them again later.</>}
+                    success="Invite revoked"
+                    error="Couldn’t revoke the invite. Please try again." />
                 </div>
               </div>
             );
@@ -97,12 +101,12 @@ export default async function TeamPage() {
               </div>
               <form action={approve} style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <input type="hidden" name="user_id" value={u.id} />
-                <select name="role" defaultValue="secretary" className="select">
-                  <option value="admin">Admin</option>
-                  <option value="doctor">Doctor</option>
-                  <option value="secretary">Secretary</option>
-                </select>
-                <button type="submit" className="btn btn-primary btn-sm">Assign</button>
+                <NativeSelect name="role" defaultValue="secretary">
+                  <NativeSelectOption value="admin">Admin</NativeSelectOption>
+                  <NativeSelectOption value="doctor">Doctor</NativeSelectOption>
+                  <NativeSelectOption value="secretary">Secretary</NativeSelectOption>
+                </NativeSelect>
+                <Button size="sm" type="submit">Assign</Button>
               </form>
             </div>
           ))}

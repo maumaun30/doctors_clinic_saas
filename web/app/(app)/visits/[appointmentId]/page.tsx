@@ -8,13 +8,16 @@ import { Icon } from "@/app/_components/icons";
 import VisitForm from "./visit-form";
 import RescheduleForm from "./reschedule-form";
 import LabFiles from "./lab-files";
+import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 
-const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
-  scheduled: { cls: "badge", label: "Scheduled" },
-  confirmed: { cls: "badge badge-blue", label: "Confirmed" },
-  completed: { cls: "badge badge-green", label: "Completed" },
-  cancelled: { cls: "badge badge-red", label: "Cancelled" },
-  no_show: { cls: "badge badge-red", label: "No-show" },
+const STATUS_BADGE: Record<string, { variant: BadgeVariant; label: string }> = {
+  scheduled: { variant: "secondary", label: "Scheduled" },
+  confirmed: { variant: "info",             label: "Confirmed" },
+  completed: { variant: "success",           label: "Completed" },
+  cancelled: { variant: "destructive",     label: "Cancelled" },
+  no_show: { variant: "destructive",     label: "No-show" },
 };
 
 export default async function VisitPage({
@@ -79,7 +82,7 @@ export default async function VisitPage({
     <>
       <PageHeader
         leading={<>
-          <Link href="/schedule" className="btn btn-ghost btn-icon" aria-label="Back to schedule"><Icon name="back" /></Link>
+          <Button asChild variant="ghost" size="icon"><Link href="/schedule" aria-label="Back to schedule"><Icon name="back" /></Link></Button>
           <span className="page-icon"><Icon name="calendar" /></span>
         </>}
         title={appt.patient
@@ -87,9 +90,9 @@ export default async function VisitPage({
           : "Visit"}
         sub={`Visit · ${fmt(appt.scheduled_at)} · ${appt.duration_minutes} min`}
         actions={<>
-          <span className={badge.cls}><span className="dot" />{badge.label}</span>
+          <Badge variant={badge.variant}><span className="dot" />{badge.label}</Badge>
           {closed && record && (
-            <Link href={`/visits/${appointmentId}/rx`} className="btn btn-secondary"><Icon name="print" /> Print prescription</Link>
+            <Button asChild variant="outline">(<Link href={`/visits/${appointmentId}/rx`}><Icon name="print" />Print prescription</Link>)</Button>
           )}
         </>} />
 
@@ -106,13 +109,13 @@ export default async function VisitPage({
 
           <Section title="Status" description="Confirm, cancel or mark as no-show. Completing happens below.">
             <form action={changeStatus} style={{ display: "flex", gap: 8 }}>
-              <select name="status" defaultValue={appt.status} className="select">
-                <option value="scheduled">Scheduled</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="no_show">No-show</option>
-              </select>
-              <button type="submit" className="btn btn-secondary">Update</button>
+              <NativeSelect name="status" defaultValue={appt.status}>
+                <NativeSelectOption value="scheduled">Scheduled</NativeSelectOption>
+                <NativeSelectOption value="confirmed">Confirmed</NativeSelectOption>
+                <NativeSelectOption value="cancelled">Cancelled</NativeSelectOption>
+                <NativeSelectOption value="no_show">No-show</NativeSelectOption>
+              </NativeSelect>
+              <Button variant="outline" type="submit">Update</Button>
             </form>
           </Section>
 
@@ -178,7 +181,7 @@ export default async function VisitPage({
                   {labOrders.map(l => (
                     <div key={l.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
                       <div>
-                        <div className="strong">{l.name} <span className="badge" style={{ marginLeft: 6 }}>{l.status}</span></div>
+                        <div className="strong">{l.name} <Badge variant="secondary" style={{ marginLeft: 6 }}>{l.status}</Badge></div>
                         {l.result && <div className="hint" style={{ marginTop: 2 }}>Result: {l.result}</div>}
                         <div style={{ marginTop: 8 }}>
                           <LabFiles labOrderId={l.id} files={labFilesByOrder[l.id] ?? []} />

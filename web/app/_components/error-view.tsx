@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 // Friendly error screen used by the route error boundaries. Reports the
 // error (boundaries swallow it otherwise) and shows the digest so a user
@@ -24,8 +25,8 @@ export function ErrorView({
       </p>
       {error.digest && <code className="error-id">Error ID: {error.digest}</code>}
       <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 20 }}>
-        <button type="button" className="btn btn-primary" onClick={reset}>Try again</button>
-        <Link href={homeHref} className="btn btn-secondary">Go to Today</Link>
+        <Button type="button" onClick={reset}>Try again</Button>
+        <Button asChild variant="outline"><Link href={homeHref}>Go to Today</Link></Button>
       </div>
     </div>
   );

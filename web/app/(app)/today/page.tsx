@@ -6,13 +6,16 @@ import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { setAppointmentStatus } from "@/lib/actions/appointments";
 import { Icon } from "@/app/_components/icons";
+import { Button } from "@/components/ui/button";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
+import { StatCard } from "@/app/_components/stat-card";
 
-const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
-  scheduled: { cls: "badge", label: "Scheduled" },
-  confirmed: { cls: "badge badge-blue", label: "Confirmed" },
-  completed: { cls: "badge badge-green", label: "Completed" },
-  cancelled: { cls: "badge badge-red", label: "Cancelled" },
-  no_show: { cls: "badge badge-red", label: "No-show" },
+const STATUS_BADGE: Record<string, { variant: BadgeVariant; label: string }> = {
+  scheduled: { variant: "secondary", label: "Scheduled" },
+  confirmed: { variant: "info",             label: "Confirmed" },
+  completed: { variant: "success",           label: "Completed" },
+  cancelled: { variant: "destructive",     label: "Cancelled" },
+  no_show: { variant: "destructive",     label: "No-show" },
 };
 
 export default async function TodayPage() {
@@ -83,27 +86,27 @@ export default async function TodayPage() {
           </div>
         </div>
         <div className="queue-actions">
-          {a.source === "online" && <span className="badge badge-blue" title="Booked by the patient online">Online</span>}
-          <span className={badge.cls}><span className="dot" />{badge.label}</span>
+          {a.source === "online" && <Badge variant="info" title="Booked by the patient online">Online</Badge>}
+          <Badge variant={badge.variant}><span className="dot" />{badge.label}</Badge>
           {a.status === "scheduled" && (
             <form action={mark}>
               <input type="hidden" name="appointment_id" value={a.id} />
               <input type="hidden" name="status" value="confirmed" />
-              <button type="submit" className="btn btn-ghost btn-sm btn-icon" title="Confirm">
+              <Button variant="ghost" size="icon-sm" type="submit" title="Confirm">
                 <Icon name="check" />
-              </button>
+              </Button>
             </form>
           )}
           {active && (
             <form action={mark}>
               <input type="hidden" name="appointment_id" value={a.id} />
               <input type="hidden" name="status" value="no_show" />
-              <button type="submit" className="btn btn-ghost btn-sm" title="Mark no-show">No-show</button>
+              <Button variant="ghost" size="sm" type="submit" title="Mark no-show">No-show</Button>
             </form>
           )}
           {active
-            ? <Link href={`/visits/${a.id}`} className="btn btn-primary btn-sm">Start visit</Link>
-            : <Link href={`/visits/${a.id}`} className="btn btn-ghost btn-sm">View</Link>}
+            ? <Button asChild size="sm"><Link href={`/visits/${a.id}`}>Start visit</Link></Button>
+            : <Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>View</Link></Button>}
         </div>
       </div>
     );
@@ -114,15 +117,15 @@ export default async function TodayPage() {
       <PageHeader icon="today" title="Today"
         sub={`${dateLabel} · ${activeClinic ? "Active clinic" : "All clinics"} · ${me.full_name ?? "You"}`}
         actions={<>
-          <Link href="/schedule" className="btn btn-secondary"><Icon name="calendar" /> View schedule</Link>
-          <Link href="/schedule#book" className="btn btn-primary"><Icon name="plus" /> Book</Link>
+          <Button asChild variant="outline"><Link href="/schedule"><Icon name="calendar" /> View schedule</Link></Button>
+          <Button asChild><Link href="/schedule#book"><Icon name="plus" /> Book</Link></Button>
         </>} />
 
       <div className="stats">
-        <div className="card stat"><div className="k">Scheduled</div><div className="v">{appts.length}</div></div>
-        <div className="card stat"><div className="k">Confirmed</div><div className="v">{confirmedCount}</div></div>
-        <div className="card stat"><div className="k">Completed</div><div className="v">{buckets.done.length} <small>/ {appts.length}</small></div></div>
-        <div className="card stat"><div className="k">Cancelled</div><div className="v">{buckets.skipped.length}</div></div>
+        <StatCard label="Scheduled">{appts.length}</StatCard>
+        <StatCard label="Confirmed">{confirmedCount}</StatCard>
+        <StatCard label="Completed">{buckets.done.length} <small>/ {appts.length}</small></StatCard>
+        <StatCard label="Cancelled">{buckets.skipped.length}</StatCard>
       </div>
 
       <div className="card" style={{ marginBottom: 20 }}>

@@ -3,6 +3,11 @@ import { PageHeader } from "@/app/_components/page-header";
 import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { PrintButton } from "@/app/_components/print-button";
+import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { StatCard } from "@/app/_components/stat-card";
 
 const STATUS_ORDER = ["scheduled", "confirmed", "completed", "cancelled", "no_show"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -137,77 +142,77 @@ export default async function AnalyticsPage({
       <form method="get" className="filters">
         <label className="field" style={{ margin: 0 }}>
           <span className="label">From</span>
-          <input className="input" type="date" name="from" defaultValue={defaultFrom} style={{ width: 170 }} />
+          <Input type="date" name="from" defaultValue={defaultFrom} style={{ width: 170 }} />
         </label>
         <label className="field" style={{ margin: 0 }}>
           <span className="label">To</span>
-          <input className="input" type="date" name="to" defaultValue={defaultTo} style={{ width: 170 }} />
+          <Input type="date" name="to" defaultValue={defaultTo} style={{ width: 170 }} />
         </label>
         {!isDoctor && (
           <label className="field" style={{ margin: 0 }}>
             <span className="label">Provider</span>
-            <select className="select" name="doctor" defaultValue={sp.doctor ?? ""}>
-              <option value="">All providers</option>
-              {doctorOpts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
+            <NativeSelect name="doctor" defaultValue={sp.doctor ?? ""}>
+              <NativeSelectOption value="">All providers</NativeSelectOption>
+              {doctorOpts.map(d => <NativeSelectOption key={d.id} value={d.id}>{d.name}</NativeSelectOption>)}
+            </NativeSelect>
           </label>
         )}
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Status</span>
-          <select className="select" name="status" defaultValue={sp.status ?? ""}>
-            <option value="">All statuses</option>
-            {STATUS_ORDER.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-          </select>
+          <NativeSelect name="status" defaultValue={sp.status ?? ""}>
+            <NativeSelectOption value="">All statuses</NativeSelectOption>
+            {STATUS_ORDER.map(s => <NativeSelectOption key={s} value={s}>{STATUS_LABEL[s]}</NativeSelectOption>)}
+          </NativeSelect>
         </label>
-        <button type="submit" className="btn btn-secondary" style={{ alignSelf: "flex-end" }}>Apply</button>
+        <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Apply</Button>
       </form>
 
       <div className="stats">
-        <div className="card stat"><div className="k">Appointments</div><div className="v">{total}</div></div>
-        <div className="card stat"><div className="k">Completed</div><div className="v">{completed} <small>/ {total}</small></div></div>
-        <div className="card stat"><div className="k">Completion rate</div><div className="v">{completionRate}<small>%</small></div></div>
-        <div className="card stat"><div className="k">No-show</div><div className="v">{noShow}</div></div>
-        <div className="card stat"><div className="k">Cancelled</div><div className="v">{cancelled}</div></div>
-        <div className="card stat"><div className="k">Unique patients</div><div className="v">{uniquePatients}</div></div>
-        <div className="card stat"><div className="k">New patients</div><div className="v">{newPatients ?? "—"}</div></div>
-        <div className="card stat"><div className="k">Care hours</div><div className="v">{careHours}<small>h</small></div></div>
+        <StatCard label="Appointments">{total}</StatCard>
+        <StatCard label="Completed">{completed} <small>/ {total}</small></StatCard>
+        <StatCard label="Completion rate">{completionRate}<small>%</small></StatCard>
+        <StatCard label="No-show">{noShow}</StatCard>
+        <StatCard label="Cancelled">{cancelled}</StatCard>
+        <StatCard label="Unique patients">{uniquePatients}</StatCard>
+        <StatCard label="New patients">{newPatients ?? "—"}</StatCard>
+        <StatCard label="Care hours">{careHours}<small>h</small></StatCard>
       </div>
 
       <div className="stack">
         <div className="card table-wrap">
           <div className="section-bar">By status</div>
-          <table className="tbl">
-            <thead><tr><th>Status</th><th>Count</th><th>Share</th></tr></thead>
-            <tbody>
+          <Table>
+            <TableHeader><TableRow><TableHead>Status</TableHead><TableHead>Count</TableHead><TableHead>Share</TableHead></TableRow></TableHeader>
+            <TableBody>
               {STATUS_ORDER.filter(s => byStatus[s]).map(s => (
-                <tr key={s}>
-                  <td className="strong">{STATUS_LABEL[s]}</td>
-                  <td className="num">{byStatus[s]}</td>
-                  <td className="num">{total ? Math.round((byStatus[s] / total) * 100) : 0}%</td>
-                </tr>
+                <TableRow key={s}>
+                  <TableCell className="strong">{STATUS_LABEL[s]}</TableCell>
+                  <TableCell className="num">{byStatus[s]}</TableCell>
+                  <TableCell className="num">{total ? Math.round((byStatus[s] / total) * 100) : 0}%</TableCell>
+                </TableRow>
               ))}
-              {total === 0 && <tr><td colSpan={3} className="empty">No appointments in this range.</td></tr>}
-            </tbody>
-          </table>
+              {total === 0 && <TableRow><TableCell colSpan={3} className="empty">No appointments in this range.</TableCell></TableRow>}
+            </TableBody>
+          </Table>
         </div>
 
         {!isDoctor && providerRows.length > 0 && (
           <div className="card table-wrap">
             <div className="section-bar">By provider <span className="count">· {providerRows.length}</span></div>
-            <table className="tbl">
-              <thead><tr><th>Provider</th><th>Appointments</th><th>Completed</th><th>No-show</th><th>Completion</th></tr></thead>
-              <tbody>
+            <Table>
+              <TableHeader><TableRow><TableHead>Provider</TableHead><TableHead>Appointments</TableHead><TableHead>Completed</TableHead><TableHead>No-show</TableHead><TableHead>Completion</TableHead></TableRow></TableHeader>
+              <TableBody>
                 {providerRows.map((p, i) => (
-                  <tr key={i}>
-                    <td className="strong">{p.name}</td>
-                    <td className="num">{p.total}</td>
-                    <td className="num">{p.completed}</td>
-                    <td className="num">{p.noShow}</td>
-                    <td className="num">{p.total ? Math.round((p.completed / p.total) * 100) : 0}%</td>
-                  </tr>
+                  <TableRow key={i}>
+                    <TableCell className="strong">{p.name}</TableCell>
+                    <TableCell className="num">{p.total}</TableCell>
+                    <TableCell className="num">{p.completed}</TableCell>
+                    <TableCell className="num">{p.noShow}</TableCell>
+                    <TableCell className="num">{p.total ? Math.round((p.completed / p.total) * 100) : 0}%</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
 

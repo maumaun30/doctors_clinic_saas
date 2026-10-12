@@ -3,6 +3,11 @@
 import { useEffect, useState, useTransition } from "react";
 import { bookAppointment } from "@/lib/actions/appointments";
 import { createClient } from "@/lib/supabase/browser";
+import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 type Option = { id: string; label: string };
 type DoctorClinic = { doctor_id: string; clinic_id: string; label: string };
@@ -78,64 +83,84 @@ export default function BookingForm({
   return (
     <form onSubmit={submit} className="card" style={{ maxWidth: 560, padding: 24 }}>
       <div className="field">
-        <label className="label">Patient</label>
-        <select className="select" style={{ width: "100%" }}
-                value={patientId} onChange={e => setPatientId(e.target.value)} required>
-          <option value="">— select patient —</option>
-          {patients.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-        </select>
+        <Label>Patient</Label>
+        <NativeSelect
+          value={patientId}
+          onChange={e => setPatientId(e.target.value)}
+          required
+          className="w-full">
+          <NativeSelectOption value="">— select patient —</NativeSelectOption>
+          {patients.map(p => <NativeSelectOption key={p.id} value={p.id}>{p.label}</NativeSelectOption>)}
+        </NativeSelect>
       </div>
 
       <div className="field">
-        <label className="label">Provider</label>
-        <select className="select" style={{ width: "100%" }}
-                value={dcIdx} onChange={e => setDcIdx(e.target.value)} required>
-          <option value="">— select doctor —</option>
-          {doctorClinics.map((dc, i) => <option key={i} value={i}>{dc.label}</option>)}
-        </select>
+        <Label>Provider</Label>
+        <NativeSelect
+          value={dcIdx}
+          onChange={e => setDcIdx(e.target.value)}
+          required
+          className="w-full">
+          <NativeSelectOption value="">— select doctor —</NativeSelectOption>
+          {doctorClinics.map((dc, i) => <NativeSelectOption key={i} value={i}>{dc.label}</NativeSelectOption>)}
+        </NativeSelect>
       </div>
 
       <div className="grid-2">
         <div className="field">
-          <label className="label">Date</label>
-          <input className="input" type="date" value={date} min={todayPhIso()}
-                 onChange={e => setDate(e.target.value)} required />
+          <Label>Date</Label>
+          <Input
+            type="date"
+            value={date}
+            min={todayPhIso()}
+            onChange={e => setDate(e.target.value)}
+            required />
         </div>
         <div className="field">
-          <label className="label">Duration (min)</label>
-          <input className="input" type="number" value={duration} min={5} max={480}
-                 onChange={e => setDuration(Number(e.target.value) || 30)} />
+          <Label>Duration (min)</Label>
+          <Input
+            type="number"
+            value={duration}
+            min={5}
+            max={480}
+            onChange={e => setDuration(Number(e.target.value) || 30)} />
         </div>
       </div>
 
       <div className="field">
-        <label className="label">Time slot</label>
-        <select className="select" style={{ width: "100%" }}
-                value={slot} onChange={e => setSlot(e.target.value)} required
-                disabled={!dcIdx || loadingSlots || slots.length === 0}>
-          <option value="">
+        <Label>Time slot</Label>
+        <NativeSelect
+          value={slot}
+          onChange={e => setSlot(e.target.value)}
+          required
+          disabled={!dcIdx || loadingSlots || slots.length === 0}
+          className="w-full">
+          <NativeSelectOption value="">
             {!dcIdx ? "— pick a doctor first —"
               : loadingSlots ? "loading…"
               : slots.length === 0 ? "no slots available"
               : "— pick a slot —"}
-          </option>
-          {slots.map(s => <option key={s} value={s}>{fmtSlot(s)}</option>)}
-        </select>
+          </NativeSelectOption>
+          {slots.map(s => <NativeSelectOption key={s} value={s}>{fmtSlot(s)}</NativeSelectOption>)}
+        </NativeSelect>
       </div>
 
       <div className="field">
-        <label className="label">Reason for visit</label>
-        <textarea className="input" value={notes} onChange={e => setNotes(e.target.value)}
-                  placeholder="e.g. Blood pressure follow-up (optional)" rows={2} />
+        <Label>Reason for visit</Label>
+        <Textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="e.g. Blood pressure follow-up (optional)"
+          rows={2} />
       </div>
 
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", alignItems: "center", marginTop: 8 }}>
         {msg && (
           <span style={{ marginRight: "auto", fontSize: 13, color: ok ? "var(--success)" : "var(--danger)" }}>{msg}</span>
         )}
-        <button type="submit" className="btn btn-primary" disabled={pending || !slot}>
+        <Button type="submit" disabled={pending || !slot}>
           {pending ? "Booking…" : "Book appointment"}
-        </button>
+        </Button>
       </div>
     </form>
   );

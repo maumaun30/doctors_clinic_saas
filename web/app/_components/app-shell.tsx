@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "./icons";
+import { Button } from "@/components/ui/button";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
 
@@ -108,14 +109,14 @@ export function AppShell({
 
       <div className="main">
         <div className="topbar-mobile">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             type="button"
-            className="btn btn-ghost btn-icon btn-sm"
             onClick={() => setOpen(true)}
-            aria-label="Menu"
-          >
+            aria-label="Menu">
             <Icon name="menu" />
-          </button>
+          </Button>
           <span className="title">{titleFor(pathname, nav, adminNav)}</span>
         </div>
 
