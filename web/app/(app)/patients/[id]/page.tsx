@@ -3,7 +3,9 @@ import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getPatient, listMedicalRecords, getMyProfile } from "@/lib/data/queries";
+import { getBookingOptions, getPatient, listMedicalRecords, getMyProfile } from "@/lib/data/queries";
+import { getActiveClinicId } from "@/lib/data/clinic-context";
+import { BookDialog } from "@/app/(app)/schedule/book-dialog";
 import { linkPatientToClinic, unlinkPatientFromClinic, updatePatient } from "@/lib/actions/patients";
 import LabFiles from "@/app/(app)/visits/[appointmentId]/lab-files";
 import { Icon } from "@/app/_components/icons";
@@ -99,6 +101,8 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
     }
   } catch { /* secretary RLS blocks clinical reads */ }
 
+  const booking = await getBookingOptions(sb, await getActiveClinicId(sb));
+
   const fmt = (iso: string) =>
     new Date(iso).toLocaleString("en-PH", { timeZone: "Asia/Manila" });
   const sub = [patient.sex, ageYearsMonths(patient.date_of_birth), patient.phone]
@@ -113,7 +117,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
         </>}
         title={patient.full_name}
         sub={sub}
-        actions={<Button asChild><Link href="/schedule#book"><Icon name="plus" /> New visit</Link></Button>} />
+        actions={<BookDialog label="New visit" defaultPatientId={patient.id} {...booking} />} />
 
       <div>
         {/* Demographics */}

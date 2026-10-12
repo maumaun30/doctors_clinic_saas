@@ -98,7 +98,7 @@ export default async function VisitPage({
 
       {!closed && (
         <div>
-          <Section title="Reschedule" description="Pick a new open slot. The patient’s reminders follow the new time.">
+          <Section id="reschedule" title="Reschedule" description="Pick a new open slot. The patient’s reminders follow the new time.">
             <RescheduleForm
               appointmentId={appointmentId}
               doctorId={appt.doctor_id}
