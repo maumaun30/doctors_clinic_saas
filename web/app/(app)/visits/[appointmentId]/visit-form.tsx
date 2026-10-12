@@ -8,6 +8,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 type Med = { id: string; name: string; default_dosage: string | null; default_frequency: string | null; default_instructions: string | null };
 type Lab = { id: string; name: string };
@@ -220,11 +221,11 @@ export default function VisitForm({
         {lab.length > 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
             {lab.map((l, i) => (
-              <span key={i} className="badge">
+              <Badge variant="secondary" key={i}>
                 <span className="dot" />{l.name}
                 <button type="button" onClick={() => removeLab(i)} title="Remove"
                         style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
-              </span>
+              </Badge>
             ))}
           </div>
         )}

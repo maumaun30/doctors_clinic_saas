@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?";
@@ -175,7 +177,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             : (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: unlinkedClinics.length ? 14 : 0 }}>
                 {links.map((l: any) => (
-                  <span key={l.id} className="badge">
+                  <Badge variant="secondary" key={l.id}>
                     {l.clinic.name}
                     {me?.role === "admin" && (
                       <form action={removeLink} style={{ display: "inline-flex" }}>
@@ -184,7 +186,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                                 style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
                       </form>
                     )}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             )}
@@ -219,17 +221,17 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
           {!upcomingRes.data || upcomingRes.data.length === 0
             ? <div className="empty">None.</div>
             : (
-              <table className="tbl">
-                <tbody>
+              <Table>
+                <TableBody>
                   {upcomingRes.data.map(a => (
-                    <tr key={a.id}>
-                      <td className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</td>
-                      <td style={{ color: "var(--fg-muted)" }}>{a.status} · {a.duration_minutes} min</td>
-                      <td style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></td>
-                    </tr>
+                    <TableRow key={a.id}>
+                      <TableCell className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</TableCell>
+                      <TableCell style={{ color: "var(--fg-muted)" }}>{a.status} · {a.duration_minutes} min</TableCell>
+                      <TableCell style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             )}
         </Section>
 
@@ -238,17 +240,17 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
           {!pastRes.data || pastRes.data.length === 0
             ? <div className="empty">None.</div>
             : (
-              <table className="tbl">
-                <tbody>
+              <Table>
+                <TableBody>
                   {pastRes.data.map(a => (
-                    <tr key={a.id}>
-                      <td className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</td>
-                      <td style={{ color: "var(--fg-muted)" }}>{a.status}</td>
-                      <td style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></td>
-                    </tr>
+                    <TableRow key={a.id}>
+                      <TableCell className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</TableCell>
+                      <TableCell style={{ color: "var(--fg-muted)" }}>{a.status}</TableCell>
+                      <TableCell style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             )}
         </Section>
 
@@ -292,7 +294,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             : labs.map(l => (
               <div key={l.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
                 <div>
-                  <div className="strong">{l.name} <span className="badge" style={{ marginLeft: 6 }}>{l.status}</span></div>
+                  <div className="strong">{l.name} <Badge variant="secondary" style={{ marginLeft: 6 }}>{l.status}</Badge></div>
                   {l.result && <div className="hint" style={{ marginTop: 2 }}>Result: {l.result}</div>}
                   <div style={{ marginTop: 8 }}>
                     <LabFiles labOrderId={l.id} files={labFilesByOrder[l.id] ?? []} />

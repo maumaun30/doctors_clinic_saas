@@ -14,6 +14,7 @@ import { Section } from "@/app/_components/section";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable, add the
 // provider back to this list — the ProviderLogo + link/unlink code already
@@ -167,7 +168,7 @@ export default function AccountPage() {
         title={name}
         sub={<span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           {email}
-          {role && <span className="badge" style={{ textTransform: "capitalize" }}>{role}</span>}
+          {role && <Badge variant="secondary" style={{ textTransform: "capitalize" }}>{role}</Badge>}
         </span>}
       />
 

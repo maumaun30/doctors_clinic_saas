@@ -2,6 +2,8 @@
 // Each page-level skeleton mirrors its page's layout so content swaps in
 // without the layout jumping. Wrapped in role="status" for screen readers.
 
+import { Card, CardHeader } from "@/components/ui/card";
+
 export function Skeleton({
   w = "100%",
   h = 14,
@@ -95,10 +97,12 @@ export function StatsSkeleton({ count = 4 }: { count?: number }) {
   return (
     <div className="stats">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="card stat">
-          <Skeleton w={80} h={12} />
-          <Skeleton w={56} h={26} style={{ marginTop: 12 }} />
-        </div>
+        <Card key={i} size="sm">
+          <CardHeader>
+            <Skeleton w={80} h={12} />
+            <Skeleton w={56} h={26} style={{ marginTop: 6 }} />
+          </CardHeader>
+        </Card>
       ))}
     </div>
   );

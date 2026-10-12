@@ -150,6 +150,13 @@ html.dark {
   * {
     box-sizing: border-box;
   }
+  /* shadcn base: Tailwind v4 defaults borders to currentColor. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+    outline-color: color-mix(in oklab, var(--accent) 50%, transparent);
+  }
   html,
   body {
     margin: 0;
@@ -196,51 +203,22 @@ html.dark {
    PRIMITIVES
    ============================================================ */
 @layer components {
+  /* Matches shadcn <Card> (rounded-xl, 10% foreground ring) for the
+     containers that keep their own inner layout. */
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    background: var(--card);
+    color: var(--card-foreground);
+    border-radius: calc(var(--radius) + 4px);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--fg) 10%, transparent);
+    overflow: hidden;
   }
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 22px;
-    padding: 0 9px;
-    font-size: 12px;
-    font-weight: 500;
-    border-radius: 999px;
-    color: var(--fg-muted);
-    background: var(--bg-subtle);
-    border: 1px solid var(--border);
-  }
-  .badge .dot {
+  /* Status dot inside a <Badge>. */
+  .dot {
     width: 6px;
     height: 6px;
     border-radius: 999px;
     background: currentColor;
-  }
-  .badge-blue {
-    color: var(--accent);
-    background: var(--accent-subtle);
-    border-color: transparent;
-  }
-  .badge-green {
-    color: var(--success);
-    background: var(--success-subtle);
-    border-color: transparent;
-  }
-  .badge-amber {
-    color: var(--warning);
-    background: var(--warning-subtle);
-    border-color: transparent;
-  }
-  .badge-red {
-    color: var(--danger);
-    background: var(--danger-subtle);
-    border-color: transparent;
   }
 
   /* Caption for a field that isn't a <label> (shadcn <Label> covers real labels). */
@@ -744,21 +722,7 @@ html.dark {
     gap: 12px;
     margin-bottom: 24px;
   }
-  .stat {
-    padding: 16px;
-  }
-  .stat .k {
-    font-size: 12.5px;
-    color: var(--fg-muted);
-    font-weight: 500;
-  }
-  .stat .v {
-    font-size: 26px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-top: 6px;
-  }
-  .stat .v small {
+  [data-slot="card-title"] small {
     font-size: 13px;
     font-weight: 500;
     color: var(--fg-subtle);
@@ -865,41 +829,7 @@ html.dark {
   .table-wrap {
     overflow-x: auto;
   }
-  table.tbl {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-  }
-  .tbl th {
-    text-align: left;
-    font-weight: 500;
-    font-size: 12px;
-    color: var(--fg-muted);
-    padding: 11px 18px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-subtle);
-    white-space: nowrap;
-  }
-  .tbl th:first-child {
-    border-radius: var(--radius) 0 0 0;
-  }
-  .tbl th:last-child {
-    border-radius: 0 var(--radius) 0 0;
-  }
-  .tbl td {
-    padding: 13px 18px;
-    border-bottom: 1px solid var(--border);
-  }
-  .tbl tr:last-child td {
-    border-bottom: none;
-  }
-  .tbl tbody tr {
-    transition: background 150ms ease;
-  }
-  .tbl tbody tr:hover {
-    background: var(--bg-subtle);
-  }
-  .tbl .strong {
+  .strong {
     font-weight: 600;
   }
   .num {
@@ -1367,7 +1297,7 @@ html.dark {
     border: 1px solid var(--border);
     break-inside: avoid;
   }
-  .badge {
+  [data-slot="badge"] {
     border: 1px solid var(--border) !important;
   }
   a {

@@ -10,6 +10,7 @@ import { ConfirmAction } from "@/app/_components/confirm-action";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 const suggestSlug = (name: string) =>
   name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
@@ -82,8 +83,8 @@ export default async function ClinicsAdmin() {
             {c.address ?? "No address yet"}
             <span style={{ display: "block", marginTop: 8 }}>
               {c.online_booking && c.booking_slug
-                ? <span className="badge badge-green"><span className="dot" />Online booking on</span>
-                : <span className="badge"><span className="dot" />Online booking off</span>}
+                ? <Badge variant="success"><span className="dot" />Online booking on</Badge>
+                : <Badge variant="secondary"><span className="dot" />Online booking off</Badge>}
             </span>
           </>}>
           <form action={update}>

@@ -6,16 +6,17 @@ import { openPortal, startCheckout } from "@/lib/actions/billing";
 import { syncSeats } from "@/lib/billing";
 import { stripeConfigured } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 
-const STATUS_LABEL: Record<string, { cls: string; label: string }> = {
-  active:   { cls: "badge badge-green", label: "Active" },
-  trialing: { cls: "badge badge-blue",  label: "Trial (Stripe)" },
-  past_due: { cls: "badge badge-red",   label: "Payment failed — retrying" },
-  unpaid:   { cls: "badge badge-red",   label: "Unpaid" },
-  canceled: { cls: "badge",             label: "Cancelled" },
-  incomplete: { cls: "badge badge-red", label: "Incomplete" },
-  incomplete_expired: { cls: "badge",   label: "Expired" },
-  paused:   { cls: "badge",             label: "Paused" },
+const STATUS_LABEL: Record<string, { variant: BadgeVariant; label: string }> = {
+  active:             { variant: "success",     label: "Active" },
+  trialing:           { variant: "info",        label: "Trial (Stripe)" },
+  past_due:           { variant: "destructive", label: "Payment failed — retrying" },
+  unpaid:             { variant: "destructive", label: "Unpaid" },
+  canceled:           { variant: "secondary",   label: "Cancelled" },
+  incomplete:         { variant: "destructive", label: "Incomplete" },
+  incomplete_expired: { variant: "secondary",   label: "Expired" },
+  paused:             { variant: "secondary",   label: "Paused" },
 };
 
 const fmtDate = (iso: string) =>
@@ -39,14 +40,15 @@ export default async function BillingPage({
 
   const live = ["active", "trialing", "past_due"].includes(s.subscription_status ?? "");
   const trialLeft = Math.ceil((new Date(s.trial_ends_at).getTime() - Date.now()) / 86_400_000);
-  const badge = s.subscription_status ? STATUS_LABEL[s.subscription_status] ?? { cls: "badge", label: s.subscription_status }
-    : trialLeft > 0 ? { cls: "badge badge-blue", label: "Free trial" }
-    : { cls: "badge badge-red", label: "Trial ended" };
+  const badge: { variant: BadgeVariant; label: string } = s.subscription_status
+    ? STATUS_LABEL[s.subscription_status] ?? { variant: "secondary", label: s.subscription_status }
+    : trialLeft > 0 ? { variant: "info", label: "Free trial" }
+    : { variant: "destructive", label: "Trial ended" };
 
   return (
     <>
       <PageHeader icon="card" title="Billing" sub="Billed per doctor, monthly"
-        actions={<span className={badge.cls}><span className="dot" />{badge.label}</span>} />
+        actions={<Badge variant={badge.variant}><span className="dot" />{badge.label}</Badge>} />
 
       {checkout === "success" && (
         <div className="card" role="status" style={{ padding: 16, marginBottom: 8, maxWidth: 1120 }}>
@@ -57,7 +59,7 @@ export default async function BillingPage({
       <Section title="Subscription"
         description="Seats follow the number of doctors in your account and are prorated automatically when you add or remove one.">
         <dl className="kv">
-          <dt>Status</dt><dd><span className={badge.cls}><span className="dot" />{badge.label}</span></dd>
+          <dt>Status</dt><dd><Badge variant={badge.variant}><span className="dot" />{badge.label}</Badge></dd>
           {!live && (
             <>
               <dt>Free trial</dt>

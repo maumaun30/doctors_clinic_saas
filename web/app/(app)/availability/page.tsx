@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -79,31 +80,31 @@ export default async function AvailabilityPage() {
         <Section title={<>Weekly hours <span className="count">· {avail?.length ?? 0}</span></>}
           description="Booking only offers times inside these windows — for staff and for online booking." flush>
           <div className="table-wrap">
-          <table className="tbl">
-            <thead>
-              <tr><th>Doctor @ Clinic</th><th>Day</th><th>Start</th><th>End</th><th></th></tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow><TableHead>Doctor @ Clinic</TableHead><TableHead>Day</TableHead><TableHead>Start</TableHead><TableHead>End</TableHead><TableHead></TableHead></TableRow>
+            </TableHeader>
+            <TableBody>
               {avail?.map(a => (
-                <tr key={a.id}>
-                  <td className="strong">{dcLabel(a.doctor_id, a.clinic_id)}</td>
-                  <td>{DAYS[a.weekday]}</td>
-                  <td className="num">{a.start_time}</td>
-                  <td className="num">{a.end_time}</td>
-                  <td style={{ textAlign: "right" }}>
+                <TableRow key={a.id}>
+                  <TableCell className="strong">{dcLabel(a.doctor_id, a.clinic_id)}</TableCell>
+                  <TableCell>{DAYS[a.weekday]}</TableCell>
+                  <TableCell className="num">{a.start_time}</TableCell>
+                  <TableCell className="num">{a.end_time}</TableCell>
+                  <TableCell style={{ textAlign: "right" }}>
                     <ConfirmAction action={remove} fields={{ id: a.id }} label="Delete"
                       title="Delete this availability block?"
                       description={<>{dcLabel(a.doctor_id, a.clinic_id)}, {DAYS[a.weekday]} {a.start_time}–{a.end_time}. Booked appointments are kept, but no new slots open here.</>}
                       success="Availability deleted"
                       error="Couldn’t delete the availability block. Please try again." />
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
               {(!avail || avail.length === 0) && (
-                <tr><td colSpan={5} className="empty">No availability set.</td></tr>
+                <TableRow><TableCell colSpan={5} className="empty">No availability set.</TableCell></TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           </div>
         </Section>
 

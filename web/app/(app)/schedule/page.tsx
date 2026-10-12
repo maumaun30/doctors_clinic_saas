@@ -12,16 +12,18 @@ import type { Database } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 
 type AppointmentStatus = Database["public"]["Enums"]["appointment_status"];
 const isStatus = (s: string | undefined): s is AppointmentStatus =>
   ["scheduled", "confirmed", "completed", "cancelled", "no_show"].includes(s ?? "");
-const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
-  scheduled: { cls: "badge", label: "Scheduled" },
-  confirmed: { cls: "badge badge-blue", label: "Confirmed" },
-  completed: { cls: "badge badge-green", label: "Completed" },
-  cancelled: { cls: "badge badge-red", label: "Cancelled" },
-  no_show: { cls: "badge badge-red", label: "No-show" },
+const STATUS_BADGE: Record<string, { variant: BadgeVariant; label: string }> = {
+  scheduled: { variant: "secondary", label: "Scheduled" },
+  confirmed: { variant: "info",             label: "Confirmed" },
+  completed: { variant: "success",           label: "Completed" },
+  cancelled: { variant: "destructive",     label: "Cancelled" },
+  no_show: { variant: "destructive",     label: "No-show" },
 };
 
 export default async function SchedulePage({
@@ -124,43 +126,43 @@ export default async function SchedulePage({
       </form>
 
       <div className="card table-wrap">
-        <table className="tbl">
-          <thead>
-            <tr><th>When (PH)</th><th>Patient</th><th>Status</th><th>Duration</th><th className="no-print"></th></tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow><TableHead>When (PH)</TableHead><TableHead>Patient</TableHead><TableHead>Status</TableHead><TableHead>Duration</TableHead><TableHead className="no-print"></TableHead></TableRow>
+          </TableHeader>
+          <TableBody>
             {appts.map((a: any) => {
               const badge = STATUS_BADGE[a.status] ?? STATUS_BADGE.scheduled;
               const meta = [a.patient?.sex, ageYearsMonths(a.patient?.date_of_birth)].filter(Boolean).join(" · ");
               return (
-                <tr key={a.id}>
-                  <td className="num strong">{fmt(a.scheduled_at)}</td>
-                  <td>
+                <TableRow key={a.id}>
+                  <TableCell className="num strong">{fmt(a.scheduled_at)}</TableCell>
+                  <TableCell>
                     {a.patient ? (
                       <Link href={`/patients/${a.patient.id}`} style={{ color: "inherit", textDecoration: "none" }}>
                         <span className="strong">{a.patient.full_name}</span>
                         {meta && <span style={{ color: "var(--fg-muted)" }}> · {meta}</span>}
                       </Link>
                     ) : <span className="hint">—</span>}
-                  </td>
-                  <td>
-                    <span className={badge.cls}><span className="dot" />{badge.label}</span>
-                    {a.source === "online" && <span className="badge badge-blue" style={{ marginLeft: 6 }} title="Booked by the patient online">Online</span>}
-                  </td>
-                  <td className="num">{a.duration_minutes} min</td>
-                  <td className="no-print" style={{ textAlign: "right" }}>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={badge.variant}><span className="dot" />{badge.label}</Badge>
+                    {a.source === "online" && <Badge variant="info" style={{ marginLeft: 6 }} title="Booked by the patient online">Online</Badge>}
+                  </TableCell>
+                  <TableCell className="num">{a.duration_minutes} min</TableCell>
+                  <TableCell className="no-print" style={{ textAlign: "right" }}>
                     <Button asChild variant="ghost" size="icon-sm"><Link href={`/visits/${a.id}`} aria-label="Open">
                         <Icon name="chevright" />
                       </Link></Button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
             {appts.length === 0 && (
-              <tr><td colSpan={5} className="empty">No appointments in this range.</td></tr>
+              <TableRow><TableCell colSpan={5} className="empty">No appointments in this range.</TableCell></TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       <div className="no-print" style={{ marginTop: 32 }}>

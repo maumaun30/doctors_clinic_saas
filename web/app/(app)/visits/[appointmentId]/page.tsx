@@ -10,13 +10,14 @@ import RescheduleForm from "./reschedule-form";
 import LabFiles from "./lab-files";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 
-const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
-  scheduled: { cls: "badge", label: "Scheduled" },
-  confirmed: { cls: "badge badge-blue", label: "Confirmed" },
-  completed: { cls: "badge badge-green", label: "Completed" },
-  cancelled: { cls: "badge badge-red", label: "Cancelled" },
-  no_show: { cls: "badge badge-red", label: "No-show" },
+const STATUS_BADGE: Record<string, { variant: BadgeVariant; label: string }> = {
+  scheduled: { variant: "secondary", label: "Scheduled" },
+  confirmed: { variant: "info",             label: "Confirmed" },
+  completed: { variant: "success",           label: "Completed" },
+  cancelled: { variant: "destructive",     label: "Cancelled" },
+  no_show: { variant: "destructive",     label: "No-show" },
 };
 
 export default async function VisitPage({
@@ -89,7 +90,7 @@ export default async function VisitPage({
           : "Visit"}
         sub={`Visit · ${fmt(appt.scheduled_at)} · ${appt.duration_minutes} min`}
         actions={<>
-          <span className={badge.cls}><span className="dot" />{badge.label}</span>
+          <Badge variant={badge.variant}><span className="dot" />{badge.label}</Badge>
           {closed && record && (
             <Button asChild variant="outline">(<Link href={`/visits/${appointmentId}/rx`}><Icon name="print" />Print prescription</Link>)</Button>
           )}
@@ -180,7 +181,7 @@ export default async function VisitPage({
                   {labOrders.map(l => (
                     <div key={l.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
                       <div>
-                        <div className="strong">{l.name} <span className="badge" style={{ marginLeft: 6 }}>{l.status}</span></div>
+                        <div className="strong">{l.name} <Badge variant="secondary" style={{ marginLeft: 6 }}>{l.status}</Badge></div>
                         {l.result && <div className="hint" style={{ marginTop: 2 }}>Result: {l.result}</div>}
                         <div style={{ marginTop: 8 }}>
                           <LabFiles labOrderId={l.id} files={labFilesByOrder[l.id] ?? []} />

@@ -6,6 +6,7 @@ import { getMyProfile } from "@/lib/data/queries";
 import { ConfirmAction } from "@/app/_components/confirm-action";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Badge } from "@/components/ui/badge";
 
 export default async function AssignmentsAdmin({
   searchParams,
@@ -121,14 +122,14 @@ export default async function AssignmentsAdmin({
                 : (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {secsHere.map((c: any) => (
-                      <span key={c.id} className="badge">
+                      <Badge variant="secondary" key={c.id}>
                         <span className="dot" />{c.secretary.full_name}
                         <form action={removeSec} style={{ display: "inline-flex" }}>
                           <input type="hidden" name="id" value={c.id} />
                           <button type="submit" title="Unassign"
                                   style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
                         </form>
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 )}
