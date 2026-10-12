@@ -1,16 +1,13 @@
 import Link from "next/link";
 import { PageHeader } from "@/app/_components/page-header";
-import { Section } from "@/app/_components/section";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
-import { createPatient } from "@/lib/actions/patients";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths } from "@/app/_components/age";
 import { Button } from "@/components/ui/button";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SearchXIcon } from "lucide-react";
+import { PatientDialog } from "./patient-dialog";
 
 function initials(name: string) {
   return (name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?");
@@ -48,23 +45,6 @@ export default async function PatientsPage({
   const { data: patients, error } = await query;
   if (error) throw error;
 
-  async function add(formData: FormData) {
-    "use server";
-    const sb = await createClient();
-    const clinicId = await getActiveClinicId(sb);
-    if (!clinicId) throw new Error("Pick an active clinic in the sidebar first.");
-    await createPatient({
-      clinic_id: clinicId,
-      full_name: formData.get("full_name"),
-      date_of_birth: (formData.get("date_of_birth") as string) || undefined,
-      sex: (formData.get("sex") as string) || undefined,
-      phone: (formData.get("phone") as string) || undefined,
-      email: (formData.get("email") as string) || undefined,
-      address: (formData.get("address") as string) || undefined,
-    });
-    revalidatePath("/patients");
-  }
-
   const sub = (p: any) =>
     [p.sex, ageYearsMonths(p.date_of_birth), p.phone].filter(Boolean).join(" · ") || "—";
 
@@ -72,7 +52,7 @@ export default async function PatientsPage({
     <>
       <PageHeader icon="users" title="Patients"
         sub={`${patients.length} ${patients.length === 1 ? "patient" : "patients"}${activeClinic ? " · active clinic" : ""}`}
-        actions={activeClinic && <Button asChild><a href="#add"><Icon name="plus" /> Add patient</a></Button>} />
+        actions={activeClinic && <PatientDialog />} />
 
       <form method="get" className="filters">
         <div className="search" style={{ maxWidth: 420 }}>
@@ -80,12 +60,28 @@ export default async function PatientsPage({
           <Input name="q" defaultValue={q ?? ""} placeholder="Search by name or phone" className="pl-9" />
         </div>
         <Button variant="outline" type="submit">Search</Button>
-        {q && <Button asChild variant="ghost"><a href="/patients">Clear</a></Button>}
+        {q && <Button asChild variant="ghost"><Link href="/patients">Clear</Link></Button>}
       </form>
 
       <div className="card">
         {patients.length === 0
-          ? <div className="empty">No patients found.</div>
+          ? (
+            <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+              <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <SearchXIcon className="size-5" />
+              </div>
+              <div>
+                <div className="font-medium">{q ? <>No patients match “{q}”</> : "No patients yet"}</div>
+                <div className="text-sm text-muted-foreground">
+                  {q ? "Try part of the name or the phone number." : "Add the first patient for this clinic."}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {q && <Button asChild variant="outline"><Link href="/patients">Clear search</Link></Button>}
+                {activeClinic && <PatientDialog />}
+              </div>
+            </div>
+          )
           : patients.map(p => (
             <Link key={p.id} href={`/patients/${p.id}`} className="plist-row">
               <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
@@ -100,50 +96,8 @@ export default async function PatientsPage({
           ))}
       </div>
 
-      {!activeClinic ? (
-        <p className="hint" style={{ marginTop: 20 }}>Pick an active clinic in the sidebar to add a patient.</p>
-      ) : (
-        <Section id="add" title="Add patient"
-          description="Adds the patient to the active clinic. An email or mobile number enables appointment reminders.">
-          <form action={add}>
-            <div className="field">
-              <Label>Full name</Label>
-              <Input name="full_name" required />
-            </div>
-            <div className="grid-2">
-              <div className="field">
-                <Label>Date of birth</Label>
-                <Input name="date_of_birth" type="date" />
-              </div>
-              <div className="field">
-                <Label>Sex</Label>
-                <NativeSelect name="sex" defaultValue="" className="w-full">
-                  <NativeSelectOption value="">—</NativeSelectOption>
-                  <NativeSelectOption value="male">Male</NativeSelectOption>
-                  <NativeSelectOption value="female">Female</NativeSelectOption>
-                  <NativeSelectOption value="other">Other</NativeSelectOption>
-                </NativeSelect>
-              </div>
-            </div>
-            <div className="grid-2">
-              <div className="field">
-                <Label>Phone</Label>
-                <Input name="phone" />
-              </div>
-              <div className="field">
-                <Label>Email</Label>
-                <Input name="email" type="email" placeholder="For appointment reminders" />
-              </div>
-            </div>
-            <div className="field">
-              <Label>Address</Label>
-              <Input name="address" />
-            </div>
-            <div className="settings-actions">
-              <Button type="submit">Add patient</Button>
-            </div>
-          </form>
-        </Section>
+      {!activeClinic && (
+        <p className="hint" style={{ marginTop: 16 }}>Pick an active clinic in the sidebar to add a patient.</p>
       )}
     </>
   );
