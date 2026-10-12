@@ -7,7 +7,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-export function InviteForm() {
+export function InviteForm({ defaultRole = "secretary" }: { defaultRole?: "secretary" | "doctor" | "admin" }) {
   const [state, action, pending] = useActionState<InviteResult | null, FormData>(inviteStaff, null);
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => { if (state?.ok) formRef.current?.reset(); }, [state]);
@@ -27,7 +27,7 @@ export function InviteForm() {
         </div>
         <div className="field">
           <Label htmlFor="invite-role">Role</Label>
-          <NativeSelect id="invite-role" name="role" defaultValue="secretary" className="w-full">
+          <NativeSelect id="invite-role" name="role" defaultValue={defaultRole} className="w-full">
             <NativeSelectOption value="secretary">Secretary — books & manages appointments</NativeSelectOption>
             <NativeSelectOption value="doctor">Doctor — visits & records (adds a billing seat)</NativeSelectOption>
             <NativeSelectOption value="admin">Admin — full access incl. billing</NativeSelectOption>
