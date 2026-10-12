@@ -25,7 +25,11 @@ function titleFor(pathname: string, nav: NavLink[], adminNav: NavLink[]): string
   const match = all
     .filter((n) => isActive(pathname, n.href))
     .sort((a, b) => b.href.length - a.href.length)[0];
-  return match?.label ?? "Clinic";
+  if (match) return match.label;
+  // Pages that aren't nav items still get a sensible mobile title.
+  if (pathname.startsWith("/visits/")) return "Visit";
+  if (pathname.startsWith("/account")) return "Account";
+  return "Clinic";
 }
 
 export function AppShell({

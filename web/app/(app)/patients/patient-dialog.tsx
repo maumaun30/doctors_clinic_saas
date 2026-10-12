@@ -83,7 +83,7 @@ export function PatientDialog({ patient, trigger }: { patient?: Patient; trigger
           ? <Button variant="outline" size="sm"><PencilIcon /> Edit</Button>
           : <Button><UserPlusIcon /> Add patient</Button>)}
       </DialogTrigger>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader className="flex-row items-center gap-3 text-left">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             {editing ? <PencilIcon className="size-5" /> : <UserPlusIcon className="size-5" />}
