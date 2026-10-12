@@ -74,16 +74,33 @@ export async function updateAppointmentStatus(raw: unknown): Promise<StatusResul
   return { ok: true };
 }
 
-export async function rescheduleAppointment(raw: unknown) {
-  const input = rescheduleInput.parse(raw);
+export async function rescheduleAppointment(raw: unknown): Promise<BookResult> {
+  const parsed = rescheduleInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: "Pick a new time first." };
+  const input = parsed.data;
   const sb = await createClient();
-  const { data, error } = await sb.rpc("reschedule_appointment", {
+  const { error } = await sb.rpc("reschedule_appointment", {
     p_appointment_id: input.appointment_id,
     p_scheduled_at: input.scheduled_at,
     p_duration_minutes: input.duration_minutes,
   });
-  if (error) throw new Error(error.message);
-  return data;
+  if (error) {
+    const m = error.message;
+    if (m.includes("double-booked"))
+      return { ok: false, slotTaken: true, error: "That time was just taken. Pick another slot." };
+    if (m.includes("not available"))
+      return { ok: false, slotTaken: true, error: "The doctor isn’t available for that whole time. Try a shorter visit or another slot." };
+    if (m.includes("not permitted"))
+      return { ok: false, error: "You don’t have access to reschedule this appointment." };
+    if (m.includes("account_read_only"))
+      return { ok: false, error: "This account is read-only until the subscription is active." };
+    console.error("reschedule_appointment failed:", m);
+    return { ok: false, error: "Couldn’t reschedule. Please try again." };
+  }
+  revalidatePath(`/visits/${input.appointment_id}`);
+  revalidatePath("/schedule");
+  revalidatePath("/today");
+  return { ok: true };
 }
 
 export async function completeVisitFull(raw: {
@@ -99,7 +116,7 @@ export async function completeVisitFull(raw: {
   const sb = await createClient();
   // These params have no SQL default, so they must be sent; null is valid
   // but the generated types can't express a nullable required arg.
-  const { data, error } = await sb.rpc("complete_visit_full", {
+  const { error } = await sb.rpc("complete_visit_full", {
     p_appointment_id: raw.appointment_id,
     p_chief_complaint: raw.chief_complaint ?? null,
     p_diagnosis: raw.diagnosis ?? null,
@@ -109,8 +126,19 @@ export async function completeVisitFull(raw: {
     p_labs: raw.labs,
     p_conditions: raw.conditions,
   } as Database["public"]["Functions"]["complete_visit_full"]["Args"]);
-  if (error) throw new Error(error.message);
-  return data;
+  if (error) {
+    const m = error.message;
+    if (m.includes("only the treating doctor"))
+      return { ok: false as const, error: "Only the treating doctor can complete this visit." };
+    if (m.includes("account_read_only"))
+      return { ok: false as const, error: "This account is read-only until the subscription is active." };
+    console.error("complete_visit_full failed:", m);
+    return { ok: false as const, error: "Couldn’t save the visit. Your entries are still here — please try again." };
+  }
+  revalidatePath(`/visits/${raw.appointment_id}`);
+  revalidatePath("/today");
+  revalidatePath("/schedule");
+  return { ok: true as const };
 }
 
 export async function completeAppointment(raw: unknown) {

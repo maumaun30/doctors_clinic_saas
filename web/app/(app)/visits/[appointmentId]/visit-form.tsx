@@ -1,15 +1,27 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {
+  ActivityIcon, AlertCircleIcon, CheckIcon, ClipboardPenLineIcon, FlaskConicalIcon, ListChecksIcon,
+  NotebookPenIcon, PillIcon, PlusIcon, StethoscopeIcon, XIcon,
+} from "lucide-react";
 import { completeVisitFull } from "@/lib/actions/appointments";
 import { Button } from "@/components/ui/button";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckIcon, XIcon } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 type Med = { id: string; name: string; default_dosage: string | null; default_frequency: string | null; default_instructions: string | null };
 type Lab = { id: string; name: string };
@@ -17,270 +29,342 @@ type Cond = { id: string; name: string };
 
 type RxPick = { medication_id?: string; name: string; dosage?: string; frequency?: string; duration?: string; instructions?: string };
 type LabPick = { lab_test_id?: string; name: string };
-type CondPick = { condition_id?: string; name: string; status?: "active" | "resolved"; since?: string };
+type CondPick = { condition_id?: string; name: string; status: "active" | "resolved" };
+
+// Vitals with their units and a loose "outside usual adult range" hint.
+const VITALS = [
+  { key: "bp", label: "Blood pressure", unit: "mmHg", placeholder: "120/80", inputMode: "numeric" as const },
+  { key: "hr", label: "Heart rate", unit: "bpm", placeholder: "72", inputMode: "numeric" as const },
+  { key: "temp_c", label: "Temperature", unit: "°C", placeholder: "36.8", inputMode: "decimal" as const },
+  { key: "weight_kg", label: "Weight", unit: "kg", placeholder: "65", inputMode: "decimal" as const },
+] as const;
+type VitalKey = (typeof VITALS)[number]["key"];
+
+function vitalIssue(key: VitalKey, v: string): { bad?: string; note?: string } {
+  if (!v.trim()) return {};
+  if (key === "bp") {
+    const m = v.match(/^\s*(\d{2,3})\s*\/\s*(\d{2,3})\s*$/);
+    if (!m) return { bad: "Use systolic/diastolic, e.g. 120/80." };
+    const [s, d] = [Number(m[1]), Number(m[2])];
+    if (s >= 140 || d >= 90) return { note: "High" };
+    if (s < 90 || d < 60) return { note: "Low" };
+    return {};
+  }
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return { bad: "Enter a number." };
+  if (key === "hr" && (n > 100 || n < 50)) return { note: n > 100 ? "High" : "Low" };
+  if (key === "temp_c") {
+    if (n < 30 || n > 45) return { bad: "Check the temperature (°C)." };
+    if (n >= 37.5) return { note: "Fever" };
+  }
+  if (key === "weight_kg" && n > 400) return { bad: "Check the weight (kg)." };
+  return {};
+}
 
 export default function VisitForm({
   appointmentId, meds, labs, conditions,
 }: { appointmentId: string; meds: Med[]; labs: Lab[]; conditions: Cond[] }) {
+  const id = useId();
   const router = useRouter();
+  const [vitals, setVitals] = useState<Record<VitalKey, string>>({ bp: "", hr: "", temp_c: "", weight_kg: "" });
   const [chief, setChief] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
   const [notes, setNotes] = useState("");
-
-  const [bp, setBp] = useState("");
-  const [hr, setHr] = useState("");
-  const [temp, setTemp] = useState("");
-  const [weight, setWeight] = useState("");
-
   const [rx, setRx] = useState<RxPick[]>([]);
   const [lab, setLab] = useState<LabPick[]>([]);
   const [cond, setCond] = useState<CondPick[]>([]);
+  const [confirming, setConfirming] = useState(false);
   const [busy, start] = useTransition();
-  const [msg, setMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const addMedFromLib = (m: Med) => {
-    if (rx.find(r => r.medication_id === m.id)) return;
-    setRx([...rx, {
-      medication_id: m.id, name: m.name,
-      dosage: m.default_dosage ?? "", frequency: m.default_frequency ?? "",
-      instructions: m.default_instructions ?? "",
-    }]);
-  };
-  const addMedCustom = (name: string) => {
-    if (!name.trim()) return;
-    setRx([...rx, { name: name.trim() }]);
-  };
-  const removeRx = (i: number) => setRx(rx.filter((_, k) => k !== i));
+  const vitalErrors = VITALS.map(v => vitalIssue(v.key, vitals[v.key]).bad).filter(Boolean);
+  const hasContent = Boolean(chief.trim() || diagnosis.trim() || notes.trim() || rx.length || lab.length || cond.length
+    || Object.values(vitals).some(v => v.trim()));
 
-  const addLabFromLib = (l: Lab) => {
-    if (lab.find(x => x.lab_test_id === l.id)) return;
-    setLab([...lab, { lab_test_id: l.id, name: l.name }]);
-  };
-  const addLabCustom = (name: string) => {
-    if (!name.trim()) return;
-    setLab([...lab, { name: name.trim() }]);
-  };
-  const removeLab = (i: number) => setLab(lab.filter((_, k) => k !== i));
+  const pickMed = (m: Med) => !rx.some(r => r.medication_id === m.id) && setRx([...rx, {
+    medication_id: m.id, name: m.name,
+    dosage: m.default_dosage ?? "", frequency: m.default_frequency ?? "", instructions: m.default_instructions ?? "",
+  }]);
+  const pickLab = (l: Lab) => !lab.some(x => x.lab_test_id === l.id) && setLab([...lab, { lab_test_id: l.id, name: l.name }]);
+  const pickCond = (c: Cond) => !cond.some(x => x.condition_id === c.id) && setCond([...cond, { condition_id: c.id, name: c.name, status: "active" }]);
+  const setRxField = (i: number, k: keyof RxPick, v: string) => setRx(rx.map((x, j) => j === i ? { ...x, [k]: v } : x));
 
-  const addCondFromLib = (c: Cond) => {
-    if (cond.find(x => x.condition_id === c.id)) return;
-    setCond([...cond, { condition_id: c.id, name: c.name, status: "active" }]);
-  };
-  const addCondCustom = (name: string) => {
-    if (!name.trim()) return;
-    setCond([...cond, { name: name.trim(), status: "active" }]);
-  };
-  const removeCond = (i: number) => setCond(cond.filter((_, k) => k !== i));
-
-  const submit = (e: React.FormEvent) => {
+  const requestComplete = (e: React.FormEvent) => {
     e.preventDefault();
-    setMsg(null);
-    const vitals: Record<string, unknown> = {};
-    if (bp) vitals.bp = bp;
-    if (hr) vitals.hr = Number(hr);
-    if (temp) vitals.temp_c = Number(temp);
-    if (weight) vitals.weight_kg = Number(weight);
+    setError(null);
+    if (vitalErrors.length) { setError("Fix the highlighted vitals first."); return; }
+    if (!hasContent) { setError("Add at least a complaint, diagnosis, vitals or a note before completing."); return; }
+    setConfirming(true);
+  };
 
+  const complete = () => {
+    const v: Record<string, unknown> = {};
+    if (vitals.bp.trim()) v.bp = vitals.bp.replace(/\s+/g, "");
+    if (vitals.hr.trim()) v.hr = Number(vitals.hr);
+    if (vitals.temp_c.trim()) v.temp_c = Number(vitals.temp_c);
+    if (vitals.weight_kg.trim()) v.weight_kg = Number(vitals.weight_kg);
     start(async () => {
-      try {
-        await completeVisitFull({
-          appointment_id: appointmentId,
-          chief_complaint: chief || undefined,
-          diagnosis: diagnosis || undefined,
-          vitals: Object.keys(vitals).length ? vitals : undefined,
-          notes: notes || undefined,
-          prescriptions: rx,
-          labs: lab,
-          conditions: cond,
-        });
-        router.push("/schedule");
-      } catch (err: any) { setMsg(err.message); }
+      const res = await completeVisitFull({
+        appointment_id: appointmentId,
+        chief_complaint: chief.trim() || undefined,
+        diagnosis: diagnosis.trim() || undefined,
+        vitals: Object.keys(v).length ? v : undefined,
+        notes: notes.trim() || undefined,
+        prescriptions: rx,
+        labs: lab,
+        conditions: cond,
+      });
+      setConfirming(false);
+      if (!res.ok) { setError(res.error); return; }
+      toast.success("Visit completed — medical record saved");
+      router.refresh();
     });
   };
 
+  const summary = [
+    rx.length && `${rx.length} prescription${rx.length === 1 ? "" : "s"}`,
+    lab.length && `${lab.length} lab${lab.length === 1 ? "" : "s"}`,
+    cond.length && `${cond.length} condition${cond.length === 1 ? "" : "s"}`,
+  ].filter(Boolean).join(" · ");
+
   return (
-    <form onSubmit={submit} style={{ display: "grid", gap: 24, maxWidth: 700 }}>
-      <div>
-        <div className="label">Vitals</div>
-        <div className="grid-2">
-          <div className="field" style={{ margin: 0 }}>
-            <Label style={{ fontWeight: 400, color: "var(--fg-muted)" }}>BP</Label>
-            <Input value={bp} onChange={e => setBp(e.target.value)} placeholder="120/80" />
-          </div>
-          <div className="field" style={{ margin: 0 }}>
-            <Label style={{ fontWeight: 400, color: "var(--fg-muted)" }}>HR</Label>
-            <Input
-              value={hr}
-              onChange={e => setHr(e.target.value)}
-              type="number"
-              placeholder="72" />
-          </div>
-          <div className="field" style={{ margin: 0 }}>
-            <Label style={{ fontWeight: 400, color: "var(--fg-muted)" }}>Temp (°C)</Label>
-            <Input
-              value={temp}
-              onChange={e => setTemp(e.target.value)}
-              type="number"
-              step="0.1"
-              placeholder="37.0" />
-          </div>
-          <div className="field" style={{ margin: 0 }}>
-            <Label style={{ fontWeight: 400, color: "var(--fg-muted)" }}>Weight (kg)</Label>
-            <Input
-              value={weight}
-              onChange={e => setWeight(e.target.value)}
-              type="number"
-              step="0.1" />
-          </div>
-        </div>
-      </div>
-
-      <div className="field" style={{ margin: 0 }}>
-        <Label>Chief complaint</Label>
-        <Textarea rows={2} value={chief} onChange={e => setChief(e.target.value)} />
-      </div>
-
-      <div className="field" style={{ margin: 0 }}>
-        <Label>Diagnosis (free-text)</Label>
-        <Textarea rows={2} value={diagnosis} onChange={e => setDiagnosis(e.target.value)} />
-      </div>
-
-      <div>
-        <TagPicker
-          title="Conditions (problem list)"
-          library={conditions.map(c => ({ id: c.id, label: c.name }))}
-          picked={cond.map(c => c.name)}
-          onPickLibrary={id => addCondFromLib(conditions.find(c => c.id === id)!)}
-          onAddCustom={addCondCustom}
-        />
-        {cond.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
-            {cond.map((c, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span className="strong">{c.name}</span>
-                <NativeSelect
-                  value={c.status ?? "active"}
-                  onChange={e => setCond(cond.map((x, k) => k === i ? { ...x, status: e.target.value as any } : x))}>
-                  <NativeSelectOption value="active">active</NativeSelectOption>
-                  <NativeSelectOption value="resolved">resolved</NativeSelectOption>
-                </NativeSelect>
-                <Button variant="ghost" size="sm" type="button" onClick={() => removeCond(i)}>Remove</Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div>
-        <TagPicker
-          title="Prescriptions"
-          library={meds.map(m => ({ id: m.id, label: m.name }))}
-          picked={rx.map(r => r.name)}
-          onPickLibrary={id => addMedFromLib(meds.find(m => m.id === id)!)}
-          onAddCustom={addMedCustom}
-        />
-        {rx.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-            {rx.map((r, i) => (
-              <div key={i} className="card" style={{ padding: 12, boxShadow: "none" }}>
-                <div className="row-between">
-                  <strong>{r.name}</strong>
-                  <Button variant="ghost" size="sm" type="button" onClick={() => removeRx(i)}>Remove</Button>
+    <form onSubmit={requestComplete} className="grid gap-4" aria-busy={busy}>
+      {/* ---- Vitals ---- */}
+      <Card>
+        <SectionHead icon={<ActivityIcon />} title="Vitals" desc="Optional. Values outside the usual adult range are flagged." />
+        <CardContent className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {VITALS.map(f => {
+            const issue = vitalIssue(f.key, vitals[f.key]);
+            return (
+              <div key={f.key} className="grid content-start gap-2">
+                <Label htmlFor={`${id}-${f.key}`} className="justify-between">
+                  {f.label}
+                  {issue.note && <span className="text-xs font-medium text-(--warning)">{issue.note}</span>}
+                </Label>
+                <div className="relative">
+                  <Input id={`${id}-${f.key}`} value={vitals[f.key]} inputMode={f.inputMode} placeholder={f.placeholder}
+                    onChange={e => setVitals({ ...vitals, [f.key]: e.target.value })}
+                    aria-invalid={issue.bad ? true : undefined}
+                    className={cn("pr-12 tabular-nums", issue.note && "border-(--warning)/60")} />
+                  <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-xs text-muted-foreground">
+                    {f.unit}
+                  </span>
                 </div>
-                <div className="grid-2" style={{ marginTop: 8 }}>
-                  <Input
-                    placeholder="dosage"
-                    value={r.dosage ?? ""}
-                    onChange={e => setRx(rx.map((x, k) => k === i ? { ...x, dosage: e.target.value } : x))} />
-                  <Input
-                    placeholder="frequency"
-                    value={r.frequency ?? ""}
-                    onChange={e => setRx(rx.map((x, k) => k === i ? { ...x, frequency: e.target.value } : x))} />
-                  <Input
-                    placeholder="duration"
-                    value={r.duration ?? ""}
-                    onChange={e => setRx(rx.map((x, k) => k === i ? { ...x, duration: e.target.value } : x))} />
-                  <Input
-                    placeholder="instructions"
-                    value={r.instructions ?? ""}
-                    onChange={e => setRx(rx.map((x, k) => k === i ? { ...x, instructions: e.target.value } : x))} />
-                </div>
+                {issue.bad && <p className="text-xs text-destructive">{issue.bad}</p>}
               </div>
-            ))}
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      {/* ---- Assessment ---- */}
+      <Card>
+        <SectionHead icon={<StethoscopeIcon />} title="Assessment" />
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="grid content-start gap-2">
+            <Label htmlFor={`${id}-chief`}>Chief complaint</Label>
+            <Textarea id={`${id}-chief`} rows={3} value={chief} onChange={e => setChief(e.target.value)}
+              placeholder="In the patient’s words, e.g. cough for 5 days, worse at night" />
           </div>
-        )}
-      </div>
-
-      <div>
-        <TagPicker
-          title="Lab orders"
-          library={labs.map(l => ({ id: l.id, label: l.name }))}
-          picked={lab.map(l => l.name)}
-          onPickLibrary={id => addLabFromLib(labs.find(l => l.id === id)!)}
-          onAddCustom={addLabCustom}
-        />
-        {lab.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
-            {lab.map((l, i) => (
-              <Badge variant="secondary" key={i}>
-                <span className="dot" />{l.name}
-                <Button type="button" variant="ghost" size="icon-xs" onClick={() => removeLab(i)} title="Remove" aria-label="Remove"
-                        className="-mr-1 size-4 rounded-full text-muted-foreground"><XIcon /></Button>
-              </Badge>
-            ))}
+          <div className="grid content-start gap-2">
+            <Label htmlFor={`${id}-dx`}>Diagnosis</Label>
+            <Textarea id={`${id}-dx`} rows={3} value={diagnosis} onChange={e => setDiagnosis(e.target.value)}
+              placeholder="e.g. Acute upper respiratory infection" />
           </div>
-        )}
+        </CardContent>
+      </Card>
+
+      {/* ---- Problem list ---- */}
+      <Card>
+        <SectionHead icon={<ListChecksIcon />} title="Problem list" desc="Adds or updates conditions on the patient’s chart." count={cond.length} />
+        <CardContent className="grid gap-3">
+          <Picker noun="condition" library={conditions} picked={cond.map(c => c.name)}
+            onPick={c => pickCond(c)} onCustom={name => setCond([...cond, { name, status: "active" }])} />
+          {cond.map((c, i) => (
+            <div key={`${c.name}-${i}`} className="flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2">
+              <span className="flex-1 font-medium">{c.name}</span>
+              <ToggleGroup type="single" variant="outline" size="sm" value={c.status}
+                onValueChange={(v: string) => v && setCond(cond.map((x, j) => j === i ? { ...x, status: v as CondPick["status"] } : x))}
+                aria-label={`${c.name} status`}>
+                <ToggleGroupItem value="active">Active</ToggleGroupItem>
+                <ToggleGroupItem value="resolved">Resolved</ToggleGroupItem>
+              </ToggleGroup>
+              <RemoveButton label={c.name} onClick={() => setCond(cond.filter((_, j) => j !== i))} />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* ---- Prescriptions ---- */}
+      <Card>
+        <SectionHead icon={<PillIcon />} title="Prescriptions" desc="Picking from the library prefills dosage and instructions." count={rx.length} />
+        <CardContent className="grid gap-3">
+          <Picker noun="medication" library={meds} picked={rx.map(r => r.name)}
+            onPick={m => pickMed(m)} onCustom={name => setRx([...rx, { name }])} />
+          {rx.map((r, i) => (
+            <div key={`${r.name}-${i}`} className="grid gap-3 rounded-lg border p-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2 font-medium"><PillIcon className="size-4 text-primary" />{r.name}</span>
+                <RemoveButton label={r.name} onClick={() => setRx(rx.filter((_, j) => j !== i))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {([
+                  ["dosage", "Dosage", "500 mg"],
+                  ["frequency", "Frequency", "3× a day"],
+                  ["duration", "Duration", "7 days"],
+                  ["instructions", "Instructions", "After meals"],
+                ] as const).map(([k, label, ph]) => (
+                  <div key={k} className="grid content-start gap-1.5">
+                    <Label htmlFor={`${id}-rx${i}-${k}`} className="text-xs text-muted-foreground">{label}</Label>
+                    <Input id={`${id}-rx${i}-${k}`} value={r[k] ?? ""} placeholder={ph}
+                      onChange={e => setRxField(i, k, e.target.value)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* ---- Labs ---- */}
+      <Card>
+        <SectionHead icon={<FlaskConicalIcon />} title="Lab orders" desc="Results can be attached to each order later." count={lab.length} />
+        <CardContent className="grid gap-3">
+          <Picker noun="lab test" library={labs} picked={lab.map(l => l.name)}
+            onPick={l => pickLab(l)} onCustom={name => setLab([...lab, { name }])} />
+          {lab.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {lab.map((l, i) => (
+                <Badge variant="info" key={`${l.name}-${i}`} className="h-6 pr-1">
+                  <FlaskConicalIcon />{l.name}
+                  <Button type="button" variant="ghost" size="icon-xs" onClick={() => setLab(lab.filter((_, j) => j !== i))}
+                    aria-label={`Remove ${l.name}`} className="size-4 rounded-full hover:bg-primary/15"><XIcon /></Button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ---- Notes ---- */}
+      <Card>
+        <SectionHead icon={<NotebookPenIcon />} title="Notes" desc="Plan, advice and follow-up. Not shown to the patient." />
+        <CardContent>
+          <Textarea id={`${id}-notes`} aria-label="Notes" rows={4} value={notes} onChange={e => setNotes(e.target.value)}
+            placeholder="e.g. Increase fluids. Return in 1 week or sooner if fever persists." />
+        </CardContent>
+      </Card>
+
+      {error && (
+        <Alert variant="destructive" className="border-destructive/30 bg-destructive/5">
+          <AlertCircleIcon />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* ---- Sticky action bar ---- */}
+      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border bg-card/95 px-4 py-3 shadow-lg backdrop-blur">
+        <ClipboardPenLineIcon className="size-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">{summary || "Nothing prescribed or ordered yet"}</span>
+        <Button type="submit" className="ml-auto" disabled={busy}>
+          {busy ? <><Spinner /> Saving…</> : <><CheckIcon /> Complete visit</>}
+        </Button>
       </div>
 
-      <div className="field" style={{ margin: 0 }}>
-        <Label>Notes</Label>
-        <Textarea rows={4} value={notes} onChange={e => setNotes(e.target.value)} />
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Complete visit"}</Button>
-        {msg && <span style={{ fontSize: 13, color: "var(--danger)" }}>{msg}</span>}
-      </div>
+      <AlertDialog open={confirming} onOpenChange={o => !busy && setConfirming(o)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Complete this visit?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This writes the medical record{summary ? ` (${summary})` : ""} and closes the visit. It can’t be edited afterwards.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>Keep editing</AlertDialogCancel>
+            <AlertDialogAction disabled={busy} onClick={e => { e.preventDefault(); complete(); }}>
+              {busy ? <><Spinner /> Saving…</> : "Complete visit"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   );
 }
 
-// --- tag picker: shows library as clickable chips, with a custom-add input ---
-function TagPicker({
-  title, library, picked, onPickLibrary, onAddCustom,
-}: {
-  title: string;
-  library: { id: string; label: string }[];
-  picked: string[];
-  onPickLibrary: (id: string) => void;
-  onAddCustom: (name: string) => void;
-}) {
-  const [custom, setCustom] = useState("");
+function SectionHead({ icon, title, desc, count }: { icon: React.ReactNode; title: string; desc?: string; count?: number }) {
   return (
-    <div>
-      <div className="label">{title}</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {library.map(item => {
-          const isPicked = picked.includes(item.label);
-          return (
-            <Badge key={item.id} asChild variant={isPicked ? "info" : "outline"}>
-              <button type="button" onClick={() => onPickLibrary(item.id)} disabled={isPicked}
-                className={isPicked ? "cursor-default" : "cursor-pointer hover:bg-muted"}>
-                {item.label}{isPicked && <CheckIcon />}
-              </button>
-            </Badge>
-          );
-        })}
-        {library.length === 0 && <span className="hint">(library empty — admin adds these)</span>}
+    <CardHeader className="flex-row items-start gap-3">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary [&>svg]:size-4">{icon}</div>
+      <div className="grid gap-1">
+        <CardTitle className="flex items-center gap-2">
+          {title}
+          {count ? <Badge variant="info" className="h-4.5 px-1.5 tabular-nums">{count}</Badge> : null}
+        </CardTitle>
+        {desc && <CardDescription>{desc}</CardDescription>}
       </div>
-      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-        <Input
-          value={custom}
-          onChange={e => setCustom(e.target.value)}
-          placeholder={`Add custom ${title.toLowerCase()}`}
-          style={{ maxWidth: 320 }} />
-        <Button variant="outline" type="button" onClick={() => { onAddCustom(custom); setCustom(""); }}>Add</Button>
+    </CardHeader>
+  );
+}
+
+function RemoveButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <Button type="button" variant="ghost" size="icon-sm" onClick={onClick} aria-label={`Remove ${label}`}
+      className="text-muted-foreground hover:text-destructive"><XIcon /></Button>
+  );
+}
+
+// Library chips filtered by a search box; Enter (or "Add") picks the exact
+// match from the library, otherwise adds the typed text as a custom item.
+function Picker<T extends { id: string; name: string }>({
+  noun, library, picked, onPick, onCustom,
+}: {
+  noun: string; library: T[]; picked: string[]; onPick: (item: T) => void; onCustom: (name: string) => void;
+}) {
+  const [q, setQ] = useState("");
+  const term = q.trim().toLowerCase();
+  const shown = useMemo(
+    () => (term ? library.filter(i => i.name.toLowerCase().includes(term)) : library),
+    [library, term],
+  );
+  const exact = library.find(i => i.name.toLowerCase() === term);
+  const already = picked.some(p => p.toLowerCase() === term);
+
+  const add = () => {
+    if (!term || already) return;
+    if (exact) onPick(exact);
+    else onCustom(q.trim());
+    setQ("");
+  };
+
+  return (
+    <div className="grid gap-2">
+      <div className="flex gap-2">
+        <Input value={q} onChange={e => setQ(e.target.value)} placeholder={`Search or add a ${noun}…`}
+          aria-label={`Search or add a ${noun}`}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} className="max-w-sm" />
+        <Button type="button" variant="outline" onClick={add} disabled={!term || already}>
+          <PlusIcon /> {exact || !term ? "Add" : `Add “${q.trim()}”`}
+        </Button>
       </div>
+      {library.length === 0 ? (
+        <p className="text-xs text-muted-foreground">No quick picks yet — an admin can add them under Library. Type to add one now.</p>
+      ) : shown.length === 0 ? (
+        <p className="text-xs text-muted-foreground">No library match. Press Enter to add “{q.trim()}”.</p>
+      ) : (
+        <div className="flex flex-wrap gap-1.5">
+          {shown.map(item => {
+            const isPicked = picked.includes(item.name);
+            return (
+              <Badge key={item.id} asChild variant={isPicked ? "info" : "outline"}>
+                <button type="button" onClick={() => onPick(item)} disabled={isPicked}
+                  className={isPicked ? "cursor-default" : "cursor-pointer hover:bg-muted"}>
+                  {item.name}{isPicked && <CheckIcon />}
+                </button>
+              </Badge>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
