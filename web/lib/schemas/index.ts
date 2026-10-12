@@ -39,7 +39,7 @@ export const bookAppointmentInput = z.object({
   patient_id: uuid,
   doctor_id: uuid,
   clinic_id: uuid,
-  scheduled_at: z.string().datetime(),
+  scheduled_at: z.string().datetime({ offset: true }),
   duration_minutes: z.number().int().positive().max(480).default(30),
   notes: z.string().max(2000).optional(),
 });
@@ -59,7 +59,7 @@ export const setStatusInput = z.object({
 
 export const rescheduleInput = z.object({
   appointment_id: uuid,
-  scheduled_at: z.string().datetime(),
+  scheduled_at: z.string().datetime({ offset: true }),
   duration_minutes: z.number().int().positive().max(480).optional(),
 });
 
