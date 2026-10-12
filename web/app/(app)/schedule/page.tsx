@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { PageHeader } from "@/app/_components/page-header";
-import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getBookingOptions } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths } from "@/app/_components/age";
 import { PrintButton } from "@/app/_components/print-button";
-import BookingForm from "./booking-form";
+import { BookDialog } from "./book-dialog";
 import type { Database } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -70,7 +69,7 @@ export default async function SchedulePage({
         sub={activeClinic ? "Manage appointments for the active clinic" : "Showing all clinics — pick one in the sidebar to scope"}
         actions={<>
           <PrintButton label="Print" />
-          <Button asChild><a href="#book"><Icon name="plus" /> Book appointment</a></Button>
+          <BookDialog label="Book appointment" {...booking} />
         </>} />
 
       {/* Printed hard-copy header (hidden on screen) */}
@@ -145,13 +144,6 @@ export default async function SchedulePage({
             )}
           </TableBody>
         </Table>
-      </div>
-
-      <div className="no-print" style={{ marginTop: 32 }}>
-        <Section id="book" title="Book appointment"
-          description="Only open slots inside the doctor’s hours are offered, so double-booking can’t happen." bare>
-          <BookingForm {...booking} />
-        </Section>
       </div>
     </>
   );

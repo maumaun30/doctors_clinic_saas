@@ -28,9 +28,11 @@ const fmtDay = (ymd: string) =>
   });
 
 export default function BookingForm({
-  patients, doctorClinics, onBooked, onCancel, bare = false,
+  patients, doctorClinics, defaultPatientId = "", onBooked, onCancel, bare = false,
 }: {
   patients: Option[];
+  /** Preselect a patient (e.g. booking from their chart). */
+  defaultPatientId?: string;
   doctorClinics: DoctorClinic[];
   /** Called after a successful booking instead of showing a note inline. */
   onBooked?: () => void;
@@ -45,7 +47,7 @@ export default function BookingForm({
   const [error, setError] = useState<string | null>(null);
   const [booked, setBooked] = useState(false);
 
-  const [patientId, setPatientId] = useState("");
+  const [patientId, setPatientId] = useState(defaultPatientId);
   const [dcIdx, setDcIdx] = useState("");
   const [date, setDate] = useState(() => phYmd());
   const [duration, setDuration] = useState(30);
@@ -94,7 +96,7 @@ export default function BookingForm({
         if (res.slotTaken) loadSlots();
         return;
       }
-      setPatientId(""); setSlot(""); setNotes("");
+      setPatientId(defaultPatientId); setSlot(""); setNotes("");
       if (onBooked) onBooked();
       else { setBooked(true); loadSlots(); }
     });
