@@ -71,3 +71,28 @@ export async function listPendingUsers(sb: SupabaseClient) {
   if (error) throw error;
   return data;
 }
+
+// Options for the booking form: every patient, plus the doctor@clinic
+// pairs the user can book into (scoped to the active clinic when set).
+export async function getBookingOptions(sb: SupabaseClient, activeClinic: string | null) {
+  const [patients, dcRes] = await Promise.all([
+    listPatients(sb),
+    sb.from("doctor_clinics")
+      .select("doctor_id, clinic_id, doctor:doctors!inner(profiles!inner(full_name)), clinic:clinics!inner(name)"),
+  ]);
+  if (dcRes.error) throw dcRes.error;
+
+  const dcFiltered = activeClinic
+    ? (dcRes.data ?? []).filter((dc: any) => dc.clinic_id === activeClinic)
+    : (dcRes.data ?? []);
+  return {
+    patients: patients.map(p => ({ id: p.id, label: p.full_name })),
+    doctorClinics: dcFiltered.map((dc: any) => ({
+      doctor_id: dc.doctor_id as string,
+      clinic_id: dc.clinic_id as string,
+      label: activeClinic
+        ? dc.doctor.profiles.full_name as string
+        : `${dc.doctor.profiles.full_name} @ ${dc.clinic.name}`,
+    })),
+  };
+}

@@ -8,6 +8,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { phYmd } from "@/lib/dates";
 
 type Option = { id: string; label: string };
 type DoctorClinic = { doctor_id: string; clinic_id: string; label: string };
@@ -18,14 +19,18 @@ const fmtSlot = (iso: string) =>
     weekday: "short", hour: "2-digit", minute: "2-digit",
   });
 
-const todayPhIso = () => {
-  const ph = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
-  return new Date(ph.getFullYear(), ph.getMonth(), ph.getDate()).toISOString().slice(0, 10);
-};
+const todayPhIso = () => phYmd();
 
 export default function BookingForm({
-  patients, doctorClinics,
-}: { patients: Option[]; doctorClinics: DoctorClinic[] }) {
+  patients, doctorClinics, onBooked, bare = false,
+}: {
+  patients: Option[];
+  doctorClinics: DoctorClinic[];
+  /** Called after a successful booking instead of showing "Booked." inline. */
+  onBooked?: () => void;
+  /** Render without the card frame (e.g. inside a dialog). */
+  bare?: boolean;
+}) {
   const sb = createClient();
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
@@ -72,8 +77,9 @@ export default function BookingForm({
           duration_minutes: duration,
           notes: notes || undefined,
         });
-        setMsg("Booked.");
         setPatientId(""); setSlot(""); setNotes("");
+        if (onBooked) onBooked();
+        else setMsg("Booked.");
       } catch (e: any) { setMsg(`Error: ${e.message}`); }
     });
   };
@@ -81,7 +87,7 @@ export default function BookingForm({
   const ok = msg && !msg.startsWith("Error") && !msg.startsWith("Pick");
 
   return (
-    <form onSubmit={submit} className="card" style={{ maxWidth: 560, padding: 24 }}>
+    <form onSubmit={submit} className={bare ? undefined : "card"} style={bare ? undefined : { maxWidth: 560, padding: 24 }}>
       <div className="field">
         <Label>Patient</Label>
         <NativeSelect

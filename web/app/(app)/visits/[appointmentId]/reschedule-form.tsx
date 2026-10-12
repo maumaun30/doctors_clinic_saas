@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { phYmd } from "@/lib/dates";
 
 const fmtSlot = (iso: string) =>
   new Date(iso).toLocaleString("en-PH", {
@@ -15,10 +16,7 @@ const fmtSlot = (iso: string) =>
     weekday: "short", hour: "2-digit", minute: "2-digit",
   });
 
-const todayPhIso = () => {
-  const ph = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
-  return new Date(ph.getFullYear(), ph.getMonth(), ph.getDate()).toISOString().slice(0, 10);
-};
+const todayPhIso = () => phYmd();
 
 export default function RescheduleForm({
   appointmentId, doctorId, clinicId, currentDuration,

@@ -701,7 +701,7 @@ html.dark {
   }
   .queue-row {
     display: grid;
-    grid-template-columns: 64px 1fr auto;
+    grid-template-columns: 76px 1fr auto;
     align-items: center;
     gap: 16px;
     padding: 14px 18px;
@@ -715,6 +715,7 @@ html.dark {
     background: var(--bg-subtle);
   }
   .queue-time {
+    white-space: nowrap;
     font-size: 13.5px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -764,6 +765,25 @@ html.dark {
     font-weight: 500;
     letter-spacing: 0;
     text-transform: none;
+  }
+  /* Status-tinted section headers (Today queue groups). */
+  .section-bar-info {
+    background: var(--accent-subtle);
+    color: var(--accent);
+  }
+  .section-bar-success {
+    background: var(--success-subtle);
+    color: var(--success);
+  }
+  .section-bar-danger {
+    background: var(--danger-subtle);
+    color: var(--danger);
+  }
+  .section-bar-info .count,
+  .section-bar-success .count,
+  .section-bar-danger .count {
+    color: inherit;
+    opacity: 0.75;
   }
   .card .section-bar:first-child {
     border-radius: var(--radius) var(--radius) 0 0;
