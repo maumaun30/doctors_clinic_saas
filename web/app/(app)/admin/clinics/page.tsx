@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { listClinics, getMyProfile } from "@/lib/data/queries";
 import { clinicBookingInput, clinicInput } from "@/lib/schemas";
 import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
 
 const suggestSlug = (name: string) =>
   name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
@@ -71,7 +72,7 @@ export default async function ClinicsAdmin() {
     <>
       <PageHeader icon="building" title="Clinics"
         sub={`${clinics.length} ${clinics.length === 1 ? "clinic" : "clinics"}`}
-        actions={<a href="#add-clinic" className="btn btn-primary"><Icon name="plus" /> Add clinic</a>} />
+        actions={<Button asChild><a href="#add-clinic"><Icon name="plus" /> Add clinic</a></Button>} />
 
       {clinics.map(c => (
         <Section key={c.id} title={c.name}
@@ -96,7 +97,7 @@ export default async function ClinicsAdmin() {
               </div>
             </div>
             <div className="settings-actions" style={{ marginTop: 0 }}>
-              <button type="submit" className="btn btn-secondary btn-sm">Save details</button>
+              <Button variant="outline" size="sm" type="submit">Save details</Button>
             </div>
           </form>
 
@@ -123,7 +124,7 @@ export default async function ClinicsAdmin() {
                   <a className="link" href={`/book/${c.booking_slug}`} target="_blank" rel="noreferrer"
                      style={{ fontSize: 13, marginRight: "auto" }}>Open booking page ↗</a>
                 )}
-                <button type="submit" className="btn btn-secondary btn-sm">Save booking</button>
+                <Button variant="outline" size="sm" type="submit">Save booking</Button>
               </div>
             </form>
           </div>
@@ -158,7 +159,7 @@ export default async function ClinicsAdmin() {
             </div>
           </div>
           <div className="settings-actions">
-            <button type="submit" className="btn btn-primary">Add clinic</button>
+            <Button type="submit">Add clinic</Button>
           </div>
         </form>
       </Section>

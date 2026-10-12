@@ -6,6 +6,7 @@ import { assignUser } from "@/lib/actions/admin";
 import { resendInvite, revokeInvite } from "@/lib/actions/invites";
 import { InviteForm } from "./invite-form";
 import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
 
 const ROLE_LABEL: Record<string, string> = { admin: "Admin", doctor: "Doctor", secretary: "Secretary" };
 const fmtDate = (iso: string) =>
@@ -70,7 +71,7 @@ export default async function TeamPage() {
                 <div style={{ display: "flex", gap: 6 }}>
                   <form action={resendInvite}>
                     <input type="hidden" name="id" value={i.id} />
-                    <button type="submit" className="btn btn-secondary btn-sm">Resend</button>
+                    <Button variant="outline" size="sm" type="submit">Resend</Button>
                   </form>
                   <ConfirmAction action={revokeInvite} fields={{ id: i.id }} label="Revoke"
                     title="Revoke this invite?"
@@ -104,7 +105,7 @@ export default async function TeamPage() {
                   <option value="doctor">Doctor</option>
                   <option value="secretary">Secretary</option>
                 </select>
-                <button type="submit" className="btn btn-primary btn-sm">Assign</button>
+                <Button size="sm" type="submit">Assign</Button>
               </form>
             </div>
           ))}

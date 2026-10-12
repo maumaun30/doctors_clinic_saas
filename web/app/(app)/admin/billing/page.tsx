@@ -5,6 +5,7 @@ import { getMyProfile } from "@/lib/data/queries";
 import { openPortal, startCheckout } from "@/lib/actions/billing";
 import { syncSeats } from "@/lib/billing";
 import { stripeConfigured } from "@/lib/stripe";
+import { Button } from "@/components/ui/button";
 
 const STATUS_LABEL: Record<string, { cls: string; label: string }> = {
   active:   { cls: "badge badge-green", label: "Active" },
@@ -81,11 +82,11 @@ export default async function BillingPage({
           {!stripeConfigured() ? (
             <p className="hint">Billing isn’t configured on this server (STRIPE_SECRET_KEY / STRIPE_PRICE_ID).</p>
           ) : live ? (
-            <form action={openPortal}><button className="btn btn-primary">Manage billing</button></form>
+            <form action={openPortal}><Button>Manage billing</Button></form>
           ) : (
             <>
-              <form action={startCheckout}><button className="btn btn-primary">Subscribe</button></form>
-              {s.has_customer && <form action={openPortal}><button className="btn btn-secondary">Billing history</button></form>}
+              <form action={startCheckout}><Button>Subscribe</Button></form>
+              {s.has_customer && <form action={openPortal}><Button variant="outline">Billing history</Button></form>}
             </>
           )}
         </div>

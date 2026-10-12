@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { GoogleLogo } from "@/app/_components/brand-icons";
+import { Button } from "@/components/ui/button";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable: add the
 // provider here, re-add its button below, and import {AppleLogo, FacebookLogo}.
@@ -96,9 +97,9 @@ export default function LoginPage() {
                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
                    value={password} onChange={e => setPassword(e.target.value)} required />
           </div>
-          <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: "100%" }}>
+          <Button type="submit" disabled={busy} style={{ width: "100%" }}>
             {busy ? <span className="spinner" /> : mode === "signin" ? "Sign in" : "Sign up"}
-          </button>
+          </Button>
         </form>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0", color: "var(--fg-subtle)", fontSize: 12 }}>
@@ -107,7 +108,7 @@ export default function LoginPage() {
           <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
         </div>
         <div style={{ display: "grid", gap: 8 }}>
-          <button type="button" className="btn btn-secondary" onClick={() => oauth("google")}><GoogleLogo /> Google</button>
+          <Button variant="outline" type="button" onClick={() => oauth("google")}><GoogleLogo /> Google</Button>
         </div>
 
         <p className="auth-foot">

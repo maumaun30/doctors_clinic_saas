@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { bookAppointment } from "@/lib/actions/appointments";
 import { createClient } from "@/lib/supabase/browser";
+import { Button } from "@/components/ui/button";
 
 type Option = { id: string; label: string };
 type DoctorClinic = { doctor_id: string; clinic_id: string; label: string };
@@ -133,9 +134,9 @@ export default function BookingForm({
         {msg && (
           <span style={{ marginRight: "auto", fontSize: 13, color: ok ? "var(--success)" : "var(--danger)" }}>{msg}</span>
         )}
-        <button type="submit" className="btn btn-primary" disabled={pending || !slot}>
+        <Button type="submit" disabled={pending || !slot}>
           {pending ? "Booking…" : "Book appointment"}
-        </button>
+        </Button>
       </div>
     </form>
   );

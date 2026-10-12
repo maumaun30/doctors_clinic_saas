@@ -7,6 +7,7 @@ import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { createPatient } from "@/lib/actions/patients";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths } from "@/app/_components/age";
+import { Button } from "@/components/ui/button";
 
 function initials(name: string) {
   return (
@@ -70,15 +71,15 @@ export default async function PatientsPage({
     <>
       <PageHeader icon="users" title="Patients"
         sub={`${patients.length} ${patients.length === 1 ? "patient" : "patients"}${activeClinic ? " · active clinic" : ""}`}
-        actions={activeClinic && <a href="#add" className="btn btn-primary"><Icon name="plus" /> Add patient</a>} />
+        actions={activeClinic && <Button asChild><a href="#add"><Icon name="plus" /> Add patient</a></Button>} />
 
       <form method="get" className="filters">
         <div className="search" style={{ maxWidth: 420 }}>
           <Icon name="search" />
           <input className="input" name="q" defaultValue={q ?? ""} placeholder="Search by name or phone" />
         </div>
-        <button type="submit" className="btn btn-secondary">Search</button>
-        {q && <a href="/patients" className="btn btn-ghost">Clear</a>}
+        <Button variant="outline" type="submit">Search</Button>
+        {q && <Button asChild variant="ghost"><a href="/patients">Clear</a></Button>}
       </form>
 
       <div className="card">
@@ -138,7 +139,7 @@ export default async function PatientsPage({
               <input className="input" name="address" />
             </div>
             <div className="settings-actions">
-              <button type="submit" className="btn btn-primary">Add patient</button>
+              <Button type="submit">Add patient</Button>
             </div>
           </form>
         </Section>

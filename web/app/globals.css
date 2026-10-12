@@ -196,76 +196,6 @@ html.dark {
    PRIMITIVES
    ============================================================ */
 @layer components {
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    height: 36px;
-    padding: 0 14px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1;
-    border-radius: var(--radius);
-    border: 1px solid transparent;
-    cursor: pointer;
-    white-space: nowrap;
-    text-decoration: none;
-    transition: background 150ms ease, border-color 150ms ease, color 150ms ease,
-      box-shadow 150ms ease;
-  }
-  .btn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ring);
-  }
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  .btn svg {
-    width: 16px;
-    height: 16px;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: var(--accent-fg);
-  }
-  .btn-primary:hover:not(:disabled) {
-    background: var(--accent-hover);
-  }
-  .btn-secondary {
-    background: var(--surface);
-    color: var(--fg);
-    border-color: var(--border-strong);
-  }
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--bg-hover);
-  }
-  .btn-ghost {
-    background: transparent;
-    color: var(--fg-muted);
-  }
-  .btn-ghost:hover:not(:disabled) {
-    background: var(--bg-hover);
-    color: var(--fg);
-  }
-  .btn-danger {
-    background: var(--danger);
-    color: #fff;
-  }
-  .btn-sm {
-    height: 30px;
-    padding: 0 10px;
-    font-size: 13px;
-  }
-  .btn-icon {
-    width: 36px;
-    padding: 0;
-  }
-  .btn-icon.btn-sm {
-    width: 30px;
-  }
-
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -1153,11 +1083,6 @@ html.dark {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
     gap: 8px;
-  }
-  .slot-grid .btn[aria-pressed="true"] {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
   }
   .honeypot {
     position: absolute;

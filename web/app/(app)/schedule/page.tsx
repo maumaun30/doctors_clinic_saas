@@ -9,6 +9,7 @@ import { ageYearsMonths } from "@/app/_components/age";
 import { PrintButton } from "@/app/_components/print-button";
 import BookingForm from "./booking-form";
 import type { Database } from "@/lib/database.types";
+import { Button } from "@/components/ui/button";
 
 type AppointmentStatus = Database["public"]["Enums"]["appointment_status"];
 const isStatus = (s: string | undefined): s is AppointmentStatus =>
@@ -83,7 +84,7 @@ export default async function SchedulePage({
         sub={activeClinic ? "Manage appointments for the active clinic" : "Showing all clinics — pick one in the sidebar to scope"}
         actions={<>
           <PrintButton label="Print" />
-          <a href="#book" className="btn btn-primary"><Icon name="plus" /> Book appointment</a>
+          <Button asChild><a href="#book"><Icon name="plus" /> Book appointment</a></Button>
         </>} />
 
       {/* Printed hard-copy header (hidden on screen) */}
@@ -117,7 +118,7 @@ export default async function SchedulePage({
             <option value="no_show">No-show</option>
           </select>
         </label>
-        <button type="submit" className="btn btn-secondary" style={{ alignSelf: "flex-end" }}>Filter</button>
+        <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Filter</Button>
       </form>
 
       <div className="card table-wrap">
@@ -146,9 +147,9 @@ export default async function SchedulePage({
                   </td>
                   <td className="num">{a.duration_minutes} min</td>
                   <td className="no-print" style={{ textAlign: "right" }}>
-                    <Link href={`/visits/${a.id}`} className="btn btn-ghost btn-sm btn-icon" aria-label="Open">
-                      <Icon name="chevright" />
-                    </Link>
+                    <Button asChild variant="ghost" size="icon-sm"><Link href={`/visits/${a.id}`} aria-label="Open">
+                        <Icon name="chevright" />
+                      </Link></Button>
                   </td>
                 </tr>
               );

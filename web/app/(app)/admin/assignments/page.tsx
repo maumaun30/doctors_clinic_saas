@@ -4,6 +4,7 @@ import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
 
 export default async function AssignmentsAdmin({
   searchParams,
@@ -96,7 +97,7 @@ export default async function AssignmentsAdmin({
             {clinics?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </label>
-        <button type="submit" className="btn btn-secondary" style={{ alignSelf: "flex-end" }}>Switch</button>
+        <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Switch</Button>
       </form>
 
       <div>
@@ -138,7 +139,7 @@ export default async function AssignmentsAdmin({
                     <option value="" disabled>— add secretary —</option>
                     {addableSecs.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
                   </select>
-                  <button type="submit" className="btn btn-secondary btn-sm">Add</button>
+                  <Button variant="outline" size="sm" type="submit">Add</Button>
                 </form>
               )}
 
@@ -167,7 +168,7 @@ export default async function AssignmentsAdmin({
                     <option key={d.profile_id} value={d.profile_id}>{d.profiles.full_name}</option>
                   ))}
                 </select>
-                <button type="submit" className="btn btn-secondary">Add</button>
+                <Button variant="outline" type="submit">Add</Button>
               </form>
             )}
         </Section>

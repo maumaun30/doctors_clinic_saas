@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/app/_components/page-header";
+import { Button } from "@/components/ui/button";
 
 const TABLES = [
   "patients", "medical_records", "prescriptions", "lab_orders",
@@ -82,7 +83,7 @@ export default async function AuditPage({
             <option value="90">90</option>
           </select>
         </label>
-        <button type="submit" className="btn btn-secondary" style={{ alignSelf: "flex-end" }}>Filter</button>
+        <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Filter</Button>
       </form>
 
       <div className="card">

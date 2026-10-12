@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -136,7 +137,7 @@ export default async function AvailabilityPage() {
                   </div>
                 </div>
                 <div className="settings-actions">
-                  <button type="submit" className="btn btn-primary">Add hours</button>
+                  <Button type="submit">Add hours</Button>
                 </div>
               </form>
             )}

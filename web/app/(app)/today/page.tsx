@@ -6,6 +6,7 @@ import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { setAppointmentStatus } from "@/lib/actions/appointments";
 import { Icon } from "@/app/_components/icons";
+import { Button } from "@/components/ui/button";
 
 const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
   scheduled: { cls: "badge", label: "Scheduled" },
@@ -89,21 +90,21 @@ export default async function TodayPage() {
             <form action={mark}>
               <input type="hidden" name="appointment_id" value={a.id} />
               <input type="hidden" name="status" value="confirmed" />
-              <button type="submit" className="btn btn-ghost btn-sm btn-icon" title="Confirm">
+              <Button variant="ghost" size="icon-sm" type="submit" title="Confirm">
                 <Icon name="check" />
-              </button>
+              </Button>
             </form>
           )}
           {active && (
             <form action={mark}>
               <input type="hidden" name="appointment_id" value={a.id} />
               <input type="hidden" name="status" value="no_show" />
-              <button type="submit" className="btn btn-ghost btn-sm" title="Mark no-show">No-show</button>
+              <Button variant="ghost" size="sm" type="submit" title="Mark no-show">No-show</Button>
             </form>
           )}
           {active
-            ? <Link href={`/visits/${a.id}`} className="btn btn-primary btn-sm">Start visit</Link>
-            : <Link href={`/visits/${a.id}`} className="btn btn-ghost btn-sm">View</Link>}
+            ? <Button asChild size="sm"><Link href={`/visits/${a.id}`}>Start visit</Link></Button>
+            : <Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>View</Link></Button>}
         </div>
       </div>
     );
@@ -114,8 +115,8 @@ export default async function TodayPage() {
       <PageHeader icon="today" title="Today"
         sub={`${dateLabel} · ${activeClinic ? "Active clinic" : "All clinics"} · ${me.full_name ?? "You"}`}
         actions={<>
-          <Link href="/schedule" className="btn btn-secondary"><Icon name="calendar" /> View schedule</Link>
-          <Link href="/schedule#book" className="btn btn-primary"><Icon name="plus" /> Book</Link>
+          <Button asChild variant="outline"><Link href="/schedule"><Icon name="calendar" /> View schedule</Link></Button>
+          <Button asChild><Link href="/schedule#book"><Icon name="plus" /> Book</Link></Button>
         </>} />
 
       <div className="stats">

@@ -8,6 +8,7 @@ import { linkPatientToClinic, unlinkPatientFromClinic, updatePatient } from "@/l
 import LabFiles from "@/app/(app)/visits/[appointmentId]/lab-files";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths, ageVerbose } from "@/app/_components/age";
+import { Button } from "@/components/ui/button";
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?";
@@ -101,12 +102,12 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
     <>
       <PageHeader
         leading={<>
-          <Link href="/patients" className="btn btn-ghost btn-icon" aria-label="Back to patients"><Icon name="back" /></Link>
+          <Button asChild variant="ghost" size="icon"><Link href="/patients" aria-label="Back to patients"><Icon name="back" /></Link></Button>
           <span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(patient.full_name)}</span>
         </>}
         title={patient.full_name}
         sub={sub}
-        actions={<Link href="/schedule#book" className="btn btn-primary"><Icon name="plus" /> New visit</Link>} />
+        actions={<Button asChild><Link href="/schedule#book"><Icon name="plus" /> New visit</Link></Button>} />
 
       <div>
         {/* Demographics */}
@@ -155,7 +156,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                 <input className="input" name="address" defaultValue={patient.address ?? ""} />
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button type="submit" className="btn btn-primary btn-sm">Save</button>
+                <Button size="sm" type="submit">Save</Button>
               </div>
             </form>
           </details>
@@ -187,7 +188,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                 <option value="" disabled>— link clinic —</option>
                 {unlinkedClinics.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
-              <button type="submit" className="btn btn-secondary">Link</button>
+              <Button variant="outline" type="submit">Link</Button>
             </form>
           )}
         </Section>
@@ -218,7 +219,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                     <tr key={a.id}>
                       <td className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</td>
                       <td style={{ color: "var(--fg-muted)" }}>{a.status} · {a.duration_minutes} min</td>
-                      <td style={{ textAlign: "right" }}><Link href={`/visits/${a.id}`} className="btn btn-ghost btn-sm">Open</Link></td>
+                      <td style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -237,7 +238,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                     <tr key={a.id}>
                       <td className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</td>
                       <td style={{ color: "var(--fg-muted)" }}>{a.status}</td>
-                      <td style={{ textAlign: "right" }}><Link href={`/visits/${a.id}`} className="btn btn-ghost btn-sm">Open</Link></td>
+                      <td style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></td>
                     </tr>
                   ))}
                 </tbody>

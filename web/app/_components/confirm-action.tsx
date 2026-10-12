@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 // A destructive button that asks first. On confirm it calls the server
 // action with `fields` as FormData, then toasts the outcome. Failures
@@ -30,7 +32,9 @@ export function ConfirmAction({
   confirmLabel = label,
   success,
   error = "Something went wrong. Please try again.",
-  className = "btn btn-ghost btn-sm",
+  variant = "ghost",
+  size = "sm",
+  className,
   danger = true,
   triggerTitle,
 }: {
@@ -42,6 +46,8 @@ export function ConfirmAction({
   confirmLabel?: React.ReactNode;
   success?: string;
   error?: string;
+  variant?: React.ComponentProps<typeof Button>["variant"];
+  size?: React.ComponentProps<typeof Button>["size"];
   className?: string;
   danger?: boolean;
   triggerTitle?: string;
@@ -69,14 +75,15 @@ export function ConfirmAction({
   return (
     <AlertDialog open={open} onOpenChange={o => !pending && setOpen(o)}>
       <AlertDialogTrigger asChild>
-        <button
+        <Button
           type="button"
-          className={className}
-          style={danger ? { color: "var(--danger)" } : undefined}
+          variant={variant}
+          size={size}
+          className={danger ? cn("text-destructive hover:text-destructive", className) : className}
           title={triggerTitle}
         >
           {label}
-        </button>
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

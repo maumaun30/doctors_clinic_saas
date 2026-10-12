@@ -3,6 +3,7 @@ import { PageHeader } from "@/app/_components/page-header";
 import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { PrintButton } from "@/app/_components/print-button";
+import { Button } from "@/components/ui/button";
 
 const STATUS_ORDER = ["scheduled", "confirmed", "completed", "cancelled", "no_show"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -159,7 +160,7 @@ export default async function AnalyticsPage({
             {STATUS_ORDER.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
           </select>
         </label>
-        <button type="submit" className="btn btn-secondary" style={{ alignSelf: "flex-end" }}>Apply</button>
+        <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Apply</Button>
       </form>
 
       <div className="stats">

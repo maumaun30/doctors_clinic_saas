@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { completeVisitFull } from "@/lib/actions/appointments";
+import { Button } from "@/components/ui/button";
 
 type Med = { id: string; name: string; default_dosage: string | null; default_frequency: string | null; default_instructions: string | null };
 type Lab = { id: string; name: string };
@@ -143,7 +144,7 @@ export default function VisitForm({
                   <option value="active">active</option>
                   <option value="resolved">resolved</option>
                 </select>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeCond(i)}>Remove</button>
+                <Button variant="ghost" size="sm" type="button" onClick={() => removeCond(i)}>Remove</Button>
               </div>
             ))}
           </div>
@@ -164,7 +165,7 @@ export default function VisitForm({
               <div key={i} className="card" style={{ padding: 12, boxShadow: "none" }}>
                 <div className="row-between">
                   <strong>{r.name}</strong>
-                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeRx(i)}>Remove</button>
+                  <Button variant="ghost" size="sm" type="button" onClick={() => removeRx(i)}>Remove</Button>
                 </div>
                 <div className="grid-2" style={{ marginTop: 8 }}>
                   <input className="input" placeholder="dosage" value={r.dosage ?? ""}
@@ -209,7 +210,7 @@ export default function VisitForm({
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? "Saving…" : "Complete visit"}</button>
+        <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Complete visit"}</Button>
         {msg && <span style={{ fontSize: 13, color: "var(--danger)" }}>{msg}</span>}
       </div>
     </form>
@@ -247,7 +248,7 @@ function TagPicker({
       <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
         <input className="input" value={custom} onChange={e => setCustom(e.target.value)}
                placeholder={`Add custom ${title.toLowerCase()}`} style={{ maxWidth: 320 }} />
-        <button type="button" className="btn btn-secondary" onClick={() => { onAddCustom(custom); setCustom(""); }}>Add</button>
+        <Button variant="outline" type="button" onClick={() => { onAddCustom(custom); setCustom(""); }}>Add</Button>
       </div>
     </div>
   );

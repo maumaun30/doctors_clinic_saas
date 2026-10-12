@@ -8,6 +8,7 @@ import { Icon } from "@/app/_components/icons";
 import VisitForm from "./visit-form";
 import RescheduleForm from "./reschedule-form";
 import LabFiles from "./lab-files";
+import { Button } from "@/components/ui/button";
 
 const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
   scheduled: { cls: "badge", label: "Scheduled" },
@@ -79,7 +80,7 @@ export default async function VisitPage({
     <>
       <PageHeader
         leading={<>
-          <Link href="/schedule" className="btn btn-ghost btn-icon" aria-label="Back to schedule"><Icon name="back" /></Link>
+          <Button asChild variant="ghost" size="icon"><Link href="/schedule" aria-label="Back to schedule"><Icon name="back" /></Link></Button>
           <span className="page-icon"><Icon name="calendar" /></span>
         </>}
         title={appt.patient
@@ -89,7 +90,7 @@ export default async function VisitPage({
         actions={<>
           <span className={badge.cls}><span className="dot" />{badge.label}</span>
           {closed && record && (
-            <Link href={`/visits/${appointmentId}/rx`} className="btn btn-secondary"><Icon name="print" /> Print prescription</Link>
+            <Button asChild variant="outline">(<Link href={`/visits/${appointmentId}/rx`}><Icon name="print" />Print prescription</Link>)</Button>
           )}
         </>} />
 
@@ -112,7 +113,7 @@ export default async function VisitPage({
                 <option value="cancelled">Cancelled</option>
                 <option value="no_show">No-show</option>
               </select>
-              <button type="submit" className="btn btn-secondary">Update</button>
+              <Button variant="outline" type="submit">Update</Button>
             </form>
           </Section>
 

@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { rescheduleAppointment } from "@/lib/actions/appointments";
+import { Button } from "@/components/ui/button";
 
 const fmtSlot = (iso: string) =>
   new Date(iso).toLocaleString("en-PH", {
@@ -82,7 +83,7 @@ export default function RescheduleForm({
           {slots.map(s => <option key={s} value={s}>{fmtSlot(s)}</option>)}
         </select>
       </div>
-      <button type="submit" className="btn btn-secondary" disabled={busy || !slot}>{busy ? "…" : "Reschedule"}</button>
+      <Button variant="outline" type="submit" disabled={busy || !slot}>{busy ? "…" : "Reschedule"}</Button>
       {msg && <span style={{ fontSize: 13, color: msg === "Rescheduled." ? "var(--success)" : "var(--danger)" }}>{msg}</span>}
     </form>
   );

@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { inviteStaff, type InviteResult } from "@/lib/actions/invites";
+import { Button } from "@/components/ui/button";
 
 export function InviteForm() {
   const [state, action, pending] = useActionState<InviteResult | null, FormData>(inviteStaff, null);
@@ -32,9 +33,9 @@ export function InviteForm() {
             {state.message}
           </p>
         )}
-        <button type="submit" className="btn btn-primary" disabled={pending}>
+        <Button type="submit" disabled={pending}>
           {pending ? "Sending…" : "Send invite"}
-        </button>
+        </Button>
       </div>
     </form>
   );

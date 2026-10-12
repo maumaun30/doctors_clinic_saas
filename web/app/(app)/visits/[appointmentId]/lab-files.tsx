@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { uploadLabResult, getLabFileSignedUrl, deleteLabFile } from "@/lib/actions/lab-files";
 import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
 
 type FileRow = { id: string; file_name: string; size_bytes: number | null; content_type: string | null };
 
@@ -52,7 +53,7 @@ export default function LabFiles({
               <ConfirmAction
                 action={async () => { await deleteLabFile(f.id); router.refresh(); }}
                 fields={{}} label="✕" triggerTitle="Delete file" confirmLabel="Delete"
-                className="cursor-pointer border-none bg-transparent p-0"
+                size="icon-xs"
                 title="Delete this file?"
                 description={<><strong>{f.file_name}</strong> is permanently removed from this lab order.</>}
                 success="File deleted" error="Couldn’t delete the file. Please try again." />
@@ -64,7 +65,7 @@ export default function LabFiles({
         <input type="hidden" name="lab_order_id" value={labOrderId} />
         <input type="file" name="file" required className="hint"
                accept=".pdf,image/png,image/jpeg,image/webp,image/heic" />
-        <button type="submit" className="btn btn-secondary btn-sm" disabled={busy}>{busy ? "…" : "Upload"}</button>
+        <Button variant="outline" size="sm" type="submit" disabled={busy}>{busy ? "…" : "Upload"}</Button>
       </form>
       {msg && <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 6 }}>{msg}</p>}
     </div>

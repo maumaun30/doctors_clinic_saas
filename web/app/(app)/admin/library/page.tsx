@@ -4,6 +4,7 @@ import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 import { ConfirmAction } from "@/app/_components/confirm-action";
+import { Button } from "@/components/ui/button";
 
 export default async function LibraryAdmin() {
   const sb = await createClient();
@@ -126,7 +127,7 @@ export default async function LibraryAdmin() {
                 <input className="input" name="default_dosage" defaultValue={m.default_dosage ?? ""} placeholder="dosage" />
                 <input className="input" name="default_frequency" defaultValue={m.default_frequency ?? ""} placeholder="frequency" />
                 <input className="input" name="default_instructions" defaultValue={m.default_instructions ?? ""} placeholder="instructions" />
-                <button type="submit" className="btn btn-secondary btn-sm">Save</button>
+                <Button variant="outline" size="sm" type="submit">Save</Button>
                 <ConfirmAction action={delMed} fields={{ id: m.id }} label="Delete"
                   title={`Delete ${m.name}?`}
                   description="It’s removed from quick picks. Past prescriptions keep their own copy."
@@ -139,7 +140,7 @@ export default async function LibraryAdmin() {
             <input className="input" name="default_dosage" placeholder="default dosage" />
             <input className="input" name="default_frequency" placeholder="default frequency" />
             <input className="input" name="default_instructions" placeholder="default instructions" />
-            <button type="submit" className="btn btn-primary btn-sm">Add</button>
+            <Button size="sm" type="submit">Add</Button>
           </form>
         </Section>
 
@@ -152,7 +153,7 @@ export default async function LibraryAdmin() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto auto", gap: 6, alignItems: "center" }}>
                 <input className="input" name="name" defaultValue={l.name} required placeholder="name" />
                 <input className="input" name="description" defaultValue={l.description ?? ""} placeholder="description" />
-                <button type="submit" className="btn btn-secondary btn-sm">Save</button>
+                <Button variant="outline" size="sm" type="submit">Save</Button>
                 <ConfirmAction action={delLab} fields={{ id: l.id }} label="Delete"
                   title={`Delete ${l.name}?`}
                   description="It’s removed from quick picks. Past lab orders keep their own copy."
@@ -163,7 +164,7 @@ export default async function LibraryAdmin() {
           <form action={addLab} className="settings-add-row" style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: 6 }}>
             <input className="input" name="name" placeholder="Add: name (e.g. CBC)" required />
             <input className="input" name="description" placeholder="description" />
-            <button type="submit" className="btn btn-primary btn-sm">Add</button>
+            <Button size="sm" type="submit">Add</Button>
           </form>
         </Section>
 
@@ -176,7 +177,7 @@ export default async function LibraryAdmin() {
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto auto", gap: 6, alignItems: "center" }}>
                 <input className="input" name="name" defaultValue={c.name} required placeholder="name" />
                 <input className="input" name="icd_code" defaultValue={c.icd_code ?? ""} placeholder="ICD code" />
-                <button type="submit" className="btn btn-secondary btn-sm">Save</button>
+                <Button variant="outline" size="sm" type="submit">Save</Button>
                 <ConfirmAction action={delCond} fields={{ id: c.id }} label="Delete"
                   title={`Delete ${c.name}?`}
                   description="It’s removed from quick picks. Existing patient problem lists keep their own copy."
@@ -187,7 +188,7 @@ export default async function LibraryAdmin() {
           <form action={addCond} className="settings-add-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 6 }}>
             <input className="input" name="name" placeholder="Add: name (e.g. Hypertension)" required />
             <input className="input" name="icd_code" placeholder="ICD code" />
-            <button type="submit" className="btn btn-primary btn-sm">Add</button>
+            <Button size="sm" type="submit">Add</Button>
           </form>
         </Section>
       </div>

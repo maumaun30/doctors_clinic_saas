@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import {
   bookPublicAppointment, getPublicSlots, type PublicDoctor,
 } from "@/lib/actions/public-booking";
+import { Button } from "@/components/ui/button";
 
 const TZ = "Asia/Manila";
 
@@ -84,10 +85,10 @@ export default function BookingWidget({
           {clinicName} will confirm your appointment. If you gave an email,
           you’ll get a reminder the day before.
         </p>
-        <button type="button" className="btn btn-secondary" style={{ marginTop: 18 }}
+        <Button variant="outline" type="button" style={{ marginTop: 18 }}
                 onClick={() => { setBooked(null); setSlot(""); setDate(todayPh()); }}>
           Book another
-        </button>
+        </Button>
       </div>
     );
   }
@@ -122,10 +123,15 @@ export default function BookingWidget({
           : (
             <div className="slot-grid" role="group" aria-label="Available times">
               {slots.map(s => (
-                <button key={s} type="button" className="btn btn-secondary btn-sm"
-                        aria-pressed={slot === s} onClick={() => setSlot(s)}>
+                <Button
+                  variant={slot === s ? "default" : "outline"}
+                  size="sm"
+                  key={s}
+                  type="button"
+                  aria-pressed={slot === s}
+                  onClick={() => setSlot(s)}>
                   {fmtTime(s)}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -160,10 +166,9 @@ export default function BookingWidget({
         <p role="alert" style={{ color: "var(--danger)", fontSize: 13, margin: "4px 0 12px" }}>{error}</p>
       )}
 
-      <button type="submit" className="btn btn-primary" style={{ width: "100%" }}
-              disabled={pending || !slot}>
+      <Button type="submit" style={{ width: "100%" }} disabled={pending || !slot}>
         {pending ? "Booking…" : slot ? `Book ${fmtTime(slot)}` : "Book appointment"}
-      </button>
+      </Button>
     </form>
   );
 }

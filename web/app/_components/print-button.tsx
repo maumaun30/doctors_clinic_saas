@@ -1,11 +1,16 @@
 "use client";
 
 import { Icon } from "./icons";
+import { Button } from "@/components/ui/button";
 
 export function PrintButton({ label = "Print" }: { label?: string }) {
   return (
-    <button type="button" className="btn btn-secondary no-print" onClick={() => window.print()}>
+    <Button
+      variant="outline"
+      className="no-print"
+      type="button"
+      onClick={() => window.print()}>
       <Icon name="print" /> {label}
-    </button>
+    </Button>
   );
 }
