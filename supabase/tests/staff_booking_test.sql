@@ -1,5 +1,6 @@
 -- =====================================================================
--- staff_booking_test.sql  —  book_appointment() for staff (0021 fix).
+-- staff_booking_test.sql  —  book_appointment() / reschedule_appointment()
+--                             for staff (0021 / 0022 fixes).
 -- Before 0021 every call failed on the end-time calculation, so this
 -- covers the happy path plus the main rejections.
 -- =====================================================================
@@ -77,6 +78,15 @@ select _assert_raises($q$ select book_appointment(
      '00000000-0000-0000-0000-0000000009b1', '00000000-0000-0000-0000-0000000009d1',
      '00000000-0000-0000-0000-0000000009c1', _tomorrow_at('11:45'), 30) $q$,
   'not available', 'slot running past end of availability is rejected');
+
+-- ---- reschedule (0022) ----
+select _assert(
+  (select scheduled_at from reschedule_appointment(
+     (select id from appointments where patient_id = '00000000-0000-0000-0000-0000000009b1'), _tomorrow_at('10:00'))) = _tomorrow_at('10:00'),
+  'admin can reschedule inside availability');
+select _assert_raises($q$ select reschedule_appointment(
+     (select id from appointments where patient_id = '00000000-0000-0000-0000-0000000009b1'), _tomorrow_at('11:45')) $q$,
+  'not available', 'reschedule past end of availability is rejected');
 
 -- ---- unassigned secretary can't book for this doctor ----
 select _as('00000000-0000-0000-0000-0000000009e1');
