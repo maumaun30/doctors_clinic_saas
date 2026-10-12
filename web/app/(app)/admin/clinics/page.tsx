@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { listClinics, getMyProfile } from "@/lib/data/queries";
 import { clinicBookingInput, clinicInput } from "@/lib/schemas";
+import { ConfirmAction } from "@/app/_components/confirm-action";
 
 const suggestSlug = (name: string) =>
   name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
@@ -129,10 +130,11 @@ export default async function ClinicsAdmin() {
 
           <div className="settings-subsection settings-danger">
             <span className="hint">Deleting fails while the clinic still has appointments.</span>
-            <form action={remove}>
-              <input type="hidden" name="id" value={c.id} />
-              <button type="submit" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }}>Delete clinic</button>
-            </form>
+            <ConfirmAction action={remove} fields={{ id: c.id }} label="Delete clinic"
+              title={`Delete ${c.name}?`}
+              description="This permanently removes the clinic, its doctor and secretary assignments, and its booking page. It can’t be undone."
+              success="Clinic deleted"
+              error="Couldn’t delete the clinic. It still has appointments — cancel or move them first." />
           </div>
         </Section>
       ))}

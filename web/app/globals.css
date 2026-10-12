@@ -41,6 +41,27 @@
   --sidebar-w-collapsed: 72px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+
+  /* shadcn/ui variable names, aliased onto the palette above so its
+     components match the existing UI (and follow html.dark for free).
+     shadcn "primary" is the brand blue. shadcn's "accent" (hover surface)
+     clashes with --accent (brand blue) here, so it is only exposed as the
+     Tailwind color below, never as a raw variable. */
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--fg);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-fg);
+  --secondary: var(--bg-subtle);
+  --secondary-foreground: var(--fg);
+  --muted: var(--bg-hover);
+  --muted-foreground: var(--fg-muted);
+  --accent-foreground: var(--fg);
+  --destructive: var(--danger);
+  --input: var(--border-strong);
 }
 
 html.dark {
@@ -98,26 +119,23 @@ html.dark {
 
   --font-sans: var(--font);
 
-  /* shadcn/ui tokens, mapped onto the palette above so its components
-     match the existing UI. Note shadcn's "accent" is the hover/highlight
-     surface, not the brand color — the brand blue is "primary" here.
-     Plain var(--accent) in this file still means brand blue. */
-  --color-background: var(--bg);
-  --color-foreground: var(--fg);
-  --color-card: var(--surface);
-  --color-card-foreground: var(--fg);
-  --color-popover: var(--surface);
-  --color-popover-foreground: var(--fg);
-  --color-primary: var(--accent);
-  --color-primary-foreground: var(--accent-fg);
-  --color-secondary: var(--bg-subtle);
-  --color-secondary-foreground: var(--fg);
-  --color-muted: var(--bg-hover);
-  --color-muted-foreground: var(--fg-muted);
+  /* shadcn/ui colors (raw aliases defined in :root). */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--bg-hover);
-  --color-accent-foreground: var(--fg);
-  --color-destructive: var(--danger);
-  --color-input: var(--border-strong);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
   --color-ring: var(--accent);
 
   --radius-md: var(--radius);

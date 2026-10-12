@@ -3,6 +3,7 @@ import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
+import { ConfirmAction } from "@/app/_components/confirm-action";
 
 export default async function LibraryAdmin() {
   const sb = await createClient();
@@ -126,7 +127,10 @@ export default async function LibraryAdmin() {
                 <input className="input" name="default_frequency" defaultValue={m.default_frequency ?? ""} placeholder="frequency" />
                 <input className="input" name="default_instructions" defaultValue={m.default_instructions ?? ""} placeholder="instructions" />
                 <button type="submit" className="btn btn-secondary btn-sm">Save</button>
-                <button type="submit" formAction={delMed} className="btn btn-ghost btn-sm">Delete</button>
+                <ConfirmAction action={delMed} fields={{ id: m.id }} label="Delete"
+                  title={`Delete ${m.name}?`}
+                  description="It’s removed from quick picks. Past prescriptions keep their own copy."
+                  success="Medication deleted" error="Couldn’t delete the medication. Please try again." />
               </div>
             </form>
           ))}
@@ -149,7 +153,10 @@ export default async function LibraryAdmin() {
                 <input className="input" name="name" defaultValue={l.name} required placeholder="name" />
                 <input className="input" name="description" defaultValue={l.description ?? ""} placeholder="description" />
                 <button type="submit" className="btn btn-secondary btn-sm">Save</button>
-                <button type="submit" formAction={delLab} className="btn btn-ghost btn-sm">Delete</button>
+                <ConfirmAction action={delLab} fields={{ id: l.id }} label="Delete"
+                  title={`Delete ${l.name}?`}
+                  description="It’s removed from quick picks. Past lab orders keep their own copy."
+                  success="Lab test deleted" error="Couldn’t delete the lab test. Please try again." />
               </div>
             </form>
           ))}
@@ -170,7 +177,10 @@ export default async function LibraryAdmin() {
                 <input className="input" name="name" defaultValue={c.name} required placeholder="name" />
                 <input className="input" name="icd_code" defaultValue={c.icd_code ?? ""} placeholder="ICD code" />
                 <button type="submit" className="btn btn-secondary btn-sm">Save</button>
-                <button type="submit" formAction={delCond} className="btn btn-ghost btn-sm">Delete</button>
+                <ConfirmAction action={delCond} fields={{ id: c.id }} label="Delete"
+                  title={`Delete ${c.name}?`}
+                  description="It’s removed from quick picks. Existing patient problem lists keep their own copy."
+                  success="Condition deleted" error="Couldn’t delete the condition. Please try again." />
               </div>
             </form>
           ))}

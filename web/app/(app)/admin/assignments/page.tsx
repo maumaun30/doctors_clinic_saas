@@ -3,6 +3,7 @@ import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
+import { ConfirmAction } from "@/app/_components/confirm-action";
 
 export default async function AssignmentsAdmin({
   searchParams,
@@ -143,10 +144,12 @@ export default async function AssignmentsAdmin({
 
               <div className="settings-subsection settings-danger">
                 <span className="hint">Past appointments stay; this doctor’s secretary assignments here are removed.</span>
-                <form action={removeDoctor}>
-                  <input type="hidden" name="id" value={dcRow.id} />
-                  <button type="submit" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }}>Remove from clinic</button>
-                </form>
+                <ConfirmAction action={removeDoctor} fields={{ id: dcRow.id }} label="Remove from clinic"
+                  title="Remove this doctor from the clinic?"
+                  description="Past appointments stay. This doctor’s secretary assignments at this clinic are removed."
+                  confirmLabel="Remove"
+                  success="Doctor removed from clinic"
+                  error="Couldn’t remove the doctor. Please try again." />
               </div>
             </Section>
           );

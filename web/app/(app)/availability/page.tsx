@@ -4,6 +4,7 @@ import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
+import { ConfirmAction } from "@/app/_components/confirm-action";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -86,10 +87,11 @@ export default async function AvailabilityPage() {
                   <td className="num">{a.start_time}</td>
                   <td className="num">{a.end_time}</td>
                   <td style={{ textAlign: "right" }}>
-                    <form action={remove}>
-                      <input type="hidden" name="id" value={a.id} />
-                      <button type="submit" className="btn btn-ghost btn-sm">Delete</button>
-                    </form>
+                    <ConfirmAction action={remove} fields={{ id: a.id }} label="Delete"
+                      title="Delete this availability block?"
+                      description={<>{dcLabel(a.doctor_id, a.clinic_id)}, {DAYS[a.weekday]} {a.start_time}–{a.end_time}. Booked appointments are kept, but no new slots open here.</>}
+                      success="Availability deleted"
+                      error="Couldn’t delete the availability block. Please try again." />
                   </td>
                 </tr>
               ))}
