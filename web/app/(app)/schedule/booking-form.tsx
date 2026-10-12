@@ -1,15 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { AlertCircleIcon, CalendarCheckIcon, ClockIcon } from "lucide-react";
 import { bookAppointment } from "@/lib/actions/appointments";
-import { createClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { SlotPicker, fmtSlotDay as fmtDay, fmtSlotTime as fmtTime } from "./slot-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { phYmd } from "@/lib/dates";
@@ -17,15 +17,8 @@ import { phYmd } from "@/lib/dates";
 type Option = { id: string; label: string };
 type DoctorClinic = { doctor_id: string; clinic_id: string; label: string };
 
-const TZ = "Asia/Manila";
 const DURATIONS = [15, 20, 30, 45, 60, 90];
 
-const fmtTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString("en-PH", { timeZone: TZ, hour: "numeric", minute: "2-digit" });
-const fmtDay = (ymd: string) =>
-  new Date(`${ymd}T12:00:00+08:00`).toLocaleDateString("en-PH", {
-    timeZone: TZ, weekday: "short", month: "short", day: "numeric",
-  });
 
 export default function BookingForm({
   patients, doctorClinics, defaultPatientId = "", onBooked, onCancel, bare = false,
@@ -41,7 +34,6 @@ export default function BookingForm({
   /** Render without the card frame, with a dialog-style footer. */
   bare?: boolean;
 }) {
-  const sb = useMemo(() => createClient(), []);
   const id = useId();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -52,30 +44,10 @@ export default function BookingForm({
   const [date, setDate] = useState(() => phYmd());
   const [duration, setDuration] = useState(30);
   const [slot, setSlot] = useState("");
-  const [slots, setSlots] = useState<string[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [slotsKey, setSlotsKey] = useState(0);
   const [notes, setNotes] = useState("");
 
   const dc = dcIdx === "" ? null : doctorClinics[Number(dcIdx)];
-
-  const loadSlots = useCallback(() => {
-    setSlot("");
-    if (!dc || !date) { setSlots([]); return; }
-    setLoadingSlots(true);
-    sb.rpc("available_slots", {
-      p_doctor_id: dc.doctor_id,
-      p_clinic_id: dc.clinic_id,
-      p_date_local: date,
-      p_duration_minutes: duration,
-      p_step_minutes: 15,
-    }).then(({ data, error }) => {
-      if (error) { setError("Couldn’t load open times. Please try again."); setSlots([]); }
-      else setSlots((data ?? []).map((r: any) => r.slot_start));
-      setLoadingSlots(false);
-    });
-  }, [sb, dc, date, duration]);
-
-  useEffect(loadSlots, [loadSlots]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,12 +65,12 @@ export default function BookingForm({
       });
       if (!res.ok) {
         setError(res.error);
-        if (res.slotTaken) loadSlots();
+        if (res.slotTaken) setSlotsKey(k => k + 1);
         return;
       }
       setPatientId(defaultPatientId); setSlot(""); setNotes("");
       if (onBooked) onBooked();
-      else { setBooked(true); loadSlots(); }
+      else { setBooked(true); setSlotsKey(k => k + 1); }
     });
   };
 
@@ -143,34 +115,8 @@ export default function BookingForm({
         </div>
       </div>
 
-      <fieldset className="grid content-start gap-2">
-        <legend className="mb-2 flex items-center gap-2 text-sm font-medium leading-none">
-          Time
-          {loadingSlots && <Spinner className="size-3.5 text-muted-foreground" />}
-          {dc && !loadingSlots && slots.length > 0 && (
-            <span className="font-normal text-muted-foreground">· {slots.length} open on {fmtDay(date)}</span>
-          )}
-        </legend>
-        {!dc ? (
-          <SlotNote>Choose a provider to see open times.</SlotNote>
-        ) : loadingSlots && slots.length === 0 ? (
-          <SlotNote><Spinner className="size-3.5" /> Finding open times…</SlotNote>
-        ) : slots.length === 0 ? (
-          <SlotNote>No open times on {fmtDay(date)}. Try another day or a shorter visit.</SlotNote>
-        ) : (
-          <div role="radiogroup" aria-label="Open times"
-            className={cn("grid max-h-40 grid-cols-4 gap-1.5 overflow-y-auto pr-0.5 sm:grid-cols-5",
-              loadingSlots && "pointer-events-none opacity-60")}>
-            {slots.map(s => (
-              <Button key={s} type="button" size="sm" role="radio" aria-checked={slot === s}
-                variant={slot === s ? "default" : "outline"} onClick={() => setSlot(s)}
-                className="tabular-nums">
-                {fmtTime(s)}
-              </Button>
-            ))}
-          </div>
-        )}
-      </fieldset>
+      <SlotPicker doctorId={dc?.doctor_id ?? null} clinicId={dc?.clinic_id ?? null} date={date}
+        duration={duration} value={slot} onChange={setSlot} refreshKey={slotsKey} />
 
       <div className="grid content-start gap-2">
         <Label htmlFor={`${id}-notes`}>
@@ -217,13 +163,5 @@ export default function BookingForm({
         </Button>
       </div>
     </form>
-  );
-}
-
-function SlotNote({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2 rounded-lg border border-dashed px-3 py-3 text-sm text-muted-foreground">
-      {children}
-    </div>
   );
 }

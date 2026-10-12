@@ -21,8 +21,10 @@ type Status = "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show";
 
 // Row "⋯" menu on the schedule: open/reschedule plus quick status changes.
 // Cancelling asks first (the dialog lives outside the menu so focus works).
-export function AppointmentActions({ id, status, patient, when }: {
+export function AppointmentActions({ id, status, patient, when, onVisitPage = false }: {
   id: string; status: Status; patient: string; when: string;
+  /** Already on the visit page: hide "Open visit" and "Reschedule". */
+  onVisitPage?: boolean;
 }) {
   const [pending, start] = useTransition();
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -45,10 +47,12 @@ export function AppointmentActions({ id, status, patient, when }: {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem asChild>
-            <Link href={`/visits/${id}`}><ExternalLinkIcon /> {active ? "Open visit" : "View visit"}</Link>
-          </DropdownMenuItem>
-          {active && (
+          {!onVisitPage && (
+            <DropdownMenuItem asChild>
+              <Link href={`/visits/${id}`}><ExternalLinkIcon /> {active ? "Open visit" : "View visit"}</Link>
+            </DropdownMenuItem>
+          )}
+          {active && !onVisitPage && (
             <DropdownMenuItem asChild>
               <Link href={`/visits/${id}#reschedule`}><CalendarClockIcon /> Reschedule</Link>
             </DropdownMenuItem>
