@@ -8,6 +8,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatCard } from "@/app/_components/stat-card";
+import { phYmd, phYmdOffset } from "@/lib/dates";
 
 const STATUS_ORDER = ["scheduled", "confirmed", "completed", "cancelled", "no_show"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -29,10 +30,8 @@ export default async function AnalyticsPage({
   const activeClinic = await getActiveClinicId(sb);
   const isDoctor = me.role === "doctor";
 
-  const todayPh = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
-  const ymd = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0, 10);
-  const defaultTo = sp.to ?? ymd(todayPh);
-  const defaultFrom = sp.from ?? ymd(new Date(todayPh.getTime() - 29 * 86_400_000));
+  const defaultTo = sp.to ?? phYmd();
+  const defaultFrom = sp.from ?? phYmdOffset(-29);
 
   // Appointments in range (scoped to clinic / doctor like the rest of the app).
   let q = sb.from("appointments")

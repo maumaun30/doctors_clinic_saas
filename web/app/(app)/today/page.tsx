@@ -2,20 +2,21 @@ import Link from "next/link";
 import { PageHeader } from "@/app/_components/page-header";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getMyProfile } from "@/lib/data/queries";
+import { getBookingOptions, getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { setAppointmentStatus } from "@/lib/actions/appointments";
 import { Icon } from "@/app/_components/icons";
 import { Button } from "@/components/ui/button";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { StatCard } from "@/app/_components/stat-card";
+import { BookDialog } from "@/app/(app)/schedule/book-dialog";
 
 const STATUS_BADGE: Record<string, { variant: BadgeVariant; label: string }> = {
-  scheduled: { variant: "secondary", label: "Scheduled" },
-  confirmed: { variant: "info",             label: "Confirmed" },
-  completed: { variant: "success",           label: "Completed" },
-  cancelled: { variant: "destructive",     label: "Cancelled" },
-  no_show: { variant: "destructive",     label: "No-show" },
+  scheduled: { variant: "secondary",   label: "Scheduled" },
+  confirmed: { variant: "info",        label: "Confirmed" },
+  completed: { variant: "success",     label: "Completed" },
+  cancelled: { variant: "destructive", label: "Cancelled" },
+  no_show:   { variant: "destructive", label: "No-show" },
 };
 
 export default async function TodayPage() {
@@ -40,6 +41,7 @@ export default async function TodayPage() {
   if (me.role === "doctor") q = q.eq("doctor_id", me.id);
   const { data: appts, error } = await q;
   if (error) throw error;
+  const booking = await getBookingOptions(sb, activeClinic);
 
   async function mark(formData: FormData) {
     "use server";
@@ -118,7 +120,7 @@ export default async function TodayPage() {
         sub={`${dateLabel} · ${activeClinic ? "Active clinic" : "All clinics"} · ${me.full_name ?? "You"}`}
         actions={<>
           <Button asChild variant="outline"><Link href="/schedule"><Icon name="calendar" /> View schedule</Link></Button>
-          <Button asChild><Link href="/schedule#book"><Icon name="plus" /> Book</Link></Button>
+          <BookDialog {...booking} />
         </>} />
 
       <div className="stats">
@@ -129,7 +131,7 @@ export default async function TodayPage() {
       </div>
 
       <div className="card" style={{ marginBottom: 20 }}>
-        <div className="section-bar">Up next <span className="count">· {buckets.upcoming.length} remaining</span></div>
+        <div className="section-bar section-bar-info">Up next <span className="count">· {buckets.upcoming.length} remaining</span></div>
         {buckets.upcoming.length === 0
           ? <div className="empty">Nothing scheduled.</div>
           : <div className="queue">{buckets.upcoming.map(row)}</div>}
@@ -137,14 +139,14 @@ export default async function TodayPage() {
 
       {buckets.done.length > 0 && (
         <div className="card" style={{ marginBottom: 20 }}>
-          <div className="section-bar">Completed <span className="count">· {buckets.done.length}</span></div>
+          <div className="section-bar section-bar-success">Completed <span className="count">· {buckets.done.length}</span></div>
           <div className="queue">{buckets.done.map(row)}</div>
         </div>
       )}
 
       {buckets.skipped.length > 0 && (
         <div className="card">
-          <div className="section-bar">Cancelled / No-show <span className="count">· {buckets.skipped.length}</span></div>
+          <div className="section-bar section-bar-danger">Cancelled / No-show <span className="count">· {buckets.skipped.length}</span></div>
           <div className="queue">{buckets.skipped.map(row)}</div>
         </div>
       )}

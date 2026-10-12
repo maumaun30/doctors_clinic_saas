@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
 import { createClient } from "@/lib/supabase/server";
-import { listPatients } from "@/lib/data/queries";
+import { getBookingOptions } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths } from "@/app/_components/age";
@@ -14,6 +14,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
+import { phYmd, phYmdOffset } from "@/lib/dates";
 
 type AppointmentStatus = Database["public"]["Enums"]["appointment_status"];
 const isStatus = (s: string | undefined): s is AppointmentStatus =>
@@ -33,10 +34,8 @@ export default async function SchedulePage({
   const sb = await createClient();
   const activeClinic = await getActiveClinicId(sb);
 
-  const todayPh = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
-  const defaultFrom = sp.from ?? new Date(todayPh.getFullYear(), todayPh.getMonth(), todayPh.getDate())
-    .toISOString().slice(0, 10);
-  const defaultTo = sp.to ?? new Date(todayPh.getTime() + 30 * 86_400_000).toISOString().slice(0, 10);
+  const defaultFrom = sp.from ?? phYmd();
+  const defaultTo = sp.to ?? phYmdOffset(30);
 
   let q = sb.from("appointments")
     .select("id, scheduled_at, duration_minutes, status, notes, source, patient_id, doctor_id, clinic_id, patient:patients!inner(id, full_name, date_of_birth, sex)")
@@ -48,24 +47,7 @@ export default async function SchedulePage({
   const { data: appts, error } = await q;
   if (error) throw error;
 
-  const [patients, dcRes] = await Promise.all([
-    listPatients(sb),
-    sb.from("doctor_clinics")
-      .select("doctor_id, clinic_id, doctor:doctors!inner(profiles!inner(full_name)), clinic:clinics!inner(name)"),
-  ]);
-  if (dcRes.error) throw dcRes.error;
-
-  const dcFiltered = activeClinic
-    ? (dcRes.data ?? []).filter((dc: any) => dc.clinic_id === activeClinic)
-    : (dcRes.data ?? []);
-  const doctorClinics = dcFiltered.map((dc: any) => ({
-    doctor_id: dc.doctor_id,
-    clinic_id: dc.clinic_id,
-    label: activeClinic
-      ? dc.doctor.profiles.full_name
-      : `${dc.doctor.profiles.full_name} @ ${dc.clinic.name}`,
-  }));
-  const patientOpts = patients.map(p => ({ id: p.id, label: p.full_name }));
+  const booking = await getBookingOptions(sb, activeClinic);
 
   let clinicName = "All clinics";
   if (activeClinic) {
@@ -168,7 +150,7 @@ export default async function SchedulePage({
       <div className="no-print" style={{ marginTop: 32 }}>
         <Section id="book" title="Book appointment"
           description="Only open slots inside the doctor’s hours are offered, so double-booking can’t happen." bare>
-          <BookingForm patients={patientOpts} doctorClinics={doctorClinics} />
+          <BookingForm {...booking} />
         </Section>
       </div>
     </>
