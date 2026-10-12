@@ -6,12 +6,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 import { countDoctors, ensureCustomer, seatsFor } from "@/lib/billing";
 import { priceId, stripe, stripeConfigured } from "@/lib/stripe";
+import { hasTwoFactorSession } from "@/lib/auth/mfa";
 
 async function requireAdmin() {
   if (!stripeConfigured()) throw new Error("Billing is not configured on this server.");
   const sb = await createClient();
   const me = await getMyProfile(sb);
   if (me?.role !== "admin" || !me.account_id) throw new Error("Only admins can manage billing.");
+  if (!(await hasTwoFactorSession(sb))) throw new Error("Two-factor authentication required.");
   const { data: { user } } = await sb.auth.getUser();
   const { data: status } = await sb.rpc("my_billing_status");
   return { accountId: me.account_id, email: user?.email, status: status?.[0] };

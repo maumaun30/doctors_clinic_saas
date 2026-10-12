@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { TwoFactorSettings } from "./two-factor";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable, add the
 // provider back to this list — the ProviderLogo + link/unlink code already
@@ -264,6 +265,13 @@ export default function AccountPage() {
         <div className="settings-actions" style={{ justifyContent: "flex-start" }}>
           <StatusLine status={signInStatus} />
         </div>
+      </Section>
+
+      <Section title="Two-factor authentication"
+        description={role === "admin"
+          ? "Admins must confirm sign-in with a code from an authenticator app."
+          : "Optional extra protection: a code from your phone at sign-in."}>
+        <TwoFactorSettings isAdmin={role === "admin"} />
       </Section>
 
       <Section title="Appearance" description="Choose light or dark. Saved on this device.">

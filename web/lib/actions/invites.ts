@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createStatelessClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMyProfile } from "@/lib/data/queries";
+import { hasTwoFactorSession } from "@/lib/auth/mfa";
 
 export type InviteResult = { ok: true; message: string } | { ok: false; message: string };
 
@@ -19,6 +20,7 @@ async function requireAdmin() {
   const sb = await createClient();
   const me = await getMyProfile(sb);
   if (me?.role !== "admin" || !me.account_id) throw new Error("Only admins can invite staff.");
+  if (!(await hasTwoFactorSession(sb))) throw new Error("Two-factor authentication required.");
   return { sb, me: { id: me.id, account_id: me.account_id } };
 }
 
