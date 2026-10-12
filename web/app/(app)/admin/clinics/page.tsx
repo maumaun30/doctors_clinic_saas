@@ -49,13 +49,13 @@ export default async function ClinicsAdmin() {
           <ClinicDialog />
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-[repeat(2,minmax(0,1fr))]">
           {clinics.map((c, i) => {
             const s = stats[i];
             const live = c.online_booking && c.booking_slug;
             const url = c.booking_slug ? `${origin}/book/${c.booking_slug}` : null;
             return (
-              <Card key={c.id}>
+              <Card key={c.id} className="min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">{c.name}</CardTitle>
                   <CardDescription className="flex items-center gap-1.5">
@@ -63,7 +63,7 @@ export default async function ClinicsAdmin() {
                   </CardDescription>
                   <CardAction><ClinicDialog clinic={c} /></CardAction>
                 </CardHeader>
-                <CardContent className="grid gap-4">
+                <CardContent className="grid grid-cols-[minmax(0,1fr)] gap-4">
                   <dl className="grid grid-cols-3 gap-2">
                     {[
                       { icon: StethoscopeIcon, label: "Doctors", v: s.doctors },
@@ -77,10 +77,13 @@ export default async function ClinicsAdmin() {
                     ))}
                   </dl>
 
-                  <div className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2">
+                  <div className="flex h-11 items-center gap-2 rounded-lg border px-3">
                     {live
                       ? <Badge variant="success"><span className="dot" />Online booking on</Badge>
-                      : <Badge variant="secondary"><span className="dot" />Online booking off</Badge>}
+                      : <>
+                          <Badge variant="secondary"><span className="dot" />Online booking off</Badge>
+                          <span className="min-w-0 truncate text-sm text-muted-foreground">Staff booking only</span>
+                        </>}
                     {live && url && (
                       <>
                         <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{url.replace(/^https?:\/\//, "")}</span>
@@ -92,7 +95,7 @@ export default async function ClinicsAdmin() {
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="justify-between gap-2">
+                <CardFooter className="mt-auto justify-between gap-2">
                   <BookingDialog clinic={c} origin={origin} />
                   {s.appointments > 0 ? (
                     <span className="text-xs text-muted-foreground" title="Cancel or move its appointments before deleting">
