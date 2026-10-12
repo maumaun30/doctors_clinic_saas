@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { CheckIcon, XIcon } from "lucide-react";
 
 type Med = { id: string; name: string; default_dosage: string | null; default_frequency: string | null; default_instructions: string | null };
 type Lab = { id: string; name: string };
@@ -223,8 +224,8 @@ export default function VisitForm({
             {lab.map((l, i) => (
               <Badge variant="secondary" key={i}>
                 <span className="dot" />{l.name}
-                <button type="button" onClick={() => removeLab(i)} title="Remove"
-                        style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
+                <Button type="button" variant="ghost" size="icon-xs" onClick={() => removeLab(i)} title="Remove" aria-label="Remove"
+                        className="-mr-1 size-4 rounded-full text-muted-foreground"><XIcon /></Button>
               </Badge>
             ))}
           </div>
@@ -262,12 +263,12 @@ function TagPicker({
         {library.map(item => {
           const isPicked = picked.includes(item.label);
           return (
-            <button key={item.id} type="button" onClick={() => onPickLibrary(item.id)}
-              disabled={isPicked}
-              className={`badge ${isPicked ? "badge-blue" : ""}`}
-              style={{ cursor: isPicked ? "default" : "pointer", borderColor: isPicked ? "transparent" : "var(--border-strong)" }}>
-              {item.label}{isPicked && " ✓"}
-            </button>
+            <Badge key={item.id} asChild variant={isPicked ? "info" : "outline"}>
+              <button type="button" onClick={() => onPickLibrary(item.id)} disabled={isPicked}
+                className={isPicked ? "cursor-default" : "cursor-pointer hover:bg-muted"}>
+                {item.label}{isPicked && <CheckIcon />}
+              </button>
+            </Badge>
           );
         })}
         {library.length === 0 && <span className="hint">(library empty — admin adds these)</span>}

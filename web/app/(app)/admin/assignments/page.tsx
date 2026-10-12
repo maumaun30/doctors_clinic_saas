@@ -7,6 +7,7 @@ import { ConfirmAction } from "@/app/_components/confirm-action";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Badge } from "@/components/ui/badge";
+import { XIcon } from "lucide-react";
 
 export default async function AssignmentsAdmin({
   searchParams,
@@ -126,8 +127,8 @@ export default async function AssignmentsAdmin({
                         <span className="dot" />{c.secretary.full_name}
                         <form action={removeSec} style={{ display: "inline-flex" }}>
                           <input type="hidden" name="id" value={c.id} />
-                          <button type="submit" title="Unassign"
-                                  style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
+                          <Button type="submit" variant="ghost" size="icon-xs" title="Unassign" aria-label="Unassign"
+                                  className="-mr-1 size-4 rounded-full text-muted-foreground"><XIcon /></Button>
                         </form>
                       </Badge>
                     ))}

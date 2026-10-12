@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { XIcon } from "lucide-react";
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?";
@@ -182,8 +183,8 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                     {me?.role === "admin" && (
                       <form action={removeLink} style={{ display: "inline-flex" }}>
                         <input type="hidden" name="link_id" value={l.id} />
-                        <button type="submit" title="Unlink"
-                                style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--fg-subtle)", padding: 0, marginLeft: 2 }}>✕</button>
+                        <Button type="submit" variant="ghost" size="icon-xs" title="Unlink" aria-label="Unlink"
+                                className="-mr-1 size-4 rounded-full text-muted-foreground"><XIcon /></Button>
                       </form>
                     )}
                   </Badge>
@@ -208,9 +209,9 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             : (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {conditions.map(c => (
-                  <span key={c.id} className={`badge ${c.status === "active" ? "badge-amber" : ""}`}>
+                  <Badge key={c.id} variant={c.status === "active" ? "warning" : "secondary"}>
                     <span className="dot" />{c.name}{c.since ? ` · since ${c.since}` : ""}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             )}

@@ -481,9 +481,6 @@ html.dark {
     gap: 10px;
     cursor: pointer;
   }
-  .row-check input {
-    margin-top: 3px;
-  }
   /* Input with a fixed prefix (e.g. https://host/book/) */
   .input-affix {
     display: flex;
@@ -623,36 +620,6 @@ html.dark {
     flex-shrink: 0;
     color: var(--fg-subtle);
   }
-  .theme-toggle {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px;
-    background: var(--bg-hover);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-  }
-  .theme-toggle button {
-    display: grid;
-    place-items: center;
-    width: 30px;
-    height: 26px;
-    border: none;
-    background: transparent;
-    color: var(--fg-subtle);
-    cursor: pointer;
-    border-radius: var(--radius-sm);
-    transition: background 150ms ease, color 150ms ease;
-  }
-  .theme-toggle button svg {
-    width: 15px;
-    height: 15px;
-  }
-  .theme-toggle button.on {
-    background: var(--surface);
-    color: var(--accent);
-    box-shadow: var(--shadow);
-  }
-
   /* ---------------- MAIN ---------------- */
   .main {
     flex: 1;

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const suggestSlug = (name: string) =>
   name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
@@ -108,7 +109,7 @@ export default async function ClinicsAdmin() {
             <form action={updateBooking}>
               <input type="hidden" name="id" value={c.id} />
               <label className="row-check">
-                <input type="checkbox" name="online_booking" defaultChecked={c.online_booking} />
+                <Checkbox name="online_booking" defaultChecked={c.online_booking} className="mt-0.5" />
                 <span>
                   <span className="strong">Online booking</span>
                   <span className="hint" style={{ display: "block" }}>Patients can book open slots at this link without an account.</span>

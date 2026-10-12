@@ -3,16 +3,17 @@ import { PageHeader } from "@/app/_components/page-header";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Input } from "@/components/ui/input";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 
 const TABLES = [
   "patients", "medical_records", "prescriptions", "lab_orders",
   "lab_result_files", "patient_conditions", "appointments",
 ];
 
-const OP_BADGE: Record<string, string> = {
-  INSERT: "badge badge-green",
-  UPDATE: "badge badge-blue",
-  DELETE: "badge badge-red",
+const OP_BADGE: Record<string, BadgeVariant> = {
+  INSERT: "success",
+  UPDATE: "info",
+  DELETE: "destructive",
 };
 
 export default async function AuditPage({
@@ -97,7 +98,7 @@ export default async function AuditPage({
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 13 }}>
                   <span className="num" style={{ color: "var(--fg-muted)" }}>{fmt(e.occurred_at)}</span>
-                  <span className={OP_BADGE[e.operation] ?? "badge"}>{e.operation}</span>
+                  <Badge variant={OP_BADGE[e.operation] ?? "secondary"}>{e.operation}</Badge>
                   <code style={{ fontSize: 12 }}>{e.table_name}</code>
                   {e.row_id && <span className="hint">row {e.row_id.slice(0, 8)}…</span>}
                   <span className="hint">· {e.actor_id ? (actors[e.actor_id] ?? e.actor_id.slice(0, 8)) : "(system)"}</span>

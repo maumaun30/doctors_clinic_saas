@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { uploadLabResult, getLabFileSignedUrl, deleteLabFile } from "@/lib/actions/lab-files";
 import { ConfirmAction } from "@/app/_components/confirm-action";
 import { Button } from "@/components/ui/button";
+import { XIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 type FileRow = { id: string; file_name: string; size_bytes: number | null; content_type: string | null };
 
@@ -45,14 +47,13 @@ export default function LabFiles({
         <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
           {files.map(f => (
             <div key={f.id} style={{ fontSize: 13, display: "flex", gap: 8, alignItems: "center" }}>
-              <button type="button" onClick={() => onView(f.id)} className="link"
-                      style={{ background: "none", border: "none", padding: 0, fontSize: 13 }}>
+              <Button type="button" variant="link" size="sm" onClick={() => onView(f.id)} className="h-auto p-0">
                 {f.file_name}
-              </button>
+              </Button>
               <span className="hint">{fmtSize(f.size_bytes)}</span>
               <ConfirmAction
                 action={async () => { await deleteLabFile(f.id); router.refresh(); }}
-                fields={{}} label="✕" triggerTitle="Delete file" confirmLabel="Delete"
+                fields={{}} label={<XIcon />} triggerTitle="Delete file" confirmLabel="Delete"
                 size="icon-xs"
                 title="Delete this file?"
                 description={<><strong>{f.file_name}</strong> is permanently removed from this lab order.</>}
@@ -63,7 +64,7 @@ export default function LabFiles({
       )}
       <form onSubmit={onUpload} style={{ display: "flex", gap: 6, alignItems: "center" }}>
         <input type="hidden" name="lab_order_id" value={labOrderId} />
-        <input type="file" name="file" required className="hint"
+        <Input type="file" name="file" required className="max-w-xs"
                accept=".pdf,image/png,image/jpeg,image/webp,image/heic" />
         <Button variant="outline" size="sm" type="submit" disabled={busy}>{busy ? "…" : "Upload"}</Button>
       </form>
