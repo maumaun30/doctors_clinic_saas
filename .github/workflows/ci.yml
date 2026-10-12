@@ -36,7 +36,8 @@ jobs:
     name: Database — migrations, SQL tests, types, reminders e2e
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      # sslmode=disable: the plain Postgres service has no TLS (the v2 Supabase CLI tries it by default).
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       JWT_SECRET: ci-jwt-secret-ci-jwt-secret-ci-jwt-secret
     services:
       postgres:
