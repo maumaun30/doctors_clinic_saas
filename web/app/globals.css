@@ -62,9 +62,18 @@
   --accent-foreground: var(--fg);
   --destructive: var(--danger);
   --input: var(--border-strong);
+
+  /* Analytics status series (validated with the dataviz palette checker:
+     stacked in this order so green and red are never adjacent). */
+  --chart-done: #16a34a;
+  --chart-upcoming: #3b82f6;
+  --chart-missed: #dc2626;
 }
 
 html.dark {
+  --chart-done: #16a34a;
+  --chart-upcoming: #3b82f6;
+  --chart-missed: #ef4444;
   --bg: #0a0a0b;
   --bg-subtle: #131316;
   --bg-hover: #1c1c21;
