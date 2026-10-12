@@ -78,15 +78,24 @@ export async function inviteStaff(_prev: InviteResult | null, formData: FormData
   return { ok: true, message: `Invite sent to ${email}. They’ll have access as soon as they sign in.` };
 }
 
-export async function resendInvite(formData: FormData) {
+/** Restarts the 7-day window and emails the link again. */
+export async function resendInvite(id: string): Promise<InviteResult> {
   const { sb } = await requireAdmin();
-  const id = z.string().uuid().parse(formData.get("id"));
+  if (!z.string().uuid().safeParse(id).success) return { ok: false, message: "Invite not found." };
   const { data, error } = await sb.from("staff_invites")
     .update({ expires_at: new Date(Date.now() + 7 * 86_400_000).toISOString() })
     .eq("id", id).select("email").single();
-  if (error) throw new Error(error.message);
-  await sendInviteEmail(data.email);
+  if (error) {
+    if (error.message.includes("account_read_only")) return { ok: false, message: "Your account is read-only — subscribe under Billing to invite staff." };
+    return { ok: false, message: "Couldn’t resend the invite. Please try again." };
+  }
+  try {
+    await sendInviteEmail(data.email);
+  } catch (e: any) {
+    return { ok: false, message: `Couldn’t send the email (${e.message}). Ask them to sign in with ${data.email}.` };
+  }
   revalidatePath("/admin/users");
+  return { ok: true, message: `Invite resent to ${data.email}` };
 }
 
 export async function revokeInvite(formData: FormData) {

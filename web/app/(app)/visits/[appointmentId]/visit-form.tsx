@@ -293,14 +293,16 @@ export default function VisitForm({
 
 function SectionHead({ icon, title, desc, count }: { icon: React.ReactNode; title: string; desc?: string; count?: number }) {
   return (
-    <CardHeader className="flex-row items-start gap-3">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary [&>svg]:size-4">{icon}</div>
-      <div className="grid gap-1">
-        <CardTitle className="flex items-center gap-2">
-          {title}
-          {count ? <Badge variant="info" className="h-4.5 px-1.5 tabular-nums">{count}</Badge> : null}
-        </CardTitle>
-        {desc && <CardDescription>{desc}</CardDescription>}
+    <CardHeader>
+      <div className="flex items-start gap-3">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary [&>svg]:size-4">{icon}</div>
+        <div className="grid gap-1">
+          <CardTitle className="flex items-center gap-2">
+            {title}
+            {count ? <Badge variant="info" className="h-4.5 px-1.5 tabular-nums">{count}</Badge> : null}
+          </CardTitle>
+          {desc && <CardDescription>{desc}</CardDescription>}
+        </div>
       </div>
     </CardHeader>
   );
