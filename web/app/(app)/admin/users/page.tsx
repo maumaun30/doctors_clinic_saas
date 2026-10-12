@@ -17,7 +17,9 @@ function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?";
 }
 
-export default async function TeamPage() {
+export default async function TeamPage({ searchParams }: { searchParams: Promise<{ role?: string }> }) {
+  const { role } = await searchParams;
+  const presetRole = role === "doctor" || role === "admin" ? role : "secretary";
   const sb = await createClient();
   const [{ data: pending, error }, { data: invites, error: invErr }] = await Promise.all([
     sb.rpc("list_pending_users"),
@@ -48,7 +50,7 @@ export default async function TeamPage() {
 
       <Section title="Invite staff"
         description="They get an email link and land in the app with this role — no approval step. Invites expire after 7 days.">
-        <InviteForm />
+        <InviteForm defaultRole={presetRole} />
       </Section>
 
       <Section title={<>Open invites <span className="count">· {invites?.length ?? 0}</span></>}
