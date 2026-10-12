@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/lib/database.types";
 import { bookAppointmentInput, completeAppointmentInput, setStatusInput, rescheduleInput } from "@/lib/schemas";
@@ -46,6 +47,31 @@ export async function setAppointmentStatus(raw: unknown) {
   });
   if (error) throw new Error(error.message);
   return data;
+}
+
+export type StatusResult = { ok: true } | { ok: false; error: string };
+
+// Client-callable variant of setAppointmentStatus for menus: returns a
+// result (production hides thrown messages) and refreshes the lists.
+export async function updateAppointmentStatus(raw: unknown): Promise<StatusResult> {
+  const parsed = setStatusInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: "That status change isn’t allowed." };
+  const sb = await createClient();
+  const { error } = await sb.rpc("set_appointment_status", {
+    p_appointment_id: parsed.data.appointment_id,
+    p_status: parsed.data.status,
+  });
+  if (error) {
+    if (error.message.includes("account_read_only"))
+      return { ok: false, error: "This account is read-only until the subscription is active." };
+    if (error.message.includes("not permitted"))
+      return { ok: false, error: "You don’t have access to change this appointment." };
+    console.error("set_appointment_status failed:", error.message);
+    return { ok: false, error: "Couldn’t update the appointment. Please try again." };
+  }
+  revalidatePath("/schedule");
+  revalidatePath("/today");
+  return { ok: true };
 }
 
 export async function rescheduleAppointment(raw: unknown) {

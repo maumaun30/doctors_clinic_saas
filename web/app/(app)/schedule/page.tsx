@@ -4,10 +4,10 @@ import { PageHeader } from "@/app/_components/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { getBookingOptions } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
-import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths } from "@/app/_components/age";
 import { PrintButton } from "@/app/_components/print-button";
 import { BookDialog } from "./book-dialog";
+import { AppointmentActions } from "./appointment-actions";
 import type { Database } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -214,11 +214,8 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                           </div>
                         </TableCell>
                         <TableCell className="no-print text-right align-top">
-                          <Button asChild variant="ghost" size="icon-sm">
-                            <Link href={`/visits/${a.id}`} aria-label={`Open ${a.patient.full_name}’s visit`}>
-                              <Icon name="chevright" />
-                            </Link>
-                          </Button>
+                          <AppointmentActions id={a.id} status={a.status} patient={a.patient.full_name}
+                            when={`${fmtDay(day)}, ${fmtTime(a.scheduled_at)}`} />
                         </TableCell>
                       </TableRow>
                     );
