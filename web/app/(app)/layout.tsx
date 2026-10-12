@@ -45,9 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: "/schedule", label: "Schedule", icon: "calendar" },
         { href: "/patients", label: "Patients", icon: "users" },
         { href: "/analytics", label: "Analytics", icon: "chart" },
-        ...(isDoctor || isAdmin
-          ? [{ href: "/availability", label: "Availability", icon: "clock" as const }]
-          : []),
+        { href: "/availability", label: "Availability", icon: "clock" },
       ];
 
   const adminNav: NavLink[] =

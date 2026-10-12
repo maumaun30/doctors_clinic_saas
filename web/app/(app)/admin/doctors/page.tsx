@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { AlertTriangleIcon, UserPlusIcon, UserRoundXIcon } from "lucide-react";
+import { AlertTriangleIcon, ChevronRightIcon, UserPlusIcon, UserRoundXIcon } from "lucide-react";
 import { PageHeader } from "@/app/_components/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DoctorDialog } from "./doctor-dialog";
 
 const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const WEEK = [1, 2, 3, 4, 5, 6, 0];
@@ -74,17 +73,17 @@ export default async function DoctorsAdmin() {
                 <TableHead>Weekly hours</TableHead>
                 <TableHead className="hidden text-right lg:table-cell">Next 7 days</TableHead>
                 <TableHead className="hidden text-right lg:table-cell">Seen (30 days)</TableHead>
-                <TableHead className="w-10"><span className="sr-only">Edit</span></TableHead>
+                <TableHead className="w-10"><span className="sr-only">Manage</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {doctors.map(d => (
-                <TableRow key={d.profile_id}>
+                <TableRow key={d.profile_id} className="group">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <span className="avatar">{initials(d.name)}</span>
                       <span className="min-w-0">
-                        <span className="block font-medium">{d.name}</span>
+                        <Link href={`/admin/doctors/${d.profile_id}`} className="block font-medium group-hover:underline">{d.name}</Link>
                         <span className="block text-xs text-muted-foreground">
                           {[d.specialization ?? "No specialization", d.prc_license_no && `PRC ${d.prc_license_no}`].filter(Boolean).join(" · ")}
                         </span>
@@ -94,7 +93,7 @@ export default async function DoctorsAdmin() {
                   <TableCell className="hidden md:table-cell">
                     {d.clinics.length
                       ? <div className="flex flex-wrap gap-1">{d.clinics.map(c => <Badge key={c} variant="secondary">{c}</Badge>)}</div>
-                      : <Link href="/admin/assignments" className="inline-flex items-center gap-1 text-sm text-(--warning) hover:underline">
+                      : <Link href={`/admin/doctors/${d.profile_id}`} className="inline-flex items-center gap-1 text-sm text-(--warning) hover:underline">
                           <AlertTriangleIcon className="size-3.5" />No clinic — assign
                         </Link>}
                   </TableCell>
@@ -104,13 +103,17 @@ export default async function DoctorsAdmin() {
                           <span className="tabular-nums">{fmtH(d.hours)} h/week</span>
                           <span className="text-xs text-muted-foreground">{d.days.join(", ")}</span>
                         </span>
-                      : <Link href="/availability" className="inline-flex items-center gap-1 text-sm text-(--warning) hover:underline">
+                      : <Link href={`/admin/doctors/${d.profile_id}`} className="inline-flex items-center gap-1 text-sm text-(--warning) hover:underline">
                           <AlertTriangleIcon className="size-3.5" />No hours — set
                         </Link>}
                   </TableCell>
                   <TableCell className="hidden text-right tabular-nums lg:table-cell">{d.upcoming}</TableCell>
                   <TableCell className="hidden text-right tabular-nums lg:table-cell">{d.seen}</TableCell>
-                  <TableCell className="text-right"><DoctorDialog doctor={d} /></TableCell>
+                  <TableCell className="text-right">
+                    <Button asChild variant="ghost" size="icon-sm">
+                      <Link href={`/admin/doctors/${d.profile_id}`} aria-label={`Manage ${d.name}`}><ChevronRightIcon /></Link>
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -118,8 +121,7 @@ export default async function DoctorsAdmin() {
         </div>
       )}
       <p className="hint" style={{ marginTop: 12 }}>
-        Clinic pairings live in <Link href="/admin/assignments" className="link">Assignments</Link>;
-        working hours in <Link href="/availability" className="link">Availability</Link>.
+        Open a doctor to edit their details, clinics and weekly hours.
       </p>
     </>
   );

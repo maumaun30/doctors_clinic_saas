@@ -43,11 +43,12 @@ export async function addAvailability(raw: unknown): Promise<AvailabilityResult>
   if (error) {
     if (error.message.includes("account_read_only")) return { ok: false, error: "This account is read-only until the subscription is active." };
     if (error.code === "42501" || error.message.includes("row-level security"))
-      return { ok: false, error: "You can only change your own hours." };
+      return { ok: false, error: "Only admins can change working hours." };
     console.error("add availability failed:", error.message);
     return { ok: false, error: "Couldn’t save the hours. Please try again." };
   }
   revalidatePath("/availability");
+  revalidatePath(`/admin/doctors/${doctor_id}`);
   return { ok: true, added: weekdays.length };
 }
 
@@ -58,4 +59,5 @@ export async function removeAvailability(formData: FormData) {
   const { error } = await sb.from("doctor_availability").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/availability");
+  revalidatePath("/admin/doctors", "layout");
 }
