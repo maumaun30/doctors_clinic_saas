@@ -688,6 +688,7 @@ html.dark {
   }
   .head-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     align-items: center;
   }
@@ -752,6 +753,7 @@ html.dark {
   }
   .queue-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
   }
@@ -876,7 +878,7 @@ html.dark {
   }
   .kv {
     display: grid;
-    grid-template-columns: 140px 1fr;
+    grid-template-columns: minmax(72px, 140px) minmax(0, 1fr);
     gap: 8px 16px;
     font-size: 13.5px;
     margin: 0;
@@ -887,6 +889,7 @@ html.dark {
   .kv dd {
     margin: 0;
     font-weight: 500;
+    overflow-wrap: anywhere;
   }
   .empty {
     padding: 40px;
@@ -954,11 +957,6 @@ html.dark {
   /* Public self-booking (/book/<slug>) — reuses the auth screen. */
   .auth-card.book-card {
     max-width: 520px;
-  }
-  .slot-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-    gap: 8px;
   }
   .honeypot {
     position: absolute;
@@ -1094,6 +1092,12 @@ html.dark {
   }
   .link:hover {
     text-decoration: underline;
+  }
+  button.link {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
   }
   .row-between {
     display: flex;

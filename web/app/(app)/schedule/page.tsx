@@ -178,7 +178,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               <TableRow>
                 <TableHead className="w-28">Time</TableHead>
                 <TableHead>Patient</TableHead>
-                <TableHead>Provider</TableHead>
+                <TableHead className="hidden md:table-cell">Provider</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="no-print w-12" />
               </TableRow>
@@ -200,10 +200,11 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                           <Link href={`/patients/${a.patient.id}`} className="font-medium text-foreground hover:underline">
                             {a.patient.full_name}
                           </Link>
-                          {meta && <span className="text-muted-foreground"> · {meta}</span>}
+                          {meta && <span className="block text-xs text-muted-foreground md:inline md:text-sm"><span className="hidden md:inline"> · </span>{meta}</span>}
+                          <span className="block text-xs text-muted-foreground md:hidden">{a.doctor.profile.full_name}</span>
                           {a.notes && <div className="truncate text-xs text-muted-foreground" title={a.notes}>{a.notes}</div>}
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="hidden align-top md:table-cell">
                           <div>{a.doctor.profile.full_name}</div>
                           {showClinic && <div className="text-xs text-muted-foreground">{a.clinic.name}</div>}
                         </TableCell>
@@ -236,7 +237,7 @@ function DayGroup({ label, day, count, children }: {
   return (
     <>
       <TableRow className="bg-muted/50 hover:bg-muted/50">
-        <TableCell colSpan={5} className="py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <TableCell colSpan={5} className="py-1.5 text-xs font-medium tracking-wide whitespace-normal text-muted-foreground uppercase">
           {label && <span className="text-primary">{label} · </span>}
           {day}
           <span className="font-normal normal-case tracking-normal"> · {count} appointment{count === 1 ? "" : "s"}</span>

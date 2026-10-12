@@ -59,7 +59,7 @@ export default function RescheduleDialog({
       <DialogTrigger asChild>
         <Button variant="outline"><CalendarClockIcon /> Reschedule</Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader className="flex-row items-center gap-3 text-left">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <CalendarClockIcon className="size-5" />
