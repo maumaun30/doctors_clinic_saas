@@ -4,10 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/lib/database.types";
 import { bookAppointmentInput, completeAppointmentInput, setStatusInput, rescheduleInput } from "@/lib/schemas";
 
-export async function bookAppointment(raw: unknown) {
-  const input = bookAppointmentInput.parse(raw);
+export type BookResult = { ok: true } | { ok: false; error: string; slotTaken?: boolean };
+
+// Returns a result instead of throwing: production builds replace thrown
+// server-action messages with a generic one, so the form couldn't say why
+// a booking failed. Messages are mapped from book_appointment()'s errors.
+export async function bookAppointment(raw: unknown): Promise<BookResult> {
+  const parsed = bookAppointmentInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: "Some details are missing or invalid. Check the form and try again." };
+  const input = parsed.data;
   const sb = await createClient();
-  const { data, error } = await sb.rpc("book_appointment", {
+  const { error } = await sb.rpc("book_appointment", {
     p_patient_id: input.patient_id,
     p_doctor_id: input.doctor_id,
     p_clinic_id: input.clinic_id,
@@ -15,8 +22,19 @@ export async function bookAppointment(raw: unknown) {
     p_duration_minutes: input.duration_minutes,
     p_notes: input.notes,
   });
-  if (error) throw new Error(error.message);
-  return data;
+  if (!error) return { ok: true };
+
+  const m = error.message;
+  if (m.includes("double-booked"))
+    return { ok: false, slotTaken: true, error: "That time was just taken. Pick another slot." };
+  if (m.includes("not available"))
+    return { ok: false, slotTaken: true, error: "The doctor isn’t available for that whole time. Try a shorter visit or another slot." };
+  if (m.includes("forbidden"))
+    return { ok: false, error: "You don’t have access to book for this doctor at this clinic." };
+  if (m.includes("account_read_only"))
+    return { ok: false, error: "This account is read-only until the subscription is active." };
+  console.error("book_appointment failed:", m);
+  return { ok: false, error: "Couldn’t book the appointment. Please try again." };
 }
 
 export async function setAppointmentStatus(raw: unknown) {

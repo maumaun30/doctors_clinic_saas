@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { CalendarPlusIcon } from "lucide-react";
 import { Icon } from "@/app/_components/icons";
 import BookingForm from "./booking-form";
 
@@ -31,13 +32,19 @@ export function BookDialog({ label = "Book", ...form }: Props) {
         <Button><Icon name="plus" /> {label}</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Book appointment</DialogTitle>
-          <DialogDescription>Pick a patient, provider and an open slot.</DialogDescription>
+        <DialogHeader className="flex-row items-center gap-3 text-left">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <CalendarPlusIcon className="size-5" />
+          </div>
+          <div className="grid gap-1">
+            <DialogTitle>Book appointment</DialogTitle>
+            <DialogDescription>Choose a patient, provider and an open time.</DialogDescription>
+          </div>
         </DialogHeader>
         <BookingForm
           {...form}
           bare
+          onCancel={() => setOpen(false)}
           onBooked={() => {
             setOpen(false);
             toast.success("Appointment booked");
