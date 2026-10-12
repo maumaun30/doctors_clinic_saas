@@ -837,15 +837,37 @@ html.dark {
     min-width: 0;
     display: flex;
     flex-direction: column;
+    position: relative;
+    isolation: isolate;
+  }
+  /* Faint backdrop behind page content: a medical-cross grid on the left
+     and right edges, fading toward the center. Drawn as a mask over
+     --accent so it follows the theme. */
+  .main::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--accent);
+    opacity: 0.07;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M21 17h2v4h4v2h-4v4h-2v-4h-4v-2h4z'/%3E%3C/svg%3E"),
+      linear-gradient(to right, #000, transparent 30%, transparent 70%, #000);
+    -webkit-mask-composite: source-in;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M21 17h2v4h4v2h-4v4h-2v-4h-4v-2h4z'/%3E%3C/svg%3E"),
+      linear-gradient(to right, #000, transparent 30%, transparent 70%, #000);
+    mask-composite: intersect;
   }
   .topbar-mobile {
     display: none;
   }
+  /* Centered container: 1200px incl. 40px gutters = 1120px of content,
+     matching .settings-section so every page shares one edge. */
   .content {
     padding: 28px 40px 64px;
-    max-width: none;
+    max-width: 1200px;
     width: 100%;
-    margin: 0;
+    margin: 0 auto;
   }
   .view {
     animation: fade-in 200ms ease both;
@@ -1502,6 +1524,9 @@ html.dark {
   .app,
   .main {
     display: block;
+  }
+  .main::before {
+    display: none;
   }
   .content {
     max-width: none;
