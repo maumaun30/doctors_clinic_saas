@@ -99,3 +99,22 @@ export async function ensureCustomer(accountId: string, email: string | undefine
   const { data: again } = await db.from("accounts").select("stripe_customer_id").eq("id", accountId).single();
   return again!.stripe_customer_id!;
 }
+
+// Per-seat price for display. Cached in memory for an hour; any Stripe
+// error returns null so the billing page still renders.
+let priceCache: { at: number; value: SeatPrice | null } | null = null;
+export type SeatPrice = { amount: number; currency: string; interval: string };
+export async function getSeatPrice(): Promise<SeatPrice | null> {
+  if (!stripeConfigured()) return null;
+  if (priceCache && Date.now() - priceCache.at < 3_600_000) return priceCache.value;
+  let value: SeatPrice | null = null;
+  try {
+    const p = await stripe().prices.retrieve(priceId());
+    if (p.unit_amount != null)
+      value = { amount: p.unit_amount / 100, currency: p.currency.toUpperCase(), interval: p.recurring?.interval ?? "month" };
+  } catch (e) {
+    console.error("could not load seat price:", (e as Error).message);
+  }
+  priceCache = { at: Date.now(), value };
+  return value;
+}
