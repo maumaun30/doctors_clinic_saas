@@ -4,6 +4,8 @@ import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { PrintButton } from "@/app/_components/print-button";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Input } from "@/components/ui/input";
 
 const STATUS_ORDER = ["scheduled", "confirmed", "completed", "cancelled", "no_show"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -138,27 +140,27 @@ export default async function AnalyticsPage({
       <form method="get" className="filters">
         <label className="field" style={{ margin: 0 }}>
           <span className="label">From</span>
-          <input className="input" type="date" name="from" defaultValue={defaultFrom} style={{ width: 170 }} />
+          <Input type="date" name="from" defaultValue={defaultFrom} style={{ width: 170 }} />
         </label>
         <label className="field" style={{ margin: 0 }}>
           <span className="label">To</span>
-          <input className="input" type="date" name="to" defaultValue={defaultTo} style={{ width: 170 }} />
+          <Input type="date" name="to" defaultValue={defaultTo} style={{ width: 170 }} />
         </label>
         {!isDoctor && (
           <label className="field" style={{ margin: 0 }}>
             <span className="label">Provider</span>
-            <select className="select" name="doctor" defaultValue={sp.doctor ?? ""}>
-              <option value="">All providers</option>
-              {doctorOpts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
+            <NativeSelect name="doctor" defaultValue={sp.doctor ?? ""}>
+              <NativeSelectOption value="">All providers</NativeSelectOption>
+              {doctorOpts.map(d => <NativeSelectOption key={d.id} value={d.id}>{d.name}</NativeSelectOption>)}
+            </NativeSelect>
           </label>
         )}
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Status</span>
-          <select className="select" name="status" defaultValue={sp.status ?? ""}>
-            <option value="">All statuses</option>
-            {STATUS_ORDER.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-          </select>
+          <NativeSelect name="status" defaultValue={sp.status ?? ""}>
+            <NativeSelectOption value="">All statuses</NativeSelectOption>
+            {STATUS_ORDER.map(s => <NativeSelectOption key={s} value={s}>{STATUS_LABEL[s]}</NativeSelectOption>)}
+          </NativeSelect>
         </label>
         <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Apply</Button>
       </form>

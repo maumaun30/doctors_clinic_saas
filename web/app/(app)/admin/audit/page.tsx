@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/app/_components/page-header";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Input } from "@/components/ui/input";
 
 const TABLES = [
   "patients", "medical_records", "prescriptions", "lab_orders",
@@ -61,27 +63,27 @@ export default async function AuditPage({
       <form method="get" className="filters">
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Table</span>
-          <select name="table" defaultValue={sp.table ?? ""} className="select">
-            <option value="">All tables</option>
-            {TABLES.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <NativeSelect name="table" defaultValue={sp.table ?? ""}>
+            <NativeSelectOption value="">All tables</NativeSelectOption>
+            {TABLES.map(t => <NativeSelectOption key={t} value={t}>{t}</NativeSelectOption>)}
+          </NativeSelect>
         </label>
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Actor (uuid)</span>
-          <input className="input" name="actor" defaultValue={sp.actor ?? ""} style={{ width: 220 }} />
+          <Input name="actor" defaultValue={sp.actor ?? ""} style={{ width: 220 }} />
         </label>
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Row (uuid)</span>
-          <input className="input" name="row" defaultValue={sp.row ?? ""} style={{ width: 220 }} />
+          <Input name="row" defaultValue={sp.row ?? ""} style={{ width: 220 }} />
         </label>
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Days</span>
-          <select name="days" defaultValue={String(days)} className="select">
-            <option value="1">1</option>
-            <option value="7">7</option>
-            <option value="30">30</option>
-            <option value="90">90</option>
-          </select>
+          <NativeSelect name="days" defaultValue={String(days)}>
+            <NativeSelectOption value="1">1</NativeSelectOption>
+            <NativeSelectOption value="7">7</NativeSelectOption>
+            <NativeSelectOption value="30">30</NativeSelectOption>
+            <NativeSelectOption value="90">90</NativeSelectOption>
+          </NativeSelect>
         </label>
         <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Filter</Button>
       </form>

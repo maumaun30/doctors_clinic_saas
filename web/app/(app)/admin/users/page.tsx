@@ -7,6 +7,7 @@ import { resendInvite, revokeInvite } from "@/lib/actions/invites";
 import { InviteForm } from "./invite-form";
 import { ConfirmAction } from "@/app/_components/confirm-action";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 const ROLE_LABEL: Record<string, string> = { admin: "Admin", doctor: "Doctor", secretary: "Secretary" };
 const fmtDate = (iso: string) =>
@@ -100,11 +101,11 @@ export default async function TeamPage() {
               </div>
               <form action={approve} style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <input type="hidden" name="user_id" value={u.id} />
-                <select name="role" defaultValue="secretary" className="select">
-                  <option value="admin">Admin</option>
-                  <option value="doctor">Doctor</option>
-                  <option value="secretary">Secretary</option>
-                </select>
+                <NativeSelect name="role" defaultValue="secretary">
+                  <NativeSelectOption value="admin">Admin</NativeSelectOption>
+                  <NativeSelectOption value="doctor">Doctor</NativeSelectOption>
+                  <NativeSelectOption value="secretary">Secretary</NativeSelectOption>
+                </NativeSelect>
                 <Button size="sm" type="submit">Assign</Button>
               </form>
             </div>

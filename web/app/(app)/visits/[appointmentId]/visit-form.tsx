@@ -4,6 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { completeVisitFull } from "@/lib/actions/appointments";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 type Med = { id: string; name: string; default_dosage: string | null; default_frequency: string | null; default_instructions: string | null };
 type Lab = { id: string; name: string };
@@ -98,32 +102,45 @@ export default function VisitForm({
         <div className="label">Vitals</div>
         <div className="grid-2">
           <div className="field" style={{ margin: 0 }}>
-            <label className="label" style={{ fontWeight: 400, color: "var(--fg-muted)" }}>BP</label>
-            <input className="input" value={bp} onChange={e => setBp(e.target.value)} placeholder="120/80" />
+            <Label style={{ fontWeight: 400, color: "var(--fg-muted)" }}>BP</Label>
+            <Input value={bp} onChange={e => setBp(e.target.value)} placeholder="120/80" />
           </div>
           <div className="field" style={{ margin: 0 }}>
-            <label className="label" style={{ fontWeight: 400, color: "var(--fg-muted)" }}>HR</label>
-            <input className="input" value={hr} onChange={e => setHr(e.target.value)} type="number" placeholder="72" />
+            <Label style={{ fontWeight: 400, color: "var(--fg-muted)" }}>HR</Label>
+            <Input
+              value={hr}
+              onChange={e => setHr(e.target.value)}
+              type="number"
+              placeholder="72" />
           </div>
           <div className="field" style={{ margin: 0 }}>
-            <label className="label" style={{ fontWeight: 400, color: "var(--fg-muted)" }}>Temp (°C)</label>
-            <input className="input" value={temp} onChange={e => setTemp(e.target.value)} type="number" step="0.1" placeholder="37.0" />
+            <Label style={{ fontWeight: 400, color: "var(--fg-muted)" }}>Temp (°C)</Label>
+            <Input
+              value={temp}
+              onChange={e => setTemp(e.target.value)}
+              type="number"
+              step="0.1"
+              placeholder="37.0" />
           </div>
           <div className="field" style={{ margin: 0 }}>
-            <label className="label" style={{ fontWeight: 400, color: "var(--fg-muted)" }}>Weight (kg)</label>
-            <input className="input" value={weight} onChange={e => setWeight(e.target.value)} type="number" step="0.1" />
+            <Label style={{ fontWeight: 400, color: "var(--fg-muted)" }}>Weight (kg)</Label>
+            <Input
+              value={weight}
+              onChange={e => setWeight(e.target.value)}
+              type="number"
+              step="0.1" />
           </div>
         </div>
       </div>
 
       <div className="field" style={{ margin: 0 }}>
-        <label className="label">Chief complaint</label>
-        <textarea className="input" rows={2} value={chief} onChange={e => setChief(e.target.value)} />
+        <Label>Chief complaint</Label>
+        <Textarea rows={2} value={chief} onChange={e => setChief(e.target.value)} />
       </div>
 
       <div className="field" style={{ margin: 0 }}>
-        <label className="label">Diagnosis (free-text)</label>
-        <textarea className="input" rows={2} value={diagnosis} onChange={e => setDiagnosis(e.target.value)} />
+        <Label>Diagnosis (free-text)</Label>
+        <Textarea rows={2} value={diagnosis} onChange={e => setDiagnosis(e.target.value)} />
       </div>
 
       <div>
@@ -139,11 +156,12 @@ export default function VisitForm({
             {cond.map((c, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span className="strong">{c.name}</span>
-                <select className="select" value={c.status ?? "active"}
+                <NativeSelect
+                  value={c.status ?? "active"}
                   onChange={e => setCond(cond.map((x, k) => k === i ? { ...x, status: e.target.value as any } : x))}>
-                  <option value="active">active</option>
-                  <option value="resolved">resolved</option>
-                </select>
+                  <NativeSelectOption value="active">active</NativeSelectOption>
+                  <NativeSelectOption value="resolved">resolved</NativeSelectOption>
+                </NativeSelect>
                 <Button variant="ghost" size="sm" type="button" onClick={() => removeCond(i)}>Remove</Button>
               </div>
             ))}
@@ -168,13 +186,21 @@ export default function VisitForm({
                   <Button variant="ghost" size="sm" type="button" onClick={() => removeRx(i)}>Remove</Button>
                 </div>
                 <div className="grid-2" style={{ marginTop: 8 }}>
-                  <input className="input" placeholder="dosage" value={r.dosage ?? ""}
+                  <Input
+                    placeholder="dosage"
+                    value={r.dosage ?? ""}
                     onChange={e => setRx(rx.map((x, k) => k === i ? { ...x, dosage: e.target.value } : x))} />
-                  <input className="input" placeholder="frequency" value={r.frequency ?? ""}
+                  <Input
+                    placeholder="frequency"
+                    value={r.frequency ?? ""}
                     onChange={e => setRx(rx.map((x, k) => k === i ? { ...x, frequency: e.target.value } : x))} />
-                  <input className="input" placeholder="duration" value={r.duration ?? ""}
+                  <Input
+                    placeholder="duration"
+                    value={r.duration ?? ""}
                     onChange={e => setRx(rx.map((x, k) => k === i ? { ...x, duration: e.target.value } : x))} />
-                  <input className="input" placeholder="instructions" value={r.instructions ?? ""}
+                  <Input
+                    placeholder="instructions"
+                    value={r.instructions ?? ""}
                     onChange={e => setRx(rx.map((x, k) => k === i ? { ...x, instructions: e.target.value } : x))} />
                 </div>
               </div>
@@ -205,8 +231,8 @@ export default function VisitForm({
       </div>
 
       <div className="field" style={{ margin: 0 }}>
-        <label className="label">Notes</label>
-        <textarea className="input" rows={4} value={notes} onChange={e => setNotes(e.target.value)} />
+        <Label>Notes</Label>
+        <Textarea rows={4} value={notes} onChange={e => setNotes(e.target.value)} />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -246,8 +272,11 @@ function TagPicker({
         {library.length === 0 && <span className="hint">(library empty — admin adds these)</span>}
       </div>
       <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-        <input className="input" value={custom} onChange={e => setCustom(e.target.value)}
-               placeholder={`Add custom ${title.toLowerCase()}`} style={{ maxWidth: 320 }} />
+        <Input
+          value={custom}
+          onChange={e => setCustom(e.target.value)}
+          placeholder={`Add custom ${title.toLowerCase()}`}
+          style={{ maxWidth: 320 }} />
         <Button variant="outline" type="button" onClick={() => { onAddCustom(custom); setCustom(""); }}>Add</Button>
       </div>
     </div>

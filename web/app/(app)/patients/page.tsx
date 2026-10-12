@@ -8,11 +8,12 @@ import { createPatient } from "@/lib/actions/patients";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths } from "@/app/_components/age";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 function initials(name: string) {
-  return (
-    name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?"
-  );
+  return (name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?");
 }
 
 export default async function PatientsPage({
@@ -76,7 +77,7 @@ export default async function PatientsPage({
       <form method="get" className="filters">
         <div className="search" style={{ maxWidth: 420 }}>
           <Icon name="search" />
-          <input className="input" name="q" defaultValue={q ?? ""} placeholder="Search by name or phone" />
+          <Input name="q" defaultValue={q ?? ""} placeholder="Search by name or phone" className="pl-9" />
         </div>
         <Button variant="outline" type="submit">Search</Button>
         {q && <Button asChild variant="ghost"><a href="/patients">Clear</a></Button>}
@@ -106,37 +107,37 @@ export default async function PatientsPage({
           description="Adds the patient to the active clinic. An email or mobile number enables appointment reminders.">
           <form action={add}>
             <div className="field">
-              <label className="label">Full name</label>
-              <input className="input" name="full_name" required />
+              <Label>Full name</Label>
+              <Input name="full_name" required />
             </div>
             <div className="grid-2">
               <div className="field">
-                <label className="label">Date of birth</label>
-                <input className="input" name="date_of_birth" type="date" />
+                <Label>Date of birth</Label>
+                <Input name="date_of_birth" type="date" />
               </div>
               <div className="field">
-                <label className="label">Sex</label>
-                <select className="select" name="sex" defaultValue="" style={{ width: "100%" }}>
-                  <option value="">—</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
+                <Label>Sex</Label>
+                <NativeSelect name="sex" defaultValue="" className="w-full">
+                  <NativeSelectOption value="">—</NativeSelectOption>
+                  <NativeSelectOption value="male">Male</NativeSelectOption>
+                  <NativeSelectOption value="female">Female</NativeSelectOption>
+                  <NativeSelectOption value="other">Other</NativeSelectOption>
+                </NativeSelect>
               </div>
             </div>
             <div className="grid-2">
               <div className="field">
-                <label className="label">Phone</label>
-                <input className="input" name="phone" />
+                <Label>Phone</Label>
+                <Input name="phone" />
               </div>
               <div className="field">
-                <label className="label">Email</label>
-                <input className="input" name="email" type="email" placeholder="For appointment reminders" />
+                <Label>Email</Label>
+                <Input name="email" type="email" placeholder="For appointment reminders" />
               </div>
             </div>
             <div className="field">
-              <label className="label">Address</label>
-              <input className="input" name="address" />
+              <Label>Address</Label>
+              <Input name="address" />
             </div>
             <div className="settings-actions">
               <Button type="submit">Add patient</Button>

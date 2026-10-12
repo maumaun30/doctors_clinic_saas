@@ -10,6 +10,8 @@ import { PrintButton } from "@/app/_components/print-button";
 import BookingForm from "./booking-form";
 import type { Database } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Input } from "@/components/ui/input";
 
 type AppointmentStatus = Database["public"]["Enums"]["appointment_status"];
 const isStatus = (s: string | undefined): s is AppointmentStatus =>
@@ -101,22 +103,22 @@ export default async function SchedulePage({
       <form method="get" className="filters">
         <label className="field" style={{ margin: 0 }}>
           <span className="label">From</span>
-          <input className="input" type="date" name="from" defaultValue={defaultFrom} style={{ width: 170 }} />
+          <Input type="date" name="from" defaultValue={defaultFrom} style={{ width: 170 }} />
         </label>
         <label className="field" style={{ margin: 0 }}>
           <span className="label">To</span>
-          <input className="input" type="date" name="to" defaultValue={defaultTo} style={{ width: 170 }} />
+          <Input type="date" name="to" defaultValue={defaultTo} style={{ width: 170 }} />
         </label>
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Status</span>
-          <select className="select" name="status" defaultValue={sp.status ?? ""}>
-            <option value="">All statuses</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="no_show">No-show</option>
-          </select>
+          <NativeSelect name="status" defaultValue={sp.status ?? ""}>
+            <NativeSelectOption value="">All statuses</NativeSelectOption>
+            <NativeSelectOption value="scheduled">Scheduled</NativeSelectOption>
+            <NativeSelectOption value="confirmed">Confirmed</NativeSelectOption>
+            <NativeSelectOption value="completed">Completed</NativeSelectOption>
+            <NativeSelectOption value="cancelled">Cancelled</NativeSelectOption>
+            <NativeSelectOption value="no_show">No-show</NativeSelectOption>
+          </NativeSelect>
         </label>
         <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Filter</Button>
       </form>

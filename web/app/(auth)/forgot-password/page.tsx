@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export default function ForgotPasswordPage() {
   const sb = createClient();
@@ -37,9 +39,14 @@ export default function ForgotPasswordPage() {
 
         <form onSubmit={submit}>
           <div className="field">
-            <label className="label" htmlFor="email">Email</label>
-            <input id="email" className="input" type="email" autoComplete="email"
-                   value={email} onChange={e => setEmail(e.target.value)} required />
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required />
           </div>
           <Button type="submit" disabled={busy} style={{ width: "100%" }}>
             {busy ? <span className="spinner" /> : "Send reset link"}

@@ -8,6 +8,8 @@ import { listClinics, getMyProfile } from "@/lib/data/queries";
 import { clinicBookingInput, clinicInput } from "@/lib/schemas";
 import { ConfirmAction } from "@/app/_components/confirm-action";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const suggestSlug = (name: string) =>
   name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
@@ -88,12 +90,12 @@ export default async function ClinicsAdmin() {
             <input type="hidden" name="id" value={c.id} />
             <div className="grid-2">
               <div className="field">
-                <label className="label" htmlFor={`name-${c.id}`}>Name</label>
-                <input id={`name-${c.id}`} className="input" name="name" defaultValue={c.name} required />
+                <Label htmlFor={`name-${c.id}`}>Name</Label>
+                <Input id={`name-${c.id}`} name="name" defaultValue={c.name} required />
               </div>
               <div className="field">
-                <label className="label" htmlFor={`addr-${c.id}`}>Address</label>
-                <input id={`addr-${c.id}`} className="input" name="address" defaultValue={c.address ?? ""} />
+                <Label htmlFor={`addr-${c.id}`}>Address</Label>
+                <Input id={`addr-${c.id}`} name="address" defaultValue={c.address ?? ""} />
               </div>
             </div>
             <div className="settings-actions" style={{ marginTop: 0 }}>
@@ -112,11 +114,14 @@ export default async function ClinicsAdmin() {
                 </span>
               </label>
               <div className="field" style={{ marginTop: 12 }}>
-                <label className="label" htmlFor={`slug-${c.id}`}>Booking link</label>
+                <Label htmlFor={`slug-${c.id}`}>Booking link</Label>
                 <div className="input-affix">
                   <span>{origin}/book/</span>
-                  <input id={`slug-${c.id}`} className="input" name="booking_slug"
-                         defaultValue={c.booking_slug ?? suggestSlug(c.name)} />
+                  <Input
+                    className="flex-1 rounded-l-none"
+                    id={`slug-${c.id}`}
+                    name="booking_slug"
+                    defaultValue={c.booking_slug ?? suggestSlug(c.name)} />
                 </div>
               </div>
               <div className="settings-actions" style={{ marginTop: 0 }}>
@@ -150,12 +155,12 @@ export default async function ClinicsAdmin() {
         <form action={add}>
           <div className="grid-2">
             <div className="field">
-              <label className="label" htmlFor="new-name">Name</label>
-              <input id="new-name" className="input" name="name" required />
+              <Label htmlFor="new-name">Name</Label>
+              <Input id="new-name" name="name" required />
             </div>
             <div className="field">
-              <label className="label" htmlFor="new-address">Address</label>
-              <input id="new-address" className="input" name="address" />
+              <Label htmlFor="new-address">Address</Label>
+              <Input id="new-address" name="address" />
             </div>
           </div>
           <div className="settings-actions">

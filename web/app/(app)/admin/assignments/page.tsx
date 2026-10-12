@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 import { ConfirmAction } from "@/app/_components/confirm-action";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 export default async function AssignmentsAdmin({
   searchParams,
@@ -93,9 +94,9 @@ export default async function AssignmentsAdmin({
       <form method="get" className="filters">
         <label className="field" style={{ margin: 0 }}>
           <span className="label">Clinic</span>
-          <select name="clinic" defaultValue={clinicId} className="select" style={{ minWidth: 200 }}>
-            {clinics?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <NativeSelect name="clinic" defaultValue={clinicId} style={{ minWidth: 200 }}>
+            {clinics?.map(c => <NativeSelectOption key={c.id} value={c.id}>{c.name}</NativeSelectOption>)}
+          </NativeSelect>
         </label>
         <Button variant="outline" type="submit" style={{ alignSelf: "flex-end" }}>Switch</Button>
       </form>
@@ -135,10 +136,10 @@ export default async function AssignmentsAdmin({
               {addableSecs.length > 0 && (
                 <form action={addSec} style={{ display: "flex", gap: 8, marginTop: 12 }}>
                   <input type="hidden" name="doctor_clinic_id" value={dcRow.id} />
-                  <select name="secretary_id" required defaultValue="" className="select">
-                    <option value="" disabled>— add secretary —</option>
-                    {addableSecs.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
-                  </select>
+                  <NativeSelect name="secretary_id" required defaultValue="">
+                    <NativeSelectOption value="" disabled>— add secretary —</NativeSelectOption>
+                    {addableSecs.map(s => <NativeSelectOption key={s.id} value={s.id}>{s.full_name}</NativeSelectOption>)}
+                  </NativeSelect>
                   <Button variant="outline" size="sm" type="submit">Add</Button>
                 </form>
               )}
@@ -162,12 +163,12 @@ export default async function AssignmentsAdmin({
             : (
               <form action={addDoctor} style={{ display: "flex", gap: 8 }}>
                 <input type="hidden" name="clinic_id" value={clinicId} />
-                <select name="doctor_id" required defaultValue="" className="select">
-                  <option value="" disabled>— doctor —</option>
+                <NativeSelect name="doctor_id" required defaultValue="">
+                  <NativeSelectOption value="" disabled>— doctor —</NativeSelectOption>
                   {addableDocs.map((d: any) => (
-                    <option key={d.profile_id} value={d.profile_id}>{d.profiles.full_name}</option>
+                    <NativeSelectOption key={d.profile_id} value={d.profile_id}>{d.profiles.full_name}</NativeSelectOption>
                   ))}
-                </select>
+                </NativeSelect>
                 <Button variant="outline" type="submit">Add</Button>
               </form>
             )}

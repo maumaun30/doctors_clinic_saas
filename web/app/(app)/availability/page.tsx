@@ -6,6 +6,9 @@ import { getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { ConfirmAction } from "@/app/_components/confirm-action";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -110,30 +113,30 @@ export default async function AvailabilityPage() {
             : (
               <form action={add}>
                 <div className="field">
-                  <label className="label">Doctor{activeClinic ? "" : " @ clinic"}</label>
-                  <select className="select" name="dc" required defaultValue="" style={{ width: "100%" }}>
-                    <option value="" disabled>{activeClinic ? "— select doctor —" : "— select doctor @ clinic —"}</option>
+                  <Label>Doctor{activeClinic ? "" : " @ clinic"}</Label>
+                  <NativeSelect name="dc" required defaultValue="" className="w-full">
+                    <NativeSelectOption value="" disabled>{activeClinic ? "— select doctor —" : "— select doctor @ clinic —"}</NativeSelectOption>
                     {dcs.map((dc: any) => (
-                      <option key={dc.id} value={`${dc.doctor_id}|${dc.clinic_id}`}>
+                      <NativeSelectOption key={dc.id} value={`${dc.doctor_id}|${dc.clinic_id}`}>
                         {activeClinic ? dc.doctor.profiles.full_name : `${dc.doctor.profiles.full_name} @ ${dc.clinic.name}`}
-                      </option>
+                      </NativeSelectOption>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </div>
                 <div className="field">
-                  <label className="label">Weekday</label>
-                  <select className="select" name="weekday" defaultValue="1" required style={{ width: "100%" }}>
-                    {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
-                  </select>
+                  <Label>Weekday</Label>
+                  <NativeSelect name="weekday" defaultValue="1" required className="w-full">
+                    {DAYS.map((d, i) => <NativeSelectOption key={i} value={i}>{d}</NativeSelectOption>)}
+                  </NativeSelect>
                 </div>
                 <div className="grid-2">
                   <div className="field">
-                    <label className="label">Start</label>
-                    <input className="input" type="time" name="start_time" defaultValue="09:00" required />
+                    <Label>Start</Label>
+                    <Input type="time" name="start_time" defaultValue="09:00" required />
                   </div>
                   <div className="field">
-                    <label className="label">End</label>
-                    <input className="input" type="time" name="end_time" defaultValue="17:00" required />
+                    <Label>End</Label>
+                    <Input type="time" name="end_time" defaultValue="17:00" required />
                   </div>
                 </div>
                 <div className="settings-actions">

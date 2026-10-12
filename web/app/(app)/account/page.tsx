@@ -12,6 +12,8 @@ import { Icon } from "@/app/_components/icons";
 import { PageHeader } from "@/app/_components/page-header";
 import { Section } from "@/app/_components/section";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable, add the
 // provider back to this list — the ProviderLogo + link/unlink code already
@@ -172,19 +174,27 @@ export default function AccountPage() {
       <Section title="Profile" description="Your name appears on visits, prescriptions and the audit log.">
         <form onSubmit={saveProfile}>
           <div className="field">
-            <label className="label" htmlFor="full_name">Full name</label>
-            <input id="full_name" className="input" value={fullName} autoComplete="name"
-                   onChange={e => setFullName(e.target.value)} required />
+            <Label htmlFor="full_name">Full name</Label>
+            <Input
+              id="full_name"
+              value={fullName}
+              autoComplete="name"
+              onChange={e => setFullName(e.target.value)}
+              required />
           </div>
           <div className="grid-2">
             <div className="field">
-              <label className="label" htmlFor="phone">Phone</label>
-              <input id="phone" className="input" type="tel" value={phone} autoComplete="tel"
-                     onChange={e => setPhone(e.target.value)} />
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                autoComplete="tel"
+                onChange={e => setPhone(e.target.value)} />
             </div>
             <div className="field">
-              <label className="label" htmlFor="email">Email</label>
-              <input id="email" className="input" value={email} readOnly aria-describedby="email-hint" />
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" value={email} readOnly aria-describedby="email-hint" />
               <span id="email-hint" className="hint">Used to sign in. Can’t be changed here.</span>
             </div>
           </div>

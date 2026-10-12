@@ -9,6 +9,7 @@ import VisitForm from "./visit-form";
 import RescheduleForm from "./reschedule-form";
 import LabFiles from "./lab-files";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
   scheduled: { cls: "badge", label: "Scheduled" },
@@ -107,12 +108,12 @@ export default async function VisitPage({
 
           <Section title="Status" description="Confirm, cancel or mark as no-show. Completing happens below.">
             <form action={changeStatus} style={{ display: "flex", gap: 8 }}>
-              <select name="status" defaultValue={appt.status} className="select">
-                <option value="scheduled">Scheduled</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="no_show">No-show</option>
-              </select>
+              <NativeSelect name="status" defaultValue={appt.status}>
+                <NativeSelectOption value="scheduled">Scheduled</NativeSelectOption>
+                <NativeSelectOption value="confirmed">Confirmed</NativeSelectOption>
+                <NativeSelectOption value="cancelled">Cancelled</NativeSelectOption>
+                <NativeSelectOption value="no_show">No-show</NativeSelectOption>
+              </NativeSelect>
               <Button variant="outline" type="submit">Update</Button>
             </form>
           </Section>

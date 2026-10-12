@@ -3,6 +3,9 @@
 import { useActionState, useEffect, useRef } from "react";
 import { inviteStaff, type InviteResult } from "@/lib/actions/invites";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export function InviteForm() {
   const [state, action, pending] = useActionState<InviteResult | null, FormData>(inviteStaff, null);
@@ -13,17 +16,22 @@ export function InviteForm() {
     <form ref={formRef} action={action}>
       <div className="grid-2">
         <div className="field">
-          <label className="label" htmlFor="invite-email">Email</label>
-          <input id="invite-email" className="input" name="email" type="email" required
-                 autoComplete="off" placeholder="name@clinic.ph" />
+          <Label htmlFor="invite-email">Email</Label>
+          <Input
+            id="invite-email"
+            name="email"
+            type="email"
+            required
+            autoComplete="off"
+            placeholder="name@clinic.ph" />
         </div>
         <div className="field">
-          <label className="label" htmlFor="invite-role">Role</label>
-          <select id="invite-role" className="select" name="role" defaultValue="secretary" style={{ width: "100%" }}>
-            <option value="secretary">Secretary — books & manages appointments</option>
-            <option value="doctor">Doctor — visits & records (adds a billing seat)</option>
-            <option value="admin">Admin — full access incl. billing</option>
-          </select>
+          <Label htmlFor="invite-role">Role</Label>
+          <NativeSelect id="invite-role" name="role" defaultValue="secretary" className="w-full">
+            <NativeSelectOption value="secretary">Secretary — books & manages appointments</NativeSelectOption>
+            <NativeSelectOption value="doctor">Doctor — visits & records (adds a billing seat)</NativeSelectOption>
+            <NativeSelectOption value="admin">Admin — full access incl. billing</NativeSelectOption>
+          </NativeSelect>
         </div>
       </div>
       <div className="settings-actions">

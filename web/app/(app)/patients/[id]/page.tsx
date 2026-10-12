@@ -9,6 +9,9 @@ import LabFiles from "@/app/(app)/visits/[appointmentId]/lab-files";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths, ageVerbose } from "@/app/_components/age";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?";
@@ -123,37 +126,40 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             <summary className="link" style={{ fontSize: 13 }}>Edit demographics</summary>
             <form action={saveEdit} style={{ marginTop: 14 }}>
               <div className="field">
-                <label className="label">Full name</label>
-                <input className="input" name="full_name" defaultValue={patient.full_name} required />
+                <Label>Full name</Label>
+                <Input name="full_name" defaultValue={patient.full_name} required />
               </div>
               <div className="grid-2">
                 <div className="field">
-                  <label className="label">Date of birth</label>
-                  <input className="input" name="date_of_birth" type="date" defaultValue={patient.date_of_birth ?? ""} />
+                  <Label>Date of birth</Label>
+                  <Input
+                    name="date_of_birth"
+                    type="date"
+                    defaultValue={patient.date_of_birth ?? ""} />
                 </div>
                 <div className="field">
-                  <label className="label">Sex</label>
-                  <select className="select" name="sex" defaultValue={patient.sex ?? ""} style={{ width: "100%" }}>
-                    <option value="">—</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <Label>Sex</Label>
+                  <NativeSelect name="sex" defaultValue={patient.sex ?? ""} className="w-full">
+                    <NativeSelectOption value="">—</NativeSelectOption>
+                    <NativeSelectOption value="male">Male</NativeSelectOption>
+                    <NativeSelectOption value="female">Female</NativeSelectOption>
+                    <NativeSelectOption value="other">Other</NativeSelectOption>
+                  </NativeSelect>
                 </div>
               </div>
               <div className="grid-2">
                 <div className="field">
-                  <label className="label">Phone</label>
-                  <input className="input" name="phone" defaultValue={patient.phone ?? ""} />
+                  <Label>Phone</Label>
+                  <Input name="phone" defaultValue={patient.phone ?? ""} />
                 </div>
                 <div className="field">
-                  <label className="label">Email</label>
-                  <input className="input" name="email" type="email" defaultValue={patient.email ?? ""} />
+                  <Label>Email</Label>
+                  <Input name="email" type="email" defaultValue={patient.email ?? ""} />
                 </div>
               </div>
               <div className="field">
-                <label className="label">Address</label>
-                <input className="input" name="address" defaultValue={patient.address ?? ""} />
+                <Label>Address</Label>
+                <Input name="address" defaultValue={patient.address ?? ""} />
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button size="sm" type="submit">Save</Button>
@@ -184,10 +190,10 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
             )}
           {unlinkedClinics.length > 0 && (
             <form action={addLink} style={{ display: "flex", gap: 8 }}>
-              <select className="select" name="clinic_id" required defaultValue="">
-                <option value="" disabled>— link clinic —</option>
-                {unlinkedClinics.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <NativeSelect name="clinic_id" required defaultValue="">
+                <NativeSelectOption value="" disabled>— link clinic —</NativeSelectOption>
+                {unlinkedClinics.map(c => <NativeSelectOption key={c.id} value={c.id}>{c.name}</NativeSelectOption>)}
+              </NativeSelect>
               <Button variant="outline" type="submit">Link</Button>
             </form>
           )}

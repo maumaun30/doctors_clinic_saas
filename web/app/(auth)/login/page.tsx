@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { GoogleLogo } from "@/app/_components/brand-icons";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable: add the
 // provider here, re-add its button below, and import {AppleLogo, FacebookLogo}.
@@ -76,26 +78,39 @@ export default function LoginPage() {
         <form onSubmit={submitEmail}>
           {mode === "signup" && (
             <div className="field">
-              <label className="label" htmlFor="full_name">Full name</label>
-              <input id="full_name" className="input" value={fullName}
-                     onChange={e => setFullName(e.target.value)} required />
+              <Label htmlFor="full_name">Full name</Label>
+              <Input
+                id="full_name"
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+                required />
             </div>
           )}
           <div className="field">
-            <label className="label" htmlFor="email">Email</label>
-            <input id="email" className="input" type="email" autoComplete="email"
-                   value={email} onChange={e => setEmail(e.target.value)} required />
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required />
           </div>
           <div className="field">
             <div className="row-between" style={{ marginBottom: 6 }}>
-              <label className="label" htmlFor="pw" style={{ margin: 0 }}>Password</label>
+              <Label htmlFor="pw" style={{ margin: 0 }}>Password</Label>
               {mode === "signin" && (
                 <a className="link" href="/forgot-password" style={{ fontSize: 12.5 }}>Forgot?</a>
               )}
             </div>
-            <input id="pw" className="input" type="password" minLength={8}
-                   autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                   value={password} onChange={e => setPassword(e.target.value)} required />
+            <Input
+              id="pw"
+              type="password"
+              minLength={8}
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required />
           </div>
           <Button type="submit" disabled={busy} style={{ width: "100%" }}>
             {busy ? <span className="spinner" /> : mode === "signin" ? "Sign in" : "Sign up"}
