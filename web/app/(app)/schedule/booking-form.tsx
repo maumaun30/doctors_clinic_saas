@@ -110,7 +110,7 @@ export default function BookingForm({
       className={cn("grid gap-4", !bare && "card max-w-[560px] p-6")}
       aria-busy={pending}
     >
-      <div className="grid gap-2">
+      <div className="grid content-start gap-2">
         <Label htmlFor={`${id}-patient`}>Patient</Label>
         <NativeSelect id={`${id}-patient`} value={patientId} onChange={e => setPatientId(e.target.value)}
           required className="w-full">
@@ -119,7 +119,7 @@ export default function BookingForm({
         </NativeSelect>
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid content-start gap-2">
         <Label htmlFor={`${id}-provider`}>Provider</Label>
         <NativeSelect id={`${id}-provider`} value={dcIdx} onChange={e => setDcIdx(e.target.value)}
           required className="w-full">
@@ -129,12 +129,12 @@ export default function BookingForm({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="grid gap-2">
+        <div className="grid content-start gap-2">
           <Label htmlFor={`${id}-date`}>Date</Label>
           <Input id={`${id}-date`} type="date" value={date} min={phYmd()}
             onChange={e => setDate(e.target.value)} required />
         </div>
-        <div className="grid gap-2">
+        <div className="grid content-start gap-2">
           <Label htmlFor={`${id}-duration`}>Duration</Label>
           <NativeSelect id={`${id}-duration`} value={duration} onChange={e => setDuration(Number(e.target.value))}
             className="w-full">
@@ -143,7 +143,7 @@ export default function BookingForm({
         </div>
       </div>
 
-      <fieldset className="grid gap-2">
+      <fieldset className="grid content-start gap-2">
         <legend className="mb-2 flex items-center gap-2 text-sm font-medium leading-none">
           Time
           {loadingSlots && <Spinner className="size-3.5 text-muted-foreground" />}
@@ -172,7 +172,7 @@ export default function BookingForm({
         )}
       </fieldset>
 
-      <div className="grid gap-2">
+      <div className="grid content-start gap-2">
         <Label htmlFor={`${id}-notes`}>
           Reason for visit <span className="font-normal text-muted-foreground">(optional)</span>
         </Label>

@@ -1,22 +1,34 @@
 import Link from "next/link";
-import { PageHeader } from "@/app/_components/page-header";
-import { Section } from "@/app/_components/section";
 import { revalidatePath } from "next/cache";
+import { ClipboardListIcon, FlaskConicalIcon, PencilIcon, PillIcon, XIcon } from "lucide-react";
+import { PageHeader } from "@/app/_components/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { getBookingOptions, getPatient, listMedicalRecords, getMyProfile } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { BookDialog } from "@/app/(app)/schedule/book-dialog";
-import { linkPatientToClinic, unlinkPatientFromClinic, updatePatient } from "@/lib/actions/patients";
+import { linkPatientToClinic, unlinkPatientFromClinic } from "@/lib/actions/patients";
 import LabFiles from "@/app/(app)/visits/[appointmentId]/lab-files";
 import { Icon } from "@/app/_components/icons";
 import { ageYearsMonths, ageVerbose } from "@/app/_components/age";
+import { AppointmentStatusBadge, LabStatusBadge } from "@/app/_components/appointment-status";
+import { PatientDialog } from "../patient-dialog";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { XIcon } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const TZ = "Asia/Manila";
+const fmtWhen = (iso: string) =>
+  new Date(iso).toLocaleString("en-PH", {
+    timeZone: TZ, weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
+  });
+const fmtDate = (ymd: string | null) =>
+  ymd ? new Date(`${ymd}T12:00:00+08:00`).toLocaleDateString("en-PH", {
+    timeZone: TZ, month: "short", day: "numeric", year: "numeric",
+  }) : null;
+const fmtStamp = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-PH", { timeZone: TZ, month: "short", day: "numeric", year: "numeric" });
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "?";
@@ -27,6 +39,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
   const sb = await createClient();
   const patient = await getPatient(sb, id);
   const me = await getMyProfile(sb);
+  const clinical = me?.role !== "secretary";
 
   const [linksRes, allClinicsRes] = await Promise.all([
     sb.from("patient_clinics")
@@ -37,20 +50,6 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
   const links = linksRes.data ?? [];
   const linkedIds = new Set(links.map(l => l.clinic_id));
   const unlinkedClinics = (allClinicsRes.data ?? []).filter(c => !linkedIds.has(c.id));
-
-  async function saveEdit(formData: FormData) {
-    "use server";
-    await updatePatient({
-      id,
-      full_name: formData.get("full_name"),
-      date_of_birth: (formData.get("date_of_birth") as string) || null,
-      sex: (formData.get("sex") as string) || null,
-      phone: (formData.get("phone") as string) || null,
-      email: (formData.get("email") as string) || null,
-      address: (formData.get("address") as string) || null,
-    });
-    revalidatePath(`/patients/${id}`);
-  }
 
   async function addLink(formData: FormData) {
     "use server";
@@ -64,22 +63,23 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
   }
 
   const nowIso = new Date().toISOString();
+  const appt = "id, scheduled_at, status, duration_minutes, notes, doctor:doctors!inner(profile:profiles!inner(full_name))";
   const [upcomingRes, pastRes] = await Promise.all([
-    sb.from("appointments")
-      .select("id, scheduled_at, status, duration_minutes")
+    sb.from("appointments").select(appt)
       .eq("patient_id", id).gte("scheduled_at", nowIso)
       .in("status", ["scheduled", "confirmed"]).order("scheduled_at"),
-    sb.from("appointments")
-      .select("id, scheduled_at, status")
+    sb.from("appointments").select(appt)
       .eq("patient_id", id).lt("scheduled_at", nowIso)
-      .order("scheduled_at", { ascending: false }).limit(10),
+      .order("scheduled_at", { ascending: false }).limit(50),
   ]);
+  const upcoming = upcomingRes.data ?? [];
+  const past = pastRes.data ?? [];
 
   let records: Awaited<ReturnType<typeof listMedicalRecords>> = [];
   let conditions: any[] = [];
   let prescriptions: any[] = [];
   let labs: any[] = [];
-  let labFilesByOrder: Record<string, any[]> = {};
+  const labFilesByOrder: Record<string, any[]> = {};
   try {
     records = await listMedicalRecords(sb, id);
     const [cRes, rxRes, lRes] = await Promise.all([
@@ -91,22 +91,17 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
     prescriptions = rxRes.data ?? [];
     labs = lRes.data ?? [];
     if (labs.length > 0) {
-      const ids = labs.map(l => l.id);
       const { data: files } = await sb.from("lab_result_files")
         .select("id, lab_order_id, file_name, size_bytes, content_type")
-        .in("lab_order_id", ids).order("uploaded_at");
-      for (const f of files ?? []) {
-        (labFilesByOrder[f.lab_order_id] ??= []).push(f);
-      }
+        .in("lab_order_id", labs.map(l => l.id)).order("uploaded_at");
+      for (const f of files ?? []) (labFilesByOrder[f.lab_order_id] ??= []).push(f);
     }
   } catch { /* secretary RLS blocks clinical reads */ }
 
+  const recordByAppt = new Map(records.filter(r => r.appointment_id).map(r => [r.appointment_id!, r]));
+  const activeProblems = conditions.filter(c => c.status === "active");
   const booking = await getBookingOptions(sb, await getActiveClinicId(sb));
-
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleString("en-PH", { timeZone: "Asia/Manila" });
-  const sub = [patient.sex, ageYearsMonths(patient.date_of_birth), patient.phone]
-    .filter(Boolean).join(" · ") || "—";
+  const sub = [patient.sex, ageYearsMonths(patient.date_of_birth), patient.phone].filter(Boolean).join(" · ") || "—";
 
   return (
     <>
@@ -117,198 +112,210 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
         </>}
         title={patient.full_name}
         sub={sub}
-        actions={<BookDialog label="New visit" defaultPatientId={patient.id} {...booking} />} />
+        actions={<>
+          <PatientDialog patient={patient} trigger={<Button variant="outline"><PencilIcon /> Edit details</Button>} />
+          <BookDialog label="New visit" defaultPatientId={patient.id} {...booking} />
+        </>} />
 
-      <div>
-        {/* Demographics */}
-        <Section title="Demographics" description="Contact details also power appointment reminders.">
-          <dl className="kv">
-            <dt>Age</dt><dd>{ageVerbose(patient.date_of_birth) ?? "—"}</dd>
-            <dt>Sex</dt><dd>{patient.sex ?? "—"}</dd>
-            <dt>Phone</dt><dd>{patient.phone ?? "—"}</dd>
-            <dt>Email</dt><dd>{patient.email ?? "—"}</dd>
-            <dt>Address</dt><dd>{patient.address ?? "—"}</dd>
-          </dl>
-          <details style={{ marginTop: 14 }}>
-            <summary className="link" style={{ fontSize: 13 }}>Edit demographics</summary>
-            <form action={saveEdit} style={{ marginTop: 14 }}>
-              <div className="field">
-                <Label>Full name</Label>
-                <Input name="full_name" defaultValue={patient.full_name} required />
-              </div>
-              <div className="grid-2">
-                <div className="field">
-                  <Label>Date of birth</Label>
-                  <Input
-                    name="date_of_birth"
-                    type="date"
-                    defaultValue={patient.date_of_birth ?? ""} />
-                </div>
-                <div className="field">
-                  <Label>Sex</Label>
-                  <NativeSelect name="sex" defaultValue={patient.sex ?? ""} className="w-full">
-                    <NativeSelectOption value="">—</NativeSelectOption>
-                    <NativeSelectOption value="male">Male</NativeSelectOption>
-                    <NativeSelectOption value="female">Female</NativeSelectOption>
-                    <NativeSelectOption value="other">Other</NativeSelectOption>
-                  </NativeSelect>
-                </div>
-              </div>
-              <div className="grid-2">
-                <div className="field">
-                  <Label>Phone</Label>
-                  <Input name="phone" defaultValue={patient.phone ?? ""} />
-                </div>
-                <div className="field">
-                  <Label>Email</Label>
-                  <Input name="email" type="email" defaultValue={patient.email ?? ""} />
-                </div>
-              </div>
-              <div className="field">
-                <Label>Address</Label>
-                <Input name="address" defaultValue={patient.address ?? ""} />
-              </div>
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <Button size="sm" type="submit">Save</Button>
-              </div>
-            </form>
-          </details>
-        </Section>
+      {activeProblems.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Active problems</span>
+          {activeProblems.map(c => (
+            <Badge key={c.id} variant="warning"><span className="dot" />{c.name}</Badge>
+          ))}
+        </div>
+      )}
 
-        {/* Clinics */}
-        <Section title="Clinics" description="Clinics where this patient can be booked.">
-          {links.length === 0
-            ? <p className="hint">Not linked to any clinic.</p>
-            : (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: unlinkedClinics.length ? 14 : 0 }}>
-                {links.map((l: any) => (
-                  <Badge variant="secondary" key={l.id}>
-                    {l.clinic.name}
-                    {me?.role === "admin" && (
-                      <form action={removeLink} style={{ display: "inline-flex" }}>
-                        <input type="hidden" name="link_id" value={l.id} />
-                        <Button type="submit" variant="ghost" size="icon-xs" title="Unlink" aria-label="Unlink"
+      <Tabs defaultValue="overview" className="gap-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="visits">Visits <Count n={past.length} /></TabsTrigger>
+          {clinical && <TabsTrigger value="rx">Prescriptions <Count n={prescriptions.length} /></TabsTrigger>}
+          {clinical && <TabsTrigger value="labs">Labs <Count n={labs.length} /></TabsTrigger>}
+        </TabsList>
+
+        {/* ---------- Overview ---------- */}
+        <TabsContent value="overview" className="grid items-start gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Details</CardTitle>
+              <CardDescription>Contact details also power appointment reminders.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="kv">
+                <dt>Age</dt><dd>{ageVerbose(patient.date_of_birth) ?? "—"}</dd>
+                <dt>Born</dt><dd>{fmtDate(patient.date_of_birth) ?? "—"}</dd>
+                <dt>Sex</dt><dd className="capitalize">{patient.sex ?? "—"}</dd>
+                <dt>Mobile</dt><dd>{patient.phone ?? "—"}</dd>
+                <dt>Email</dt><dd>{patient.email ?? "—"}</dd>
+                <dt>Address</dt><dd>{patient.address ?? "—"}</dd>
+              </dl>
+            </CardContent>
+          </Card>
+
+          <div className="grid content-start gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Upcoming <Count n={upcoming.length} /></CardTitle>
+                <CardDescription>Scheduled and confirmed appointments.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                {upcoming.length === 0
+                  ? <p className="text-sm text-muted-foreground">Nothing booked.</p>
+                  : upcoming.map(a => (
+                    <Link key={a.id} href={`/visits/${a.id}`}
+                      className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm hover:bg-muted/50">
+                      <div className="min-w-0">
+                        <div className="font-medium">{fmtWhen(a.scheduled_at)}</div>
+                        <div className="truncate text-xs text-muted-foreground">
+                          {a.doctor.profile.full_name} · {a.duration_minutes} min{a.notes ? ` · ${a.notes}` : ""}
+                        </div>
+                      </div>
+                      <AppointmentStatusBadge status={a.status} />
+                    </Link>
+                  ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Clinics</CardTitle>
+                <CardDescription>Where this patient can be booked.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3">
+                {links.length === 0
+                  ? <p className="text-sm text-muted-foreground">Not linked to any clinic.</p>
+                  : (
+                    <div className="flex flex-wrap gap-2">
+                      {links.map((l: any) => (
+                        <Badge variant="secondary" key={l.id}>
+                          {l.clinic.name}
+                          {me?.role === "admin" && (
+                            <form action={removeLink} className="inline-flex">
+                              <input type="hidden" name="link_id" value={l.id} />
+                              <Button type="submit" variant="ghost" size="icon-xs" title="Unlink" aria-label={`Unlink ${l.clinic.name}`}
                                 className="-mr-1 size-4 rounded-full text-muted-foreground"><XIcon /></Button>
-                      </form>
-                    )}
-                  </Badge>
-                ))}
-              </div>
+                            </form>
+                          )}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                {unlinkedClinics.length > 0 && (
+                  <form action={addLink} className="flex gap-2">
+                    <NativeSelect name="clinic_id" required defaultValue="" aria-label="Clinic to link" className="flex-1">
+                      <NativeSelectOption value="" disabled>Add to another clinic…</NativeSelectOption>
+                      {unlinkedClinics.map(c => <NativeSelectOption key={c.id} value={c.id}>{c.name}</NativeSelectOption>)}
+                    </NativeSelect>
+                    <Button variant="outline" type="submit">Link</Button>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
+
+            {clinical && conditions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Problem list</CardTitle>
+                  <CardDescription>Recorded at visits by the treating doctor.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-2">
+                  {conditions.map(c => (
+                    <Badge key={c.id} variant={c.status === "active" ? "warning" : "secondary"}>
+                      <span className="dot" />{c.name}{c.since ? ` · since ${fmtDate(c.since)}` : ""}
+                    </Badge>
+                  ))}
+                </CardContent>
+              </Card>
             )}
-          {unlinkedClinics.length > 0 && (
-            <form action={addLink} style={{ display: "flex", gap: 8 }}>
-              <NativeSelect name="clinic_id" required defaultValue="">
-                <NativeSelectOption value="" disabled>— link clinic —</NativeSelectOption>
-                {unlinkedClinics.map(c => <NativeSelectOption key={c.id} value={c.id}>{c.name}</NativeSelectOption>)}
-              </NativeSelect>
-              <Button variant="outline" type="submit">Link</Button>
-            </form>
+          </div>
+        </TabsContent>
+
+        {/* ---------- Visits ---------- */}
+        <TabsContent value="visits">
+          {past.length === 0 ? <Empty icon={<ClipboardListIcon />} text="No past visits yet." /> : (
+            <div className="card divide-y">
+              {past.map(a => {
+                const r = recordByAppt.get(a.id);
+                return (
+                  <Link key={a.id} href={`/visits/${a.id}`} className="flex items-start justify-between gap-4 px-4 py-3 hover:bg-muted/50">
+                    <div className="min-w-0">
+                      <div className="font-medium">{fmtWhen(a.scheduled_at)}</div>
+                      <div className="text-xs text-muted-foreground">{a.doctor.profile.full_name}{a.notes ? ` · ${a.notes}` : ""}</div>
+                      {r && (
+                        <div className="mt-1.5 text-sm">
+                          <span className="font-medium">{r.diagnosis ?? "No diagnosis recorded"}</span>
+                          {r.notes && <span className="text-muted-foreground"> — {r.notes}</span>}
+                        </div>
+                      )}
+                    </div>
+                    <AppointmentStatusBadge status={a.status} />
+                  </Link>
+                );
+              })}
+            </div>
           )}
-        </Section>
+        </TabsContent>
 
-        {/* Active problems */}
-        <Section title="Active problems" description="Recorded at visits by the treating doctor.">
-          {conditions.length === 0
-            ? <p className="hint">No conditions recorded.</p>
-            : (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {conditions.map(c => (
-                  <Badge key={c.id} variant={c.status === "active" ? "warning" : "secondary"}>
-                    <span className="dot" />{c.name}{c.since ? ` · since ${c.since}` : ""}
-                  </Badge>
+        {/* ---------- Prescriptions ---------- */}
+        {clinical && (
+          <TabsContent value="rx">
+            {prescriptions.length === 0 ? <Empty icon={<PillIcon />} text="No prescriptions issued." /> : (
+              <div className="card divide-y">
+                {prescriptions.map(p => (
+                  <div key={p.id} className="flex items-start justify-between gap-4 px-4 py-3">
+                    <div className="min-w-0">
+                      <div className="font-medium">
+                        {p.name}
+                        <span className="font-normal text-muted-foreground">
+                          {[p.dosage, p.frequency, p.duration].filter(Boolean).map(x => ` · ${x}`).join("")}
+                        </span>
+                      </div>
+                      {p.instructions && <div className="text-sm text-muted-foreground">{p.instructions}</div>}
+                    </div>
+                    <span className="shrink-0 text-xs text-muted-foreground">{fmtStamp(p.created_at)}</span>
+                  </div>
                 ))}
               </div>
             )}
-        </Section>
+          </TabsContent>
+        )}
 
-        {/* Upcoming */}
-        <Section title={<>Upcoming <span className="count">· {upcomingRes.data?.length ?? 0}</span></>} description="Scheduled and confirmed appointments." flush>
-          {!upcomingRes.data || upcomingRes.data.length === 0
-            ? <div className="empty">None.</div>
-            : (
-              <Table>
-                <TableBody>
-                  {upcomingRes.data.map(a => (
-                    <TableRow key={a.id}>
-                      <TableCell className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</TableCell>
-                      <TableCell style={{ color: "var(--fg-muted)" }}>{a.status} · {a.duration_minutes} min</TableCell>
-                      <TableCell style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-        </Section>
-
-        {/* Past */}
-        <Section title={<>Past visits <span className="count">· {pastRes.data?.length ?? 0}</span></>} description="Completed, cancelled and missed appointments." flush>
-          {!pastRes.data || pastRes.data.length === 0
-            ? <div className="empty">None.</div>
-            : (
-              <Table>
-                <TableBody>
-                  {pastRes.data.map(a => (
-                    <TableRow key={a.id}>
-                      <TableCell className="strong num" style={{ width: 200 }}>{fmt(a.scheduled_at)}</TableCell>
-                      <TableCell style={{ color: "var(--fg-muted)" }}>{a.status}</TableCell>
-                      <TableCell style={{ textAlign: "right" }}><Button asChild variant="ghost" size="sm"><Link href={`/visits/${a.id}`}>Open</Link></Button></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-        </Section>
-
-        {/* Medical records */}
-        <Section title={<>Medical records <span className="count">· {records.length}</span></>} description="Diagnoses and notes from completed visits. Not visible to secretaries." flush>
-          {records.length === 0
-            ? <div className="empty">No records visible to you.</div>
-            : records.map(r => (
-              <div key={r.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
-                <div>
-                  <div className="strong">{r.visit_date} — {r.diagnosis ?? "(no diagnosis)"}</div>
-                  {r.notes && <div className="hint" style={{ marginTop: 2 }}>{r.notes}</div>}
-                </div>
-              </div>
-            ))}
-        </Section>
-
-        {/* Prescriptions */}
-        <Section title={<>Prescriptions <span className="count">· {prescriptions.length}</span></>} description="Medications issued at visits." flush>
-          {prescriptions.length === 0
-            ? <div className="empty">None.</div>
-            : prescriptions.map(p => (
-              <div key={p.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
-                <div>
-                  <div className="strong">
-                    {p.name}
-                    <span style={{ color: "var(--fg-muted)", fontWeight: 400 }}>
-                      {[p.dosage, p.frequency, p.duration].filter(Boolean).map(x => ` · ${x}`).join("")}
-                    </span>
-                  </div>
-                  {p.instructions && <div className="hint" style={{ marginTop: 2 }}>{p.instructions}</div>}
-                </div>
-              </div>
-            ))}
-        </Section>
-
-        {/* Lab orders */}
-        <Section title={<>Lab orders <span className="count">· {labs.length}</span></>} description="Tests ordered at visits, with attached result files." flush>
-          {labs.length === 0
-            ? <div className="empty">None.</div>
-            : labs.map(l => (
-              <div key={l.id} className="queue-row" style={{ gridTemplateColumns: "1fr" }}>
-                <div>
-                  <div className="strong">{l.name} <Badge variant="secondary" style={{ marginLeft: 6 }}>{l.status}</Badge></div>
-                  {l.result && <div className="hint" style={{ marginTop: 2 }}>Result: {l.result}</div>}
-                  <div style={{ marginTop: 8 }}>
+        {/* ---------- Labs ---------- */}
+        {clinical && (
+          <TabsContent value="labs">
+            {labs.length === 0 ? <Empty icon={<FlaskConicalIcon />} text="No lab tests ordered." /> : (
+              <div className="card divide-y">
+                {labs.map(l => (
+                  <div key={l.id} className="grid gap-2 px-4 py-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 font-medium">{l.name} <LabStatusBadge status={l.status} /></div>
+                        {l.result && <div className="text-sm text-muted-foreground">Result: {l.result}</div>}
+                      </div>
+                      <span className="shrink-0 text-xs text-muted-foreground">Ordered {fmtStamp(l.created_at)}</span>
+                    </div>
                     <LabFiles labOrderId={l.id} files={labFilesByOrder[l.id] ?? []} />
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-        </Section>
-      </div>
+            )}
+          </TabsContent>
+        )}
+      </Tabs>
     </>
+  );
+}
+
+function Count({ n }: { n: number }) {
+  return <span className="text-xs font-normal tabular-nums text-muted-foreground">{n}</span>;
+}
+
+function Empty({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="card flex flex-col items-center gap-3 px-6 py-12 text-center text-sm text-muted-foreground">
+      <div className="flex size-11 items-center justify-center rounded-full bg-muted [&>svg]:size-5">{icon}</div>
+      {text}
+    </div>
   );
 }
