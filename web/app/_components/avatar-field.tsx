@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CameraIcon } from "lucide-react";
@@ -25,18 +25,25 @@ async function toSquare(file: File): Promise<Blob> {
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error("encode failed"))), "image/webp", 0.85));
 }
 
-/** Account settings: upload, change or remove your profile picture. */
+/**
+ * Upload, change or remove a profile picture. Without `userId` it edits
+ * your own (Account page); with it, an admin edits a staff member's.
+ * Pass `onChange` to lift the picture URL (the Account header shows it).
+ */
 export function AvatarField({
-  name, url, onChange,
-}: { name: string; url: string | null; onChange: (url: string | null) => void }) {
+  name, url: initialUrl, userId, onChange,
+}: { name: string; url: string | null; userId?: string; onChange?: (url: string | null) => void }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
+  const [url, setUrl] = useState(initialUrl);
+  useEffect(() => setUrl(initialUrl), [initialUrl]);
   const [busy, setBusy] = useState<"upload" | "remove" | null>(null);
 
   const done = (res: Awaited<ReturnType<typeof uploadAvatar>>, ok: string) => {
     setBusy(null);
     if (!res.ok) { toast.error(res.error); return; }
-    onChange(res.url);
+    setUrl(res.url);
+    onChange?.(res.url);
     toast.success(ok);
     router.refresh();
   };
@@ -56,12 +63,13 @@ export function AvatarField({
     }
     const fd = new FormData();
     fd.set("file", new File([blob], "avatar", { type: blob.type }));
+    if (userId) fd.set("user_id", userId);
     done(await uploadAvatar(fd), "Profile picture updated");
   };
 
   const onRemove = async () => {
     setBusy("remove");
-    done(await removeAvatar(), "Profile picture removed");
+    done(await removeAvatar(userId), "Profile picture removed");
   };
 
   return (

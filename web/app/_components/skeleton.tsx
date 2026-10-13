@@ -449,7 +449,12 @@ export function StaffDetailSkeleton({ hours = false }: { hours?: boolean }) {
     <Page>
       <Head lead="back-avatar" />
       <div className="grid gap-4">
-        <Box desc title="w-20"><Fields count={hours ? 3 : 2} cols={2} /></Box>
+        <Box desc title="w-20">
+          <div className="grid gap-5">
+            <div className="flex items-center gap-4"><Bone className="size-16 rounded-full" /><Bone className="h-8 w-32" /></div>
+            <Fields count={hours ? 3 : 2} cols={2} />
+          </div>
+        </Box>
         <Box desc title="w-28"><ItemRows count={2} /></Box>
         {hours && <Box desc title="w-48"><WeekRows /></Box>}
       </div>
