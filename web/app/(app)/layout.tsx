@@ -87,6 +87,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: "/admin/audit", label: "Audit log", icon: "audit" as const },
       ] },
     ] : []),
+    { label: "Help", links: [
+      { href: "/help", label: "Guide", icon: "help" },
+      { href: "/help/faq", label: "FAQ", icon: "faq" },
+    ] },
   ];
 
   const name = profile.full_name ?? "User";
@@ -133,6 +137,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const menuLinks: UserMenuLink[] = [
     { href: "/account", label: "Account settings", icon: "user" },
     ...(isAdmin ? [{ href: "/admin/billing", label: "Billing", icon: "card" as const }] : []),
+    { href: "/help", label: "Help & support", icon: "help" },
   ];
   const footer = (
     <UserMenu

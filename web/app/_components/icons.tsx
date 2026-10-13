@@ -7,6 +7,7 @@ export type IconName =
   | "users"
   | "user"
   | "clock"
+  | "help"
   | "building"
   | "shield"
   | "settings"
@@ -60,6 +61,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 2" />
+    </>
+  ),
+  help: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.7-2.5 2.2-2.5 3.5" />
+      <path d="M12 17h.01" />
     </>
   ),
   building: (
