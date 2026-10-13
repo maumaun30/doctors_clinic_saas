@@ -1,5 +1,5 @@
-import { SectionsSkeleton } from "@/app/_components/skeleton";
+import { TeamSkeleton } from "@/app/_components/skeleton";
 
 export default function Loading() {
-  return <SectionsSkeleton sections={3} rows={2} />;
+  return <TeamSkeleton />;
 }
