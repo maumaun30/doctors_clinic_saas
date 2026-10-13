@@ -51,7 +51,8 @@ export default function MfaPage() {
       for (const f of factors.all.filter(f => f.factor_type === "totp" && f.status !== "verified")) {
         await sb.auth.mfa.unenroll({ factorId: f.id });
       }
-      const { data, error } = await sb.auth.mfa.enroll({ factorType: "totp", friendlyName: `Authenticator ${new Date().toISOString().slice(0, 10)}` });
+// Names must be unique per user; a date alone collides when replacing on the day it was added.
+      const { data, error } = await sb.auth.mfa.enroll({ factorType: "totp", friendlyName: `Authenticator ${new Date().toISOString().slice(0, 19).replace("T", " ")}` });
       if (error) {
         setError(/not enabled|disabled/i.test(error.message)
           ? "Two-factor authentication isn’t enabled for this project yet. Ask your administrator."
@@ -75,6 +76,13 @@ export default function MfaPage() {
       setCode("");
       setError(/invalid|expired/i.test(error.message) ? "That code didn’t match. Check the time on your phone and try the newest code." : error.message);
       return;
+    }
+    // Replacing: the new authenticator works, so retire the old ones.
+    if (mode === "enroll") {
+      const { data: factors } = await sb.auth.mfa.listFactors();
+      for (const f of factors?.totp ?? []) {
+        if (f.id !== factorId && f.status === "verified") await sb.auth.mfa.unenroll({ factorId: f.id });
+      }
     }
     router.replace(next());
     router.refresh();
