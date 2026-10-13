@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-import { ClipboardListIcon, FlaskConicalIcon, PencilIcon, PillIcon, XIcon } from "lucide-react";
+import { ClipboardListIcon, FileDownIcon, FlaskConicalIcon, PencilIcon, PillIcon, XIcon } from "lucide-react";
 import { PageHeader } from "@/app/_components/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { getBookingOptions, getPatient, listMedicalRecords, getMyProfile } from "@/lib/data/queries";
@@ -113,6 +113,9 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
         title={patient.full_name}
         sub={sub}
         actions={<>
+          {clinical && (
+            <Button asChild variant="outline"><Link href={`/patients/${patient.id}/record`}><FileDownIcon /> Export record</Link></Button>
+          )}
           <PatientDialog patient={patient} trigger={<Button variant="outline"><PencilIcon /> Edit details</Button>} />
           <BookDialog label="New visit" defaultPatientId={patient.id} {...booking} />
         </>} />

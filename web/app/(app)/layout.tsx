@@ -87,6 +87,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: "/admin/library", label: "Library", icon: "library" as const },
         { href: "/admin/billing", label: "Billing", icon: "billing" as const },
         { href: "/admin/audit", label: "Audit log", icon: "audit" as const },
+        { href: "/admin/export", label: "Data export", icon: "export" as const },
       ] },
     ] : []),
     { label: "Help", links: [

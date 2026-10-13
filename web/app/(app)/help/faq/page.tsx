@@ -43,7 +43,8 @@ const FAQ: { title: string; items: QA[] }[] = [
       { q: "Can a patient be seen at more than one of our clinics?", a: <>Yes. Open their chart and add the other clinic under <strong>Clinics</strong>.</> },
       { q: "Can I delete a patient?", a: <>Not from the app: medical records must be kept intact. To fix a mistake, use <strong>Edit details</strong> on their chart. For a duplicate or a removal request, message support.</> },
       { q: "How do I print a prescription?", a: <>Open the visit and click <strong>Print prescription</strong>. It includes the doctor’s name and PRC licence number.</> },
-      { q: "A patient asked for a copy of their records.", a: <>Your clinic handles patients’ data privacy requests. A doctor or admin can print prescriptions and view the full chart; message support if you need a full export.</> },
+      { q: "A patient asked for a copy of their records.", a: <>Open the patient and click <strong>Export record</strong> (doctors and admins). You get a printable copy to save as PDF, plus a JSON file if they want to move to another clinic’s system. An admin’s export includes every visit; a doctor’s includes the visits they recorded. Exports are logged.</> },
+      { q: "Can we get a copy of all our clinic’s data?", a: <>Yes. Admins can download everything as spreadsheet files from <strong>Data export</strong> under Settings, any time, even if the subscription has lapsed.</> },
     ],
   },
   {
