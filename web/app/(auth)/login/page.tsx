@@ -167,6 +167,13 @@ export default function LoginPage() {
             {mode === "signin" ? "Create an account" : "Sign in"}
           </button>
         </p>
+        <p className="mt-3 text-center text-xs text-muted-foreground">
+          {mode === "signup" ? "By creating an account you agree to the " : ""}
+          <a href="/terms" className="hover:text-foreground hover:underline">{mode === "signup" ? "Terms of Service" : "Terms"}</a>
+          {mode === "signup" ? " and " : " · "}
+          <a href="/privacy" className="hover:text-foreground hover:underline">{mode === "signup" ? "Privacy Policy" : "Privacy"}</a>
+          {mode === "signup" ? "." : ""}
+        </p>
 
       </div>
     </div>

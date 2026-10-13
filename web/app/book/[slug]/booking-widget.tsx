@@ -249,6 +249,11 @@ export default function BookingWidget({
             {fmtWhen(slot)} with <span className="font-medium text-foreground">{doctor.name}</span>
           </p>
         )}
+        <p className="text-center text-xs text-muted-foreground">
+          By booking, you agree to the <a href="/terms#booking" target="_blank" className="underline hover:text-foreground">Terms</a> and{" "}
+          <a href="/privacy" target="_blank" className="underline hover:text-foreground">Privacy Policy</a>.
+          Your details go to {clinicName} to manage your appointment.
+        </p>
         <Button type="submit" size="lg" className="w-full" disabled={pending || !slot}>
           {pending ? <><Spinner /> Booking…</> : slot ? `Book ${fmtTime(slot)}` : "Pick a time to book"}
         </Button>
