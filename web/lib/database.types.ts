@@ -477,13 +477,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "account_id": string | null,"created_at": string,"full_name": string | null,"id": string,"phone": string | null,"role": Database["public"]['Enums']["user_role"]
+                    "account_id": string | null,"avatar_path": string | null,"created_at": string,"full_name": string | null,"id": string,"phone": string | null,"role": Database["public"]['Enums']["user_role"]
                   }
                   Insert: {
-                    "account_id"?: string | null,"created_at"?: string,"full_name"?: string | null,"id": string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "account_id"?: string | null,"avatar_path"?: string | null,"created_at"?: string,"full_name"?: string | null,"id": string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Update: {
-                    "account_id"?: string | null,"created_at"?: string,"full_name"?: string | null,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "account_id"?: string | null,"avatar_path"?: string | null,"created_at"?: string,"full_name"?: string | null,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Relationships: [
                     {
@@ -558,6 +558,7 @@ isOneToOne: false
 "admin_assign_user":
 { Args: { "p_account_id"?: string,"p_role": Database["public"]['Enums']["user_role"],"p_user_id": string }; Returns: {
               "account_id": string | null,
+"avatar_path": string | null,
 "created_at": string,
 "full_name": string | null,
 "id": string,
@@ -603,6 +604,7 @@ isOneToOne: false
 "bootstrap_first_admin":
 { Args: { "p_account_name": string,"p_email": string }; Returns: {
               "account_id": string | null,
+"avatar_path": string | null,
 "created_at": string,
 "full_name": string | null,
 "id": string,

@@ -7,6 +7,7 @@ import { AppShell, type NavGroup } from "@/app/_components/app-shell";
 import { phYmd } from "@/lib/dates";
 import { ClinicSwitcher } from "@/app/_components/clinic-switcher";
 import { UserMenu, type UserMenuLink } from "@/app/_components/user-menu";
+import { avatarUrl } from "@/lib/avatar";
 
 import { SentryUser } from "@/app/_components/sentry-user";
 import * as Sentry from "@sentry/nextjs";
@@ -136,6 +137,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const footer = (
     <UserMenu
       name={name}
+      avatarUrl={avatarUrl(profile.avatar_path)}
       email={user?.email ?? null}
       role={isPending ? "Pending" : profile.role}
       links={menuLinks}

@@ -12,23 +12,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Icon, type IconName } from "./icons";
 import { ThemeToggle } from "./theme-toggle";
+import { UserAvatar } from "./user-avatar";
 
 export type UserMenuLink = { href: string; label: string; icon: IconName };
-
-function initials(name: string) {
-  return (
-    name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "U"
-  );
-}
 
 // Sidebar footer: the signed-in user's name is a menu button. The menu
 // opens upward (to the right when the sidebar is collapsed) with account
 // links, the theme switch and sign out. Focus, keyboard and dismissal
 // behavior come from the shadcn/Radix DropdownMenu.
 export function UserMenu({
-  name, email, role, links, signOut,
+  name, avatarUrl, email, role, links, signOut,
 }: {
   name: string;
+  avatarUrl: string | null;
   email: string | null;
   role: string;
   links: UserMenuLink[];
@@ -46,7 +42,7 @@ export function UserMenu({
     >
       <DropdownMenuTrigger asChild>
         <button ref={triggerRef} type="button" className="user-menu-trigger" title={name}>
-          <span className="avatar">{initials(name)}</span>
+          <UserAvatar name={name} src={avatarUrl} />
           <span className="meta">
             <span className="name">{name}</span>
             <span className="role">{role}</span>
@@ -63,7 +59,7 @@ export function UserMenu({
         aria-label="Account"
       >
         <DropdownMenuLabel className="flex items-center gap-2.5 p-2 text-sm font-normal text-foreground">
-          <span className="avatar">{initials(name)}</span>
+          <UserAvatar name={name} src={avatarUrl} />
           <span className="flex min-w-0 flex-col">
             <span className="truncate font-semibold">{name}</span>
             {email && <span className="truncate text-xs text-muted-foreground">{email}</span>}

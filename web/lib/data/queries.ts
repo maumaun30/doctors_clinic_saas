@@ -7,7 +7,7 @@ export async function getMyProfile(sb: SupabaseClient) {
   if (!user) return null;
   const { data, error } = await sb
     .from("profiles")
-    .select("id, role, account_id, full_name, phone")
+    .select("id, role, account_id, full_name, phone, avatar_path")
     .eq("id", user.id)
     .single();
   if (error) throw error;

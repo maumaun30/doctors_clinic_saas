@@ -16,6 +16,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { TwoFactorSettings } from "./two-factor";
+import { AvatarField } from "./avatar-field";
+import { UserAvatar } from "@/app/_components/user-avatar";
+import { avatarUrl } from "@/lib/avatar";
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable, add the
 // provider back to this list — the ProviderLogo + link/unlink code already
@@ -26,10 +29,6 @@ const PROVIDER_LABEL: Record<string, string> = { email: "Email & password", goog
 
 type Identity = { provider: string; id: string; identity_data?: { email?: string } };
 type Status = { kind: "ok" | "error"; text: string } | null;
-
-function initials(name: string) {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("") || "U";
-}
 
 function StatusLine({ status }: { status: Status }) {
   if (!status) return null;
@@ -48,6 +47,7 @@ export default function AccountPage() {
   const [identities, setIdentities] = useState<Identity[]>([]);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
   const [saved, setSaved] = useState({ full_name: "", phone: "" });
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -66,12 +66,13 @@ export default function AccountPage() {
     setEmail(u.user?.email ?? "");
     if (u.user) {
       const { data: p } = await sb.from("profiles")
-        .select("full_name, phone, role").eq("id", u.user.id).single();
+        .select("full_name, phone, role, avatar_path").eq("id", u.user.id).single();
       const next = { full_name: p?.full_name ?? "", phone: p?.phone ?? "" };
       setSaved(next);
       setFullName(next.full_name);
       setPhone(next.phone);
       setRole(p?.role ?? "");
+      setAvatar(avatarUrl(p?.avatar_path));
     }
     setLoading(false);
   }
@@ -165,7 +166,7 @@ export default function AccountPage() {
   return (
     <>
       <PageHeader
-        leading={<span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(name)}</span>}
+        leading={<UserAvatar name={name} src={avatar} className="size-12" fallbackClassName="text-base" />}
         title={name}
         sub={<span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           {email}
@@ -173,8 +174,12 @@ export default function AccountPage() {
         </span>}
       />
 
-      <Section title="Profile" description="Your name appears on visits, prescriptions and the audit log.">
+      <Section title="Profile" description="Your name appears on visits, prescriptions and the audit log. Your photo shows in the sidebar.">
         <form onSubmit={saveProfile}>
+          <div className="field">
+            <Label>Photo</Label>
+            <AvatarField name={name} url={avatar} onChange={setAvatar} />
+          </div>
           <div className="field">
             <Label htmlFor="full_name">Full name</Label>
             <Input
