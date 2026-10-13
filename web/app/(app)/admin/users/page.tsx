@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { UserAvatar } from "@/app/_components/user-avatar";
+import { avatarUrl } from "@/lib/avatar";
 import { ChevronRightIcon, MailIcon, UserCheckIcon } from "lucide-react";
 import { PageHeader } from "@/app/_components/page-header";
 import { createClient } from "@/lib/supabase/server";
@@ -31,7 +33,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
     sb.rpc("list_pending_users"),
     sb.from("staff_invites").select("id, email, role, created_at, expires_at")
       .is("accepted_at", null).is("revoked_at", null).order("created_at", { ascending: false }),
-    sb.from("profiles").select("id, full_name, role, phone")
+    sb.from("profiles").select("id, full_name, role, phone, avatar_path")
       .eq("account_id", me?.account_id ?? "00000000-0000-0000-0000-000000000000").in("role", ROLE_ORDER),
   ]);
   if (error) throw error;
@@ -106,7 +108,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                     <TableRow key={m.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <span className="avatar">{initials(m.full_name ?? "?")}</span>
+                          <UserAvatar name={m.full_name ?? "?"} src={avatarUrl(m.avatar_path)} />
                           <span className="font-medium">
                             {href ? <Link href={href} className="hover:underline">{m.full_name}</Link> : m.full_name}
                             {m.id === me?.id && <span className="ml-1.5 text-xs font-normal text-muted-foreground">(you)</span>}

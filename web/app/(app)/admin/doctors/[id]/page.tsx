@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { UserAvatar } from "@/app/_components/user-avatar";
+import { avatarUrl } from "@/lib/avatar";
 import { notFound, redirect } from "next/navigation";
 import { BuildingIcon, XIcon } from "lucide-react";
 import { PageHeader } from "@/app/_components/page-header";
@@ -14,7 +16,6 @@ import { WeekView, weeklyHours, type Win } from "@/app/(app)/availability/week-v
 import { AddHoursDialog } from "@/app/(app)/availability/add-hours-dialog";
 import { AddClinic, DoctorProfileForm } from "./doctor-forms";
 
-const initials = (n: string) => n.replace(/^Dr\.?\s+/i, "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase()).join("") || "?";
 
 export default async function DoctorDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,7 +24,7 @@ export default async function DoctorDetail({ params }: { params: Promise<{ id: s
   if (me?.role !== "admin") redirect("/today");
 
   const [docRes, dcRes, clinicsRes, availRes] = await Promise.all([
-    sb.from("doctors").select("profile_id, specialization, prc_license_no, profiles!inner(full_name)").eq("profile_id", id).maybeSingle(),
+    sb.from("doctors").select("profile_id, specialization, prc_license_no, profiles!inner(full_name, avatar_path)").eq("profile_id", id).maybeSingle(),
     sb.from("doctor_clinics").select("clinic_id, clinic:clinics!inner(name)").eq("doctor_id", id),
     sb.from("clinics").select("id, name").order("name"),
     sb.from("doctor_availability").select("id, clinic_id, weekday, start_time, end_time").eq("doctor_id", id),
@@ -42,7 +43,7 @@ export default async function DoctorDetail({ params }: { params: Promise<{ id: s
       <PageHeader
         leading={<>
           <Button asChild variant="ghost" size="icon"><Link href="/admin/doctors" aria-label="Back to doctors"><Icon name="back" /></Link></Button>
-          <span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(name)}</span>
+          <UserAvatar name={name} src={avatarUrl(d.profiles.avatar_path)} className="size-12" fallbackClassName="text-base" />
         </>}
         title={name}
         sub={[d.specialization ?? "No specialization", d.prc_license_no && `PRC ${d.prc_license_no}`,
