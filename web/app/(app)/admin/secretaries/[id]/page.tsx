@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UserAvatar } from "@/app/_components/user-avatar";
+import { AvatarField } from "@/app/_components/avatar-field";
 import { avatarUrl } from "@/lib/avatar";
 import { notFound, redirect } from "next/navigation";
 import { StethoscopeIcon, XIcon } from "lucide-react";
@@ -50,9 +51,12 @@ export default async function SecretaryDetail({ params }: { params: Promise<{ id
         <Card>
           <CardHeader>
             <CardTitle>Profile</CardTitle>
-            <CardDescription>Shown on bookings they create and in the audit log.</CardDescription>
+            <CardDescription>Photo and details shown on bookings they create and in the audit log.</CardDescription>
           </CardHeader>
-          <CardContent><SecretaryProfileForm secretary={{ id: s.id, full_name: s.full_name ?? "", phone: s.phone }} /></CardContent>
+          <CardContent className="grid gap-5">
+            <AvatarField name={s.full_name ?? ""} url={avatarUrl(s.avatar_path)} userId={s.id} />
+            <SecretaryProfileForm secretary={{ id: s.id, full_name: s.full_name ?? "", phone: s.phone }} />
+          </CardContent>
         </Card>
 
         <Card>

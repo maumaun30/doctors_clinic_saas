@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UserAvatar } from "@/app/_components/user-avatar";
+import { AvatarField } from "@/app/_components/avatar-field";
 import { avatarUrl } from "@/lib/avatar";
 import { notFound, redirect } from "next/navigation";
 import { BuildingIcon, XIcon } from "lucide-react";
@@ -53,9 +54,10 @@ export default async function DoctorDetail({ params }: { params: Promise<{ id: s
         <Card>
           <CardHeader>
             <CardTitle>Profile</CardTitle>
-            <CardDescription>Name and professional details.</CardDescription>
+            <CardDescription>Photo, name and professional details.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="grid gap-5">
+            <AvatarField name={name} url={avatarUrl(d.profiles.avatar_path)} userId={id} />
             <DoctorProfileForm doctor={{ profile_id: id, full_name: name, specialization: d.specialization, prc_license_no: d.prc_license_no }} />
           </CardContent>
         </Card>
