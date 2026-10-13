@@ -20,6 +20,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const sb = await createClient();
   const profile = await getMyProfile(sb);
   if (!profile) redirect("/login");
+  // Removed staff: the database already denies them everything.
+  if (profile.deactivated_at) redirect("/access-removed");
   // Admins must finish two-factor before using the app (set up on first visit).
   if (profile.role === "admin" && !(await hasTwoFactorSession(sb))) redirect("/mfa");
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/app/_components/user-avatar";
 import { avatarUrl } from "@/lib/avatar";
 import { AlertTriangleIcon, ChevronRightIcon, UserPlusIcon, UserRoundXIcon } from "lucide-react";
@@ -16,7 +17,7 @@ export default async function DoctorsAdmin() {
   const sb = await createClient();
   const now = Date.now();
   const [docsRes, dcRes, availRes, apptRes] = await Promise.all([
-    sb.from("doctors").select("profile_id, specialization, prc_license_no, profiles!inner(full_name, avatar_path)"),
+    sb.from("doctors").select("profile_id, specialization, prc_license_no, profiles!inner(full_name, avatar_path, deactivated_at)"),
     sb.from("doctor_clinics").select("doctor_id, clinic:clinics!inner(name)"),
     sb.from("doctor_availability").select("doctor_id, weekday, start_time, end_time"),
     sb.from("appointments").select("doctor_id, status, scheduled_at")
@@ -35,6 +36,7 @@ export default async function DoctorsAdmin() {
       profile_id: id,
       name: d.profiles.full_name as string,
       avatar: avatarUrl(d.profiles.avatar_path),
+      removed: Boolean(d.profiles.deactivated_at),
       specialization: d.specialization as string | null,
       prc_license_no: d.prc_license_no as string | null,
       clinics: (dcRes.data ?? []).filter(x => x.doctor_id === id).map(x => (x.clinic as any).name as string).sort(),
@@ -43,15 +45,17 @@ export default async function DoctorsAdmin() {
       upcoming: appts.filter(a => a.scheduled_at >= nowIso && (a.status === "scheduled" || a.status === "confirmed")).length,
       seen: appts.filter(a => a.status === "completed").length,
     };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  }).sort((a, b) => Number(a.removed) - Number(b.removed) || a.name.localeCompare(b.name));
 
-  const needsSetup = doctors.filter(d => !d.clinics.length || !d.hours).length;
+  const active = doctors.filter(d => !d.removed);
+  const removed = doctors.length - active.length;
+  const needsSetup = active.filter(d => !d.clinics.length || !d.hours).length;
   const fmtH = (h: number) => (h % 1 ? h.toFixed(1) : String(h));
 
   return (
     <>
       <PageHeader icon="user" title="Doctors"
-        sub={`${doctors.length} ${doctors.length === 1 ? "doctor" : "doctors"}${needsSetup ? ` · ${needsSetup} need setup before they can be booked` : ""}`}
+        sub={`${active.length} ${active.length === 1 ? "doctor" : "doctors"}${needsSetup ? ` · ${needsSetup} need setup before they can be booked` : ""}${removed ? ` · ${removed} removed` : ""}`}
         actions={<Button asChild><Link href="/admin/users?role=doctor"><UserPlusIcon /> Invite doctor</Link></Button>} />
 
       {doctors.length === 0 ? (
@@ -80,12 +84,14 @@ export default async function DoctorsAdmin() {
             </TableHeader>
             <TableBody>
               {doctors.map(d => (
-                <TableRow key={d.profile_id} className="group">
+                <TableRow key={d.profile_id} className={cn("group", d.removed && "text-muted-foreground")}>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <UserAvatar name={d.name} src={d.avatar} />
                       <span className="min-w-0">
-                        <Link href={`/admin/doctors/${d.profile_id}`} className="block font-medium group-hover:underline">{d.name}</Link>
+                        <Link href={`/admin/doctors/${d.profile_id}`} className="block font-medium group-hover:underline">
+                          {d.name}{d.removed && <Badge variant="outline" className="ml-2 align-middle">Access removed</Badge>}
+                        </Link>
                         <span className="block text-xs text-muted-foreground">
                           {[d.specialization ?? "No specialization", d.prc_license_no && `PRC ${d.prc_license_no}`].filter(Boolean).join(" · ")}
                         </span>
@@ -93,14 +99,14 @@ export default async function DoctorsAdmin() {
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {d.clinics.length
+                    {d.removed ? <span className="text-sm">—</span> : d.clinics.length
                       ? <div className="flex flex-wrap gap-1">{d.clinics.map(c => <Badge key={c} variant="secondary">{c}</Badge>)}</div>
                       : <Link href={`/admin/doctors/${d.profile_id}`} className="inline-flex items-center gap-1 text-sm text-(--warning) hover:underline">
                           <AlertTriangleIcon className="size-3.5" />No clinic — assign
                         </Link>}
                   </TableCell>
                   <TableCell>
-                    {d.hours
+                    {d.removed ? <span className="text-sm">—</span> : d.hours
                       ? <span className="grid">
                           <span className="tabular-nums">{fmtH(d.hours)} h/week</span>
                           <span className="text-xs text-muted-foreground">{d.days.join(", ")}</span>

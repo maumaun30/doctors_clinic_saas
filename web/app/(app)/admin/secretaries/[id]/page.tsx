@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StaffAccessCard } from "../../staff-access-card";
 import { UserAvatar } from "@/app/_components/user-avatar";
 import { AvatarField } from "@/app/_components/avatar-field";
 import { avatarUrl } from "@/lib/avatar";
@@ -23,7 +24,7 @@ export default async function SecretaryDetail({ params }: { params: Promise<{ id
   if (me?.role !== "admin") redirect("/today");
 
   const [secRes, caRes, dcRes] = await Promise.all([
-    sb.from("profiles").select("id, full_name, phone, avatar_path").eq("id", id).eq("role", "secretary").maybeSingle(),
+    sb.from("profiles").select("id, full_name, phone, avatar_path, deactivated_at").eq("id", id).eq("role", "secretary").maybeSingle(),
     sb.from("clinic_assignments").select("id, doctor_clinic_id").eq("secretary_id", id),
     sb.from("doctor_clinics").select("id, doctor:doctors!inner(profiles!inner(full_name)), clinic:clinics!inner(name)"),
   ]);
@@ -91,6 +92,7 @@ export default async function SecretaryDetail({ params }: { params: Promise<{ id
               )}
           </CardContent>
         </Card>
+        <StaffAccessCard userId={s.id} name={s.full_name ?? "This secretary"} role="secretary" deactivatedAt={s.deactivated_at} />
       </div>
     </>
   );

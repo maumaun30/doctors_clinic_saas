@@ -19,6 +19,7 @@ const AREAS: Record<string, { label: string; noun: string }> = {
   lab_orders: { label: "Lab orders", noun: "a lab order" },
   lab_result_files: { label: "Lab files", noun: "a lab result file" },
   patient_conditions: { label: "Conditions", noun: "a condition" },
+  profiles: { label: "Staff access", noun: "staff access" },
 };
 const OP: Record<string, { verb: string; variant: BadgeVariant; label: string }> = {
   INSERT: { verb: "added", variant: "success", label: "Added" },
