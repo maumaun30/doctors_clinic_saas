@@ -1,6 +1,6 @@
 import {
   BarChart3Icon, BookOpenIcon, Building2Icon, CalendarDaysIcon, CalendarRangeIcon, ClockIcon, CreditCardIcon,
-  CircleHelpIcon, HistoryIcon, LifeBuoyIcon, MailPlusIcon, StethoscopeIcon, UserCogIcon, UsersIcon, type LucideIcon,
+  CircleHelpIcon, DownloadIcon, HistoryIcon, LifeBuoyIcon, MailPlusIcon, StethoscopeIcon, UserCogIcon, UsersIcon, type LucideIcon,
 } from "lucide-react";
 
 // One distinct icon per sidebar item (previously several items shared one).
@@ -17,6 +17,7 @@ export const NAV_ICONS = {
   library: BookOpenIcon,
   billing: CreditCardIcon,
   audit: HistoryIcon,
+  export: DownloadIcon,
   help: LifeBuoyIcon,
   faq: CircleHelpIcon,
 } satisfies Record<string, LucideIcon>;
