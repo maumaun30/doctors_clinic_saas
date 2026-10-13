@@ -24,6 +24,7 @@ eq(ana[0].body.from, "Clinic <r@example.com>", "from header");
 eq(ana[0].body.subject.includes("Dr Santos"), true, "subject names doctor");
 eq(ana[0].body.html.includes("Ana &lt;Reyes&gt;"), true, "html escapes patient name");
 eq(ana[0].body.html.includes("Bayside Clinic, 2 Roxas Blvd"), true, "html has clinic + address");
+eq(/https:\/\/app\.example\.test\/a\/[0-9a-f]{20}/.test(ana[0].body.html), true, "email has the confirm/cancel link");
 eq(typeof ana[0].idem === "string" && ana[0].idem.startsWith("reminder-"), true, "idempotency key set");
 
 const texts = await (await fetch("http://localhost:9101/_got")).json();
@@ -33,5 +34,6 @@ eq(texts.some((t: any) => t.number.startsWith("02")), false, "landline never tex
 const t = texts.find((t: any) => t.number === "09171112222");
 eq([t.apikey, t.sendername], ["sem_test", "BAYSIDE"], "semaphore key + sender name sent");
 eq(t.message.startsWith("Reminder: Dr Santos,") && t.message.length <= 160, true, "sms text shape");
+eq(/Confirm\/cancel: https:\/\/app\.example\.test\/a\/[0-9a-f]{20}$/.test(t.message), true, "sms ends with the confirm/cancel link");
 console.log("subject:", ana[0].body.subject);
 console.log("sms:", t.message);

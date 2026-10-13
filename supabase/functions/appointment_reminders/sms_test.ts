@@ -34,3 +34,25 @@ Deno.test("buildSms stays ASCII, <=160, and never starts with TEST", () => {
     assert(m.includes("9:30 AM"), m);
   }
 });
+
+const link = "https://app.example.com/a/0123456789abcdef0123";
+
+Deno.test("buildSms with link keeps the whole link", () => {
+  const m = buildSms({ scheduled_at: at, doctor_name: "Dr. Ana Santos", clinic_name: "Bayside Clinic" }, link);
+  assertEquals(m, `Reminder: Dr. Ana Santos, Wed, Oct 7, 9:30 AM at Bayside Clinic. Confirm/cancel: ${link}`);
+});
+
+Deno.test("buildSms with link shrinks long names, never the link, and stays <=160", () => {
+  const long = "Very Long Name ".repeat(10);
+  for (const [d, c] of [[long, long], ["Dr. Ñiño", long], [long, "Y"]]) {
+    const m = buildSms({ scheduled_at: at, doctor_name: d, clinic_name: c }, link);
+    assert(m.length <= 160, `len ${m.length}: ${m}`);
+    assert(m.endsWith(link), m);
+    assert(m.startsWith("Reminder:") && m.includes("9:30 AM"), m);
+  }
+});
+
+Deno.test("buildSms drops a link that can't fit", () => {
+  const m = buildSms({ scheduled_at: at, doctor_name: "Dr. A", clinic_name: "B" }, `https://${"x".repeat(150)}.com/a/1`);
+  assert(m.length <= 160 && !m.includes("https://") && m.includes("call the clinic"), m);
+});

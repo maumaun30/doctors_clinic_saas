@@ -63,7 +63,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
   }
 
   const nowIso = new Date().toISOString();
-  const appt = "id, scheduled_at, status, duration_minutes, notes, doctor:doctors!inner(profile:staff_profiles!inner(full_name))";
+  const appt = "id, scheduled_at, status, patient_response, duration_minutes, notes, doctor:doctors!inner(profile:staff_profiles!inner(full_name))";
   const [upcomingRes, pastRes] = await Promise.all([
     sb.from("appointments").select(appt)
       .eq("patient_id", id).gte("scheduled_at", nowIso)
@@ -177,7 +177,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                           {a.doctor.profile.full_name} · {a.duration_minutes} min{a.notes ? ` · ${a.notes}` : ""}
                         </div>
                       </div>
-                      <AppointmentStatusBadge status={a.status} />
+                      <AppointmentStatusBadge status={a.status} patientResponse={a.patient_response} />
                     </Link>
                   ))}
               </CardContent>
@@ -255,7 +255,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
                         </div>
                       )}
                     </div>
-                    <AppointmentStatusBadge status={a.status} />
+                    <AppointmentStatusBadge status={a.status} patientResponse={a.patient_response} />
                   </Link>
                 );
               })}

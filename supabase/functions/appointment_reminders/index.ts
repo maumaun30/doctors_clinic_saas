@@ -14,6 +14,8 @@
 //   REMINDER_REPLY_TO   optional reply-to address.
 //   SEMAPHORE_API_KEY   Semaphore key. Unset => SMS dry run.
 //   SEMAPHORE_SENDER_NAME  optional approved sender name (defaults to the account's).
+//   APP_URL             The app's public URL, e.g. "https://app.example.com". When set,
+//                       reminders include the patient's confirm/cancel link (/a/<token>).
 //   RESEND_API_URL / SEMAPHORE_API_URL  optional base-URL overrides (tests / proxies).
 //
 // Deployed with --no-verify-jwt (cron calls it), so the function checks
@@ -34,6 +36,7 @@ type Reminder = {
   doctor_name: string;
   clinic_name: string;
   clinic_address: string | null;
+  patient_token: string;
 };
 
 type Channel = "email" | "sms";
@@ -62,19 +65,25 @@ function whenText(iso: string) {
   }).format(new Date(iso));
 }
 
-function buildEmail(r: Reminder) {
+function buildEmail(r: Reminder, link: string | null) {
   const when = whenText(r.scheduled_at);
   const subject = `Reminder: appointment with ${r.doctor_name} on ${when}`;
   const where = r.clinic_address ? `${r.clinic_name}, ${r.clinic_address}` : r.clinic_name;
+  const action = link
+    ? `Please confirm you're coming, or cancel if you can't make it: ${link}`
+    : `If you need to reschedule or cancel, please contact the clinic.`;
   const text =
     `Hi ${r.patient_name},\n\n` +
     `This is a reminder of your appointment with ${r.doctor_name} on ${when} at ${where}.\n\n` +
-    `If you need to reschedule or cancel, please contact the clinic.\n\n— ${r.clinic_name}`;
+    `${action}\n\n— ${r.clinic_name}`;
   const html =
     `<p>Hi ${esc(r.patient_name)},</p>` +
     `<p>This is a reminder of your appointment with <strong>${esc(r.doctor_name)}</strong> ` +
     `on <strong>${esc(when)}</strong> at ${esc(where)}.</p>` +
-    `<p>If you need to reschedule or cancel, please contact the clinic.</p>` +
+    (link
+      ? `<p><a href="${esc(link)}">Confirm or cancel your appointment</a></p>` +
+        `<p>To reschedule, please contact the clinic.</p>`
+      : `<p>If you need to reschedule or cancel, please contact the clinic.</p>`) +
     `<p>— ${esc(r.clinic_name)}</p>`;
   return { subject, text, html };
 }
@@ -180,6 +189,9 @@ Deno.serve(async (req) => {
   const senderName = Deno.env.get("SEMAPHORE_SENDER_NAME") || undefined;
   const semaphoreUrl = Deno.env.get("SEMAPHORE_API_URL") || "https://api.semaphore.co";
 
+  const appUrl = (Deno.env.get("APP_URL") || "").replace(/\/+$/, "");
+  const linkFor = (r: Reminder) => appUrl && r.patient_token ? `${appUrl}/a/${r.patient_token}` : null;
+
   const supabase = createClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
@@ -187,15 +199,15 @@ Deno.serve(async (req) => {
   const email = await runChannel(
     supabase, "email", !resendKey,
     r => r.patient_email,
-    r => buildEmail(r).subject,
-    (r, to) => sendResend(resendUrl, resendKey!, from!, replyTo, to, buildEmail(r),
+    r => buildEmail(r, linkFor(r)).subject,
+    (r, to) => sendResend(resendUrl, resendKey!, from!, replyTo, to, buildEmail(r, linkFor(r)),
       `reminder-${r.appointment_id}-${r.scheduled_at}`),
   );
   const sms = await runChannel(
     supabase, "sms", !semaphoreKey,
     r => normalizePhMobile(r.patient_phone),
-    r => buildSms(r),
-    (r, to) => sendSemaphore(semaphoreUrl, semaphoreKey!, senderName, to, buildSms(r)),
+    r => buildSms(r, linkFor(r)),
+    (r, to) => sendSemaphore(semaphoreUrl, semaphoreKey!, senderName, to, buildSms(r, linkFor(r))),
   );
 
   const ok = [email, sms].every(c => !("error" in c) && c.failed === 0);

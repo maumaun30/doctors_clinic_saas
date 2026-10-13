@@ -91,6 +91,7 @@ const GUIDES: Guide[] = [
         steps: [
           <>When the clinic accepts online bookings, patient requests appear on the schedule with an <strong>Online</strong> badge. Confirm them like any other appointment.</>,
           <>The day before each appointment, patients with an email get an email reminder and patients with a Philippine mobile number get an SMS.</>,
+          <>Reminders include a link where the patient can confirm or cancel. Their answer shows on Today as <strong>Confirmed by patient</strong> or <strong>Cancelled by patient</strong>, and a cancelled time opens up for booking again.</>,
         ],
       },
     ],
