@@ -52,7 +52,7 @@ const FAQ: { title: string; items: QA[] }[] = [
       { q: "How much does it cost?", a: <>After a 14-day free trial, you pay monthly per doctor in your account (minimum of one). Secretaries and admins don’t add to the bill. The current price is on the <strong>Billing</strong> page.</> },
       { q: "Why is everything read-only?", a: <>The trial ended or the subscription isn’t active. Records stay visible, but nothing can be added or changed until an admin subscribes or updates the card under <strong>Billing</strong>.</> },
       { q: "Who can change a doctor’s working hours?", a: <>Admins only, from <strong>Doctors</strong> → the doctor → <strong>Weekly hours</strong>. Doctors can view hours on <strong>Availability</strong>.</> },
-      { q: "Someone left the clinic. How do I remove them?", a: <>Removing staff isn’t available in the app yet. Message support and we’ll remove their access. Pending invites can be revoked from <strong>Team &amp; invites</strong>.</> },
+      { q: "Someone left the clinic. How do I remove them?", a: <>Open them under <strong>Doctors</strong> or <strong>Secretaries</strong> and click <strong>Remove access</strong> (for another admin, use <strong>Remove</strong> on <strong>Team &amp; invites</strong>). They’re signed out and can’t sign in again, their name stays on past records, and a removed doctor stops counting toward your bill. Move or cancel a doctor’s upcoming appointments first. You can restore access later. Pending invites can be revoked from <strong>Team &amp; invites</strong>.</> },
       { q: "Can I see who changed a record?", a: <>Yes. The <strong>Audit log</strong> lists changes to patients, appointments and clinical records, with who made them and when.</> },
     ],
   },

@@ -501,13 +501,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "account_id": string | null,"avatar_path": string | null,"created_at": string,"full_name": string | null,"id": string,"phone": string | null,"role": Database["public"]['Enums']["user_role"]
+                    "account_id": string | null,"avatar_path": string | null,"created_at": string,"deactivated_at": string | null,"deactivated_by": string | null,"full_name": string | null,"id": string,"phone": string | null,"role": Database["public"]['Enums']["user_role"]
                   }
                   Insert: {
-                    "account_id"?: string | null,"avatar_path"?: string | null,"created_at"?: string,"full_name"?: string | null,"id": string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "account_id"?: string | null,"avatar_path"?: string | null,"created_at"?: string,"deactivated_at"?: string | null,"deactivated_by"?: string | null,"full_name"?: string | null,"id": string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Update: {
-                    "account_id"?: string | null,"avatar_path"?: string | null,"created_at"?: string,"full_name"?: string | null,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "account_id"?: string | null,"avatar_path"?: string | null,"created_at"?: string,"deactivated_at"?: string | null,"deactivated_by"?: string | null,"full_name"?: string | null,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Relationships: [
                     {
@@ -516,6 +516,18 @@ isOneToOne: false
 isOneToOne: false
       referencedColumns: ["id"]
       referencedRelation: "accounts"
+    },{
+      columns: ["deactivated_by"]
+      foreignKeyName: "profiles_deactivated_by_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "profiles"
+    },{
+      columns: ["deactivated_by"]
+      foreignKeyName: "profiles_deactivated_by_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "staff_profiles"
     }
                   ]
                 },"staff_invites": {
@@ -579,13 +591,13 @@ isOneToOne: false
           Views: {
             "staff_profiles": {
                   Row: {
-                    "account_id": string | null,"avatar_path": string | null,"full_name": string | null,"id": string | null,"role": Database["public"]['Enums']["user_role"] | null
+                    "account_id": string | null,"active": boolean | null,"avatar_path": string | null,"full_name": string | null,"id": string | null,"role": Database["public"]['Enums']["user_role"] | null
                   }
                   Insert: {
-                           "account_id"?: string | null,"avatar_path"?: string | null,"full_name"?: string | null,"id"?: string | null,"role"?: Database["public"]['Enums']["user_role"] | null
+                           "account_id"?: string | null,"active"?: never,"avatar_path"?: string | null,"full_name"?: string | null,"id"?: string | null,"role"?: Database["public"]['Enums']["user_role"] | null
                          }
                         Update: {
-                           "account_id"?: string | null,"avatar_path"?: string | null,"full_name"?: string | null,"id"?: string | null,"role"?: Database["public"]['Enums']["user_role"] | null
+                           "account_id"?: string | null,"active"?: never,"avatar_path"?: string | null,"full_name"?: string | null,"id"?: string | null,"role"?: Database["public"]['Enums']["user_role"] | null
                          }
                         Relationships: [
                     {
@@ -615,6 +627,8 @@ isOneToOne: false
               "account_id": string | null,
 "avatar_path": string | null,
 "created_at": string,
+"deactivated_at": string | null,
+"deactivated_by": string | null,
 "full_name": string | null,
 "id": string,
 "phone": string | null,
@@ -626,6 +640,9 @@ isOneToOne: false
         isSetofReturn: false
         to: "profiles"
       } },
+"admin_set_staff_active":
+{ Args: { "p_active": boolean,"p_user_id": string }; Returns: undefined
+                           },
 "appointments_for_reminder":
 { Args: { "p_channel"?: string,"p_days_ahead"?: number }; Returns: {
               "appointment_id": string,"clinic_address": string,"clinic_name": string,"doctor_name": string,"duration_minutes": number,"patient_email": string,"patient_name": string,"patient_phone": string,"scheduled_at": string
@@ -661,6 +678,8 @@ isOneToOne: false
               "account_id": string | null,
 "avatar_path": string | null,
 "created_at": string,
+"deactivated_at": string | null,
+"deactivated_by": string | null,
 "full_name": string | null,
 "id": string,
 "phone": string | null,
@@ -672,6 +691,9 @@ isOneToOne: false
         isSetofReturn: false
         to: "profiles"
       } },
+"caller_is_active":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "can_read_medical_record":
 { Args: { "p_record_id": string }; Returns: boolean
                            },

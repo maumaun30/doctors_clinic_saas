@@ -13,7 +13,8 @@ export async function countDoctors(accountId: string): Promise<number> {
     .from("profiles")
     .select("id", { count: "exact", head: true })
     .eq("account_id", accountId)
-    .eq("role", "doctor");
+    .eq("role", "doctor")
+    .is("deactivated_at", null); // removed doctors aren't billed
   if (error) throw new Error(error.message);
   return count ?? 0;
 }

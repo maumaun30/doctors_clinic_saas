@@ -155,6 +155,7 @@ const GUIDES: Guide[] = [
         steps: [
           <>People who sign up without an invite wait under <strong>Team &amp; invites</strong>. Pick a role to let them in.</>,
           <>Set or change a doctor’s or secretary’s photo and details from their page under Doctors or Secretaries.</>,
+          <>When someone leaves, open their page and click <strong>Remove access</strong>. They can’t sign in again, their past records keep their name, and removed doctors stop counting toward billing. Move or cancel a doctor’s upcoming appointments first.</>,
           <>The <strong>Audit log</strong> shows who changed patient, appointment and clinical records, and when.</>,
         ],
       },

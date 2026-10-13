@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StaffAccessCard } from "../../staff-access-card";
 import { UserAvatar } from "@/app/_components/user-avatar";
 import { AvatarField } from "@/app/_components/avatar-field";
 import { avatarUrl } from "@/lib/avatar";
@@ -25,7 +26,7 @@ export default async function DoctorDetail({ params }: { params: Promise<{ id: s
   if (me?.role !== "admin") redirect("/today");
 
   const [docRes, dcRes, clinicsRes, availRes] = await Promise.all([
-    sb.from("doctors").select("profile_id, specialization, prc_license_no, profiles!inner(full_name, avatar_path)").eq("profile_id", id).maybeSingle(),
+    sb.from("doctors").select("profile_id, specialization, prc_license_no, profiles!inner(full_name, avatar_path, deactivated_at)").eq("profile_id", id).maybeSingle(),
     sb.from("doctor_clinics").select("clinic_id, clinic:clinics!inner(name)").eq("doctor_id", id),
     sb.from("clinics").select("id, name").order("name"),
     sb.from("doctor_availability").select("id, clinic_id, weekday, start_time, end_time").eq("doctor_id", id),
@@ -107,6 +108,7 @@ export default async function DoctorDetail({ params }: { params: Promise<{ id: s
             </Card>
           );
         })}
+        <StaffAccessCard userId={id} name={name} role="doctor" deactivatedAt={d.profiles.deactivated_at} />
       </div>
     </>
   );

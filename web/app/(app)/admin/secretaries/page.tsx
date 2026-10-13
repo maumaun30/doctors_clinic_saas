@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/app/_components/user-avatar";
 import { avatarUrl } from "@/lib/avatar";
 import { AlertTriangleIcon, ChevronRightIcon, UserPlusIcon, UsersRoundIcon } from "lucide-react";
@@ -12,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 export default async function SecretariesAdmin() {
   const sb = await createClient();
   const [secRes, caRes, dcRes] = await Promise.all([
-    sb.from("profiles").select("id, full_name, phone, avatar_path").eq("role", "secretary").order("full_name"),
+    sb.from("profiles").select("id, full_name, phone, avatar_path, deactivated_at").eq("role", "secretary").order("full_name"),
     sb.from("clinic_assignments").select("secretary_id, doctor_clinic_id"),
     sb.from("doctor_clinics").select("id, doctor:doctors!inner(profiles!inner(full_name)), clinic:clinics!inner(name)"),
   ]);
@@ -24,14 +25,16 @@ export default async function SecretariesAdmin() {
   const secretaries = secRes.data.map(s => {
     const mine = (caRes.data ?? []).filter(a => a.secretary_id === s.id)
       .map(a => pairLabel.get(a.doctor_clinic_id)).filter(Boolean) as { doctor: string; clinic: string }[];
-    return { ...s, doctors: mine, clinics: [...new Set(mine.map(m => m.clinic))].sort() };
-  });
-  const unassigned = secretaries.filter(s => s.doctors.length === 0).length;
+    return { ...s, removed: Boolean(s.deactivated_at), doctors: mine, clinics: [...new Set(mine.map(m => m.clinic))].sort() };
+  }).sort((a, b) => Number(a.removed) - Number(b.removed));
+  const active = secretaries.filter(s => !s.removed);
+  const removed = secretaries.length - active.length;
+  const unassigned = active.filter(s => s.doctors.length === 0).length;
 
   return (
     <>
       <PageHeader icon="users" title="Secretaries"
-        sub={`${secretaries.length} ${secretaries.length === 1 ? "secretary" : "secretaries"}${unassigned ? ` · ${unassigned} not assigned to any doctor` : ""}`}
+        sub={`${active.length} ${active.length === 1 ? "secretary" : "secretaries"}${unassigned ? ` · ${unassigned} not assigned to any doctor` : ""}${removed ? ` · ${removed} removed` : ""}`}
         actions={<Button asChild><Link href="/admin/users?role=secretary"><UserPlusIcon /> Invite secretary</Link></Button>} />
 
       {secretaries.length === 0 ? (
@@ -58,18 +61,20 @@ export default async function SecretariesAdmin() {
             </TableHeader>
             <TableBody>
               {secretaries.map(s => (
-                <TableRow key={s.id} className="group">
+                <TableRow key={s.id} className={cn("group", s.removed && "text-muted-foreground")}>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <UserAvatar name={s.full_name ?? ""} src={avatarUrl(s.avatar_path)} />
                       <span className="min-w-0">
-                        <Link href={`/admin/secretaries/${s.id}`} className="block font-medium group-hover:underline">{s.full_name}</Link>
+                        <Link href={`/admin/secretaries/${s.id}`} className="block font-medium group-hover:underline">
+                          {s.full_name}{s.removed && <Badge variant="outline" className="ml-2 align-middle">Access removed</Badge>}
+                        </Link>
                         <span className="block text-xs text-muted-foreground">{s.phone ?? "No phone"}</span>
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-normal">
-                    {s.doctors.length
+                    {s.removed ? <span className="text-sm">—</span> : s.doctors.length
                       ? <div className="flex flex-wrap gap-1">
                           {[...new Set(s.doctors.map(d => d.doctor))].sort().map(d => <Badge key={d} variant="secondary">{d}</Badge>)}
                         </div>

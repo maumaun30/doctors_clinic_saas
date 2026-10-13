@@ -18,6 +18,7 @@ const friendly = (m: string) =>
   : /user already registered/i.test(m) ? "That email already has an account. Sign in instead."
   : /password should be at least/i.test(m) ? "Use a password of at least 8 characters."
   : /rate limit|too many/i.test(m) ? "Too many attempts. Wait a minute and try again."
+  : /banned/i.test(m) ? "Your access to this clinic was removed. Contact your clinic admin if this is a mistake."
   : m;
 
 // Apple + Facebook OAuth removed for now (testing). To re-enable: add the
