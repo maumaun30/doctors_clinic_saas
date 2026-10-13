@@ -1,5 +1,5 @@
-import { StatsListSkeleton } from "@/app/_components/skeleton";
+import { TodaySkeleton } from "@/app/_components/skeleton";
 
 export default function Loading() {
-  return <StatsListSkeleton />;
+  return <TodaySkeleton />;
 }

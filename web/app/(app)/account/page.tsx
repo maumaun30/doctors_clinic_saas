@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/browser";
 import { updateMyProfile } from "@/lib/actions/profile";
 import { signOut } from "@/lib/actions/auth";
 import { ProviderLogo } from "@/app/_components/brand-icons";
-import { Skeleton } from "@/app/_components/skeleton";
+import { AccountSkeleton } from "@/app/_components/skeleton";
 import { ThemeToggle } from "@/app/_components/theme-toggle";
 import { Icon } from "@/app/_components/icons";
 import { PageHeader } from "@/app/_components/page-header";
@@ -129,34 +129,7 @@ export default function AccountPage() {
       : { kind: "ok", text: `We sent a password reset link to ${email}.` });
   };
 
-  if (loading) {
-    return (
-      <div role="status" aria-label="Loading" className="skeleton-page">
-        <div className="page-head">
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <Skeleton w={48} h={48} r={999} />
-            <div>
-              <Skeleton w={160} h={22} />
-              <Skeleton w={220} h={13} style={{ marginTop: 8 }} />
-            </div>
-          </div>
-        </div>
-        {[0, 1, 2].map(i => (
-          <div key={i} className="settings-section">
-            <div className="settings-intro">
-              <Skeleton w={110} h={15} />
-              <Skeleton w="90%" h={12} style={{ marginTop: 10 }} />
-              <Skeleton w="70%" h={12} style={{ marginTop: 6 }} />
-            </div>
-            <div className="card settings-card">
-              <Skeleton w="100%" h={36} r={8} />
-              <Skeleton w="100%" h={36} r={8} style={{ marginTop: 12 }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  if (loading) return <AccountSkeleton />;
 
   const identityFor = (p: string) => identities.find(i => i.provider === p);
   const hasEmail = Boolean(identityFor("email"));

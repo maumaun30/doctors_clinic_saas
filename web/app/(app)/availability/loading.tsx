@@ -1,5 +1,5 @@
-import { TableFormSkeleton } from "@/app/_components/skeleton";
+import { AvailabilitySkeleton } from "@/app/_components/skeleton";
 
 export default function Loading() {
-  return <TableFormSkeleton rows={5} fields={4} />;
+  return <AvailabilitySkeleton />;
 }

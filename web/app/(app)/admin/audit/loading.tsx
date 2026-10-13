@@ -1,5 +1,5 @@
-import { FilteredListSkeleton } from "@/app/_components/skeleton";
+import { AuditSkeleton } from "@/app/_components/skeleton";
 
 export default function Loading() {
-  return <FilteredListSkeleton rows={10} filters={3} />;
+  return <AuditSkeleton />;
 }
