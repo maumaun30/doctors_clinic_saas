@@ -449,6 +449,49 @@ isOneToOne: false
       referencedRelation: "patients"
     }
                   ]
+                },"patient_not_duplicates": {
+                  Row: {
+                    "account_id": string,"dismissed_at": string,"dismissed_by": string | null,"patient_a": string,"patient_b": string
+                  }
+                  Insert: {
+                    "account_id": string,"dismissed_at"?: string,"dismissed_by"?: string | null,"patient_a": string,"patient_b": string
+                  }
+                  Update: {
+                    "account_id"?: string,"dismissed_at"?: string,"dismissed_by"?: string | null,"patient_a"?: string,"patient_b"?: string
+                  }
+                  Relationships: [
+                    {
+      columns: ["account_id"]
+      foreignKeyName: "patient_not_duplicates_account_id_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "accounts"
+    },{
+      columns: ["dismissed_by"]
+      foreignKeyName: "patient_not_duplicates_dismissed_by_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "profiles"
+    },{
+      columns: ["dismissed_by"]
+      foreignKeyName: "patient_not_duplicates_dismissed_by_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "staff_profiles"
+    },{
+      columns: ["patient_a"]
+      foreignKeyName: "patient_not_duplicates_patient_a_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "patients"
+    },{
+      columns: ["patient_b"]
+      foreignKeyName: "patient_not_duplicates_patient_b_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "patients"
+    }
+                  ]
                 },"patients": {
                   Row: {
                     "account_id": string,"address": string | null,"created_at": string,"date_of_birth": string | null,"email": string | null,"full_name": string,"id": string,"phone": string | null,"sex": Database["public"]['Enums']["sex_type"] | null
@@ -640,6 +683,14 @@ isOneToOne: false
         isSetofReturn: false
         to: "profiles"
       } },
+"admin_find_duplicate_patients":
+{ Args: { "p_limit"?: number }; Returns: {
+              "patient_a": string,"patient_b": string,"reason": string
+            }[]
+                           },
+"admin_merge_patients":
+{ Args: { "p_keep": string,"p_remove": string }; Returns: Json
+                           },
 "admin_set_staff_active":
 { Args: { "p_active": boolean,"p_user_id": string }; Returns: undefined
                            },
