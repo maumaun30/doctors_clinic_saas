@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { UserAvatar } from "@/app/_components/user-avatar";
+import { avatarUrl } from "@/lib/avatar";
 import { AlertTriangleIcon, ChevronRightIcon, UserPlusIcon, UserRoundXIcon } from "lucide-react";
 import { PageHeader } from "@/app/_components/page-header";
 import { createClient } from "@/lib/supabase/server";
@@ -9,13 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const WEEK = [1, 2, 3, 4, 5, 6, 0];
 const mins = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
-const initials = (n: string) => n.replace(/^Dr\.?\s+/i, "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase()).join("") || "?";
 
 export default async function DoctorsAdmin() {
   const sb = await createClient();
   const now = Date.now();
   const [docsRes, dcRes, availRes, apptRes] = await Promise.all([
-    sb.from("doctors").select("profile_id, specialization, prc_license_no, profiles!inner(full_name)"),
+    sb.from("doctors").select("profile_id, specialization, prc_license_no, profiles!inner(full_name, avatar_path)"),
     sb.from("doctor_clinics").select("doctor_id, clinic:clinics!inner(name)"),
     sb.from("doctor_availability").select("doctor_id, weekday, start_time, end_time"),
     sb.from("appointments").select("doctor_id, status, scheduled_at")
@@ -33,6 +34,7 @@ export default async function DoctorsAdmin() {
     return {
       profile_id: id,
       name: d.profiles.full_name as string,
+      avatar: avatarUrl(d.profiles.avatar_path),
       specialization: d.specialization as string | null,
       prc_license_no: d.prc_license_no as string | null,
       clinics: (dcRes.data ?? []).filter(x => x.doctor_id === id).map(x => (x.clinic as any).name as string).sort(),
@@ -81,7 +83,7 @@ export default async function DoctorsAdmin() {
                 <TableRow key={d.profile_id} className="group">
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <span className="avatar">{initials(d.name)}</span>
+                      <UserAvatar name={d.name} src={d.avatar} />
                       <span className="min-w-0">
                         <Link href={`/admin/doctors/${d.profile_id}`} className="block font-medium group-hover:underline">{d.name}</Link>
                         <span className="block text-xs text-muted-foreground">

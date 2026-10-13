@@ -63,7 +63,7 @@ export default async function PatientDetail({ params }: { params: Promise<{ id: 
   }
 
   const nowIso = new Date().toISOString();
-  const appt = "id, scheduled_at, status, duration_minutes, notes, doctor:doctors!inner(profile:profiles!inner(full_name))";
+  const appt = "id, scheduled_at, status, duration_minutes, notes, doctor:doctors!inner(profile:staff_profiles!inner(full_name))";
   const [upcomingRes, pastRes] = await Promise.all([
     sb.from("appointments").select(appt)
       .eq("patient_id", id).gte("scheduled_at", nowIso)

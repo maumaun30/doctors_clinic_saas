@@ -18,7 +18,7 @@ export default async function AvailabilityPage() {
   const activeClinic = await getActiveClinicId(sb);
 
   let dcQuery = sb.from("doctor_clinics")
-    .select("doctor_id, clinic_id, doctor:doctors!inner(profiles!inner(full_name)), clinic:clinics!inner(name)");
+    .select("doctor_id, clinic_id, doctor:doctors!inner(profiles:staff_profiles!inner(full_name)), clinic:clinics!inner(name)");
   if (isDoctor) dcQuery = dcQuery.eq("doctor_id", me.id);
   if (activeClinic) dcQuery = dcQuery.eq("clinic_id", activeClinic);
   const [{ data: dcs, error: dcErr }, { data: rows, error: avErr }] = await Promise.all([

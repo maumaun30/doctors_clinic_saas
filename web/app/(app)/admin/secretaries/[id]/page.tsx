@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { UserAvatar } from "@/app/_components/user-avatar";
+import { avatarUrl } from "@/lib/avatar";
 import { notFound, redirect } from "next/navigation";
 import { StethoscopeIcon, XIcon } from "lucide-react";
 import { PageHeader } from "@/app/_components/page-header";
@@ -12,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddAssignment, SecretaryProfileForm } from "./secretary-forms";
 
-const initials = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase()).join("") || "?";
 
 export default async function SecretaryDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,7 +22,7 @@ export default async function SecretaryDetail({ params }: { params: Promise<{ id
   if (me?.role !== "admin") redirect("/today");
 
   const [secRes, caRes, dcRes] = await Promise.all([
-    sb.from("profiles").select("id, full_name, phone").eq("id", id).eq("role", "secretary").maybeSingle(),
+    sb.from("profiles").select("id, full_name, phone, avatar_path").eq("id", id).eq("role", "secretary").maybeSingle(),
     sb.from("clinic_assignments").select("id, doctor_clinic_id").eq("secretary_id", id),
     sb.from("doctor_clinics").select("id, doctor:doctors!inner(profiles!inner(full_name)), clinic:clinics!inner(name)"),
   ]);
@@ -40,7 +41,7 @@ export default async function SecretaryDetail({ params }: { params: Promise<{ id
       <PageHeader
         leading={<>
           <Button asChild variant="ghost" size="icon"><Link href="/admin/secretaries" aria-label="Back to secretaries"><Icon name="back" /></Link></Button>
-          <span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(s.full_name ?? "")}</span>
+          <UserAvatar name={s.full_name ?? ""} src={avatarUrl(s.avatar_path)} className="size-12" fallbackClassName="text-base" />
         </>}
         title={s.full_name ?? "Secretary"}
         sub={[`Secretary`, s.phone, `${assigned.length} doctor${assigned.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ")} />

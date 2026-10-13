@@ -61,6 +61,12 @@ isOneToOne: false
       referencedColumns: ["id"]
       referencedRelation: "profiles"
     },{
+      columns: ["created_by"]
+      foreignKeyName: "appointments_created_by_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "staff_profiles"
+    },{
       columns: ["doctor_id"]
       foreignKeyName: "appointments_doctor_id_fkey"
 isOneToOne: false
@@ -110,6 +116,12 @@ isOneToOne: false
 isOneToOne: false
       referencedColumns: ["id"]
       referencedRelation: "profiles"
+    },{
+      columns: ["secretary_id"]
+      foreignKeyName: "clinic_assignments_secretary_id_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "staff_profiles"
     }
                   ]
                 },"clinics": {
@@ -255,6 +267,12 @@ isOneToOne: false
 isOneToOne: true
       referencedColumns: ["id"]
       referencedRelation: "profiles"
+    },{
+      columns: ["profile_id"]
+      foreignKeyName: "doctors_profile_id_fkey"
+isOneToOne: true
+      referencedColumns: ["id"]
+      referencedRelation: "staff_profiles"
     }
                   ]
                 },"lab_orders": {
@@ -311,6 +329,12 @@ isOneToOne: false
 isOneToOne: false
       referencedColumns: ["id"]
       referencedRelation: "profiles"
+    },{
+      columns: ["uploaded_by"]
+      foreignKeyName: "lab_result_files_uploaded_by_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "staff_profiles"
     }
                   ]
                 },"medical_records": {
@@ -477,13 +501,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "account_id": string | null,"created_at": string,"full_name": string | null,"id": string,"phone": string | null,"role": Database["public"]['Enums']["user_role"]
+                    "account_id": string | null,"avatar_path": string | null,"created_at": string,"full_name": string | null,"id": string,"phone": string | null,"role": Database["public"]['Enums']["user_role"]
                   }
                   Insert: {
-                    "account_id"?: string | null,"created_at"?: string,"full_name"?: string | null,"id": string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "account_id"?: string | null,"avatar_path"?: string | null,"created_at"?: string,"full_name"?: string | null,"id": string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Update: {
-                    "account_id"?: string | null,"created_at"?: string,"full_name"?: string | null,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "account_id"?: string | null,"avatar_path"?: string | null,"created_at"?: string,"full_name"?: string | null,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Relationships: [
                     {
@@ -512,6 +536,12 @@ isOneToOne: false
       referencedColumns: ["id"]
       referencedRelation: "profiles"
     },{
+      columns: ["accepted_by"]
+      foreignKeyName: "staff_invites_accepted_by_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "staff_profiles"
+    },{
       columns: ["account_id"]
       foreignKeyName: "staff_invites_account_id_fkey"
 isOneToOne: false
@@ -523,6 +553,12 @@ isOneToOne: false
 isOneToOne: false
       referencedColumns: ["id"]
       referencedRelation: "profiles"
+    },{
+      columns: ["invited_by"]
+      foreignKeyName: "staff_invites_invited_by_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "staff_profiles"
     }
                   ]
                 },"stripe_events": {
@@ -541,7 +577,26 @@ isOneToOne: false
                 }
           }
           Views: {
-            [_ in never]: never
+            "staff_profiles": {
+                  Row: {
+                    "account_id": string | null,"avatar_path": string | null,"full_name": string | null,"id": string | null,"role": Database["public"]['Enums']["user_role"] | null
+                  }
+                  Insert: {
+                           "account_id"?: string | null,"avatar_path"?: string | null,"full_name"?: string | null,"id"?: string | null,"role"?: Database["public"]['Enums']["user_role"] | null
+                         }
+                        Update: {
+                           "account_id"?: string | null,"avatar_path"?: string | null,"full_name"?: string | null,"id"?: string | null,"role"?: Database["public"]['Enums']["user_role"] | null
+                         }
+                        Relationships: [
+                    {
+      columns: ["account_id"]
+      foreignKeyName: "profiles_account_id_fkey"
+isOneToOne: false
+      referencedColumns: ["id"]
+      referencedRelation: "accounts"
+    }
+                  ]
+                }
           }
           Functions: {
             "_resolve_account_id":
@@ -558,6 +613,7 @@ isOneToOne: false
 "admin_assign_user":
 { Args: { "p_account_id"?: string,"p_role": Database["public"]['Enums']["user_role"],"p_user_id": string }; Returns: {
               "account_id": string | null,
+"avatar_path": string | null,
 "created_at": string,
 "full_name": string | null,
 "id": string,
@@ -603,6 +659,7 @@ isOneToOne: false
 "bootstrap_first_admin":
 { Args: { "p_account_name": string,"p_email": string }; Returns: {
               "account_id": string | null,
+"avatar_path": string | null,
 "created_at": string,
 "full_name": string | null,
 "id": string,

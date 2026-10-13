@@ -7,7 +7,7 @@ export async function getMyProfile(sb: SupabaseClient) {
   if (!user) return null;
   const { data, error } = await sb
     .from("profiles")
-    .select("id, role, account_id, full_name, phone")
+    .select("id, role, account_id, full_name, phone, avatar_path")
     .eq("id", user.id)
     .single();
   if (error) throw error;
@@ -78,7 +78,7 @@ export async function getBookingOptions(sb: SupabaseClient, activeClinic: string
   const [patients, dcRes] = await Promise.all([
     listPatients(sb),
     sb.from("doctor_clinics")
-      .select("doctor_id, clinic_id, doctor:doctors!inner(profiles!inner(full_name)), clinic:clinics!inner(name)"),
+      .select("doctor_id, clinic_id, doctor:doctors!inner(profiles:staff_profiles!inner(full_name)), clinic:clinics!inner(name)"),
   ]);
   if (dcRes.error) throw dcRes.error;
 

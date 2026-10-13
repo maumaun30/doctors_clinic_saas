@@ -72,7 +72,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     return count ?? 0;
   };
 
-  let dcq = sb.from("doctor_clinics").select("doctor_id, doctor:doctors!inner(profiles!inner(full_name))");
+  let dcq = sb.from("doctor_clinics").select("doctor_id, doctor:doctors!inner(profiles:staff_profiles!inner(full_name))");
   if (activeClinic) dcq = dcq.eq("clinic_id", activeClinic);
 
   const [cur, prev, newCur, newPrev, { data: dcData }, clinicRes] = await Promise.all([
