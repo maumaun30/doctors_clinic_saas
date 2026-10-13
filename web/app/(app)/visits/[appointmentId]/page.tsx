@@ -103,7 +103,7 @@ export default async function VisitPage({ params }: { params: Promise<{ appointm
           : "Visit"}
         sub={sub}
         actions={<>
-          <AppointmentStatusBadge status={appt.status} />
+          <AppointmentStatusBadge status={appt.status} patientResponse={appt.patient_response} />
           {closed && record && (
             <Button asChild variant="outline">
               <Link href={`/visits/${appointmentId}/rx`}><PrinterIcon /> Print prescription</Link>
@@ -176,7 +176,7 @@ export default async function VisitPage({ params }: { params: Promise<{ appointm
             <ClipboardXIcon className="size-5" />
           </div>
           <div className="text-sm text-muted-foreground">
-            This appointment was <AppointmentStatusBadge status={appt.status} /> — no medical record was written.
+            This appointment was <AppointmentStatusBadge status={appt.status} patientResponse={appt.patient_response} /> — no medical record was written.
           </div>
         </div>
       )}

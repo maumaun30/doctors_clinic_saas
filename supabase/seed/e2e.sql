@@ -85,4 +85,11 @@ insert into appointments (id, patient_id, doctor_id, clinic_id, scheduled_at, st
    'e2e00000-0000-0000-0000-0000000000d1', 'e2e00000-0000-0000-0000-0000000000c1',
    date_trunc('hour', now()) - interval '2 days', 'confirmed', 'Cough for 5 days');
 
+-- Tomorrow 10:00 Manila, with a known reminder-link token for the patient-link test.
+insert into appointments (id, patient_id, doctor_id, clinic_id, scheduled_at, status, patient_token) values
+  ('e2e00000-0000-0000-0000-000000000202', 'e2e00000-0000-0000-0000-000000000101',
+   'e2e00000-0000-0000-0000-0000000000d1', 'e2e00000-0000-0000-0000-0000000000c1',
+   ((now() at time zone 'Asia/Manila')::date + 1 + time '10:00') at time zone 'Asia/Manila', 'scheduled',
+   'e2e00000000000000001');
+
 commit;

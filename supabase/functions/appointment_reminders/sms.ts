@@ -36,21 +36,32 @@ function whenShort(iso: string): string {
 /**
  * Reminder text, guaranteed ASCII and ≤160 chars. Always starts with
  * "Reminder:" — Semaphore silently drops messages that start with "TEST".
+ * With `link` (the patient's confirm/cancel page) the link is kept whole
+ * and names are shortened to fit; if it can't fit, it's left out.
  */
-export function buildSms(r: { scheduled_at: string; doctor_name: string; clinic_name: string }): string {
+export function buildSms(r: { scheduled_at: string; doctor_name: string; clinic_name: string }, link?: string | null): string {
+  if (link) {
+    const withLink = fit(r, ` Confirm/cancel: ${link}`, 10);
+    if (withLink) return withLink;
+  }
+  return fit(r, " To reschedule, call the clinic.", 12)
+    ?? clip(`Reminder: ${toAscii(r.doctor_name)}, ${whenShort(r.scheduled_at)} at ${toAscii(r.clinic_name)}.`, MAX_LEN);
+}
+
+/** "Reminder: <doctor>, <when> at <clinic>.<tail>", shrinking names to fit; null if even short names don't. */
+function fit(r: { scheduled_at: string; doctor_name: string; clinic_name: string }, tail: string, minName: number): string | null {
   const when = whenShort(r.scheduled_at);
-  const tail = " To reschedule, call the clinic.";
   const doctor = toAscii(r.doctor_name);
   const clinic = toAscii(r.clinic_name);
   const make = (d: string, c: string) => `Reminder: ${d}, ${when} at ${c}.${tail}`;
 
-  let msg = make(doctor, clinic);
+  const msg = make(doctor, clinic);
   if (msg.length <= MAX_LEN) return msg;
-  // Shrink the clinic name first, then the doctor's, then drop the tail.
-  const fixed = make("", "").length;
-  const budget = MAX_LEN - fixed;
-  const d = clip(doctor, Math.max(12, Math.floor(budget / 2)));
+  // Shrink the clinic name first, then the doctor's.
+  const budget = MAX_LEN - make("", "").length;
+  if (budget < minName + 8) return null;
+  const d = clip(doctor, Math.max(minName, Math.floor(budget / 2)));
   const c = clip(clinic, Math.max(8, budget - d.length));
-  msg = make(d, c);
-  return msg.length <= MAX_LEN ? msg : clip(`Reminder: ${d}, ${when} at ${c}.`, MAX_LEN);
+  const out = make(d, c);
+  return out.length <= MAX_LEN ? out : null;
 }

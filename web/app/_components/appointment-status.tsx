@@ -8,10 +8,19 @@ const STATUS: Record<string, { variant: BadgeVariant; label: string }> = {
   no_show:   { variant: "destructive", label: "No-show" },
 };
 
-/** Colored badge for an appointment status (with a leading dot). */
-export function AppointmentStatusBadge({ status }: { status: string }) {
+/**
+ * Colored badge for an appointment status (with a leading dot). Pass the
+ * appointment's patient_response to mark ones the patient confirmed or
+ * cancelled from their reminder link.
+ */
+export function AppointmentStatusBadge({ status, patientResponse }: { status: string; patientResponse?: string | null }) {
   const s = STATUS[status] ?? { variant: "secondary" as const, label: status };
-  return <Badge variant={s.variant}><span className="dot" />{s.label}</Badge>;
+  const byPatient = patientResponse != null && patientResponse === status;
+  return (
+    <Badge variant={s.variant} title={byPatient ? `${s.label} by the patient from their reminder link` : undefined}>
+      <span className="dot" />{s.label}{byPatient && " by patient"}
+    </Badge>
+  );
 }
 
 const LAB: Record<string, { variant: BadgeVariant; label: string }> = {

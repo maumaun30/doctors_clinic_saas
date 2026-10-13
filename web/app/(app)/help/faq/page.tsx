@@ -32,6 +32,7 @@ const FAQ: { title: string; items: QA[] }[] = [
       </ul> },
       { q: "Why can’t I book a doctor at a certain time?", a: <>Only open times are offered. A time is unavailable if the doctor doesn’t work then at that clinic, it’s already booked, or it’s in the past. If a doctor has no times at all, an admin needs to link them to the clinic and set their weekly hours under <strong>Doctors</strong>.</> },
       { q: "How do I reschedule or cancel?", a: <>Use the <strong>⋯</strong> menu on the appointment in Today or Schedule and choose <strong>Reschedule</strong> or <strong>Cancel appointment</strong>.</> },
+      { q: "What does “Confirmed by patient” mean?", a: <>The patient used the link in their reminder to confirm. Patients can also cancel from that link up to 2 hours before the visit; it then shows as <strong>Cancelled by patient</strong> and the time is free to book. Closer than 2 hours, they’re asked to call you.</> },
       { q: "A patient didn’t get a reminder.", a: <>Reminders go out the day before, by email if the patient has one on file and by SMS if they have a Philippine mobile number. Check their details on their chart. Messages can also be delayed or filtered by the patient’s email provider or mobile network.</> },
       { q: "What is the “Online” badge?", a: <>The patient booked through the clinic’s online booking page. Treat it like any other appointment: confirm, reschedule or cancel it.</> },
     ],

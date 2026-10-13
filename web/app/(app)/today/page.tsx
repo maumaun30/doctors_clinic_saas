@@ -7,17 +7,10 @@ import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { setAppointmentStatus } from "@/lib/actions/appointments";
 import { Icon } from "@/app/_components/icons";
 import { Button } from "@/components/ui/button";
-import { Badge, type BadgeVariant } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
+import { AppointmentStatusBadge } from "@/app/_components/appointment-status";
 import { StatCard } from "@/app/_components/stat-card";
 import { BookDialog } from "@/app/(app)/schedule/book-dialog";
-
-const STATUS_BADGE: Record<string, { variant: BadgeVariant; label: string }> = {
-  scheduled: { variant: "secondary",   label: "Scheduled" },
-  confirmed: { variant: "info",        label: "Confirmed" },
-  completed: { variant: "success",     label: "Completed" },
-  cancelled: { variant: "destructive", label: "Cancelled" },
-  no_show:   { variant: "destructive", label: "No-show" },
-};
 
 export default async function TodayPage() {
   const sb = await createClient();
@@ -33,7 +26,7 @@ export default async function TodayPage() {
   const toIso = `${ymd}T23:59:59+08:00`;
 
   let q = sb.from("appointments")
-    .select("id, scheduled_at, duration_minutes, status, notes, source, patient:patients!inner(id, full_name, phone)")
+    .select("id, scheduled_at, duration_minutes, status, patient_response, notes, source, patient:patients!inner(id, full_name, phone)")
     .gte("scheduled_at", fromIso)
     .lte("scheduled_at", toIso)
     .order("scheduled_at");
@@ -70,7 +63,6 @@ export default async function TodayPage() {
 
   const row = (a: any) => {
     const active = a.status === "scheduled" || a.status === "confirmed";
-    const badge = STATUS_BADGE[a.status] ?? STATUS_BADGE.scheduled;
     return (
       <div className="queue-row" key={a.id}>
         <div className="queue-time">
@@ -89,7 +81,7 @@ export default async function TodayPage() {
         </div>
         <div className="queue-actions">
           {a.source === "online" && <Badge variant="info" title="Booked by the patient online">Online</Badge>}
-          <Badge variant={badge.variant}><span className="dot" />{badge.label}</Badge>
+          <AppointmentStatusBadge status={a.status} patientResponse={a.patient_response} />
           {a.status === "scheduled" && (
             <form action={mark}>
               <input type="hidden" name="appointment_id" value={a.id} />

@@ -39,13 +39,13 @@ isOneToOne: false
                   ]
                 },"appointments": {
                   Row: {
-                    "clinic_id": string,"created_at": string,"created_by": string | null,"doctor_id": string,"duration_minutes": number,"id": string,"notes": string | null,"patient_id": string,"scheduled_at": string,"source": string,"status": Database["public"]['Enums']["appointment_status"]
+                    "clinic_id": string,"created_at": string,"created_by": string | null,"doctor_id": string,"duration_minutes": number,"id": string,"notes": string | null,"patient_id": string,"patient_responded_at": string | null,"patient_response": string | null,"patient_token": string,"scheduled_at": string,"source": string,"status": Database["public"]['Enums']["appointment_status"]
                   }
                   Insert: {
-                    "clinic_id": string,"created_at"?: string,"created_by"?: string | null,"doctor_id": string,"duration_minutes"?: number,"id"?: string,"notes"?: string | null,"patient_id": string,"scheduled_at": string,"source"?: string,"status"?: Database["public"]['Enums']["appointment_status"]
+                    "clinic_id": string,"created_at"?: string,"created_by"?: string | null,"doctor_id": string,"duration_minutes"?: number,"id"?: string,"notes"?: string | null,"patient_id": string,"patient_responded_at"?: string | null,"patient_response"?: string | null,"patient_token"?: string,"scheduled_at": string,"source"?: string,"status"?: Database["public"]['Enums']["appointment_status"]
                   }
                   Update: {
-                    "clinic_id"?: string,"created_at"?: string,"created_by"?: string | null,"doctor_id"?: string,"duration_minutes"?: number,"id"?: string,"notes"?: string | null,"patient_id"?: string,"scheduled_at"?: string,"source"?: string,"status"?: Database["public"]['Enums']["appointment_status"]
+                    "clinic_id"?: string,"created_at"?: string,"created_by"?: string | null,"doctor_id"?: string,"duration_minutes"?: number,"id"?: string,"notes"?: string | null,"patient_id"?: string,"patient_responded_at"?: string | null,"patient_response"?: string | null,"patient_token"?: string,"scheduled_at"?: string,"source"?: string,"status"?: Database["public"]['Enums']["appointment_status"]
                   }
                   Relationships: [
                     {
@@ -696,7 +696,7 @@ isOneToOne: false
                            },
 "appointments_for_reminder":
 { Args: { "p_channel"?: string,"p_days_ahead"?: number }; Returns: {
-              "appointment_id": string,"clinic_address": string,"clinic_name": string,"doctor_name": string,"duration_minutes": number,"patient_email": string,"patient_name": string,"patient_phone": string,"scheduled_at": string
+              "appointment_id": string,"clinic_address": string,"clinic_name": string,"doctor_name": string,"duration_minutes": number,"patient_email": string,"patient_name": string,"patient_phone": string,"patient_token": string,"scheduled_at": string
             }[]
                            },
 "available_slots":
@@ -714,6 +714,9 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "patient_id": string,
+"patient_responded_at": string | null,
+"patient_response": string | null,
+"patient_token": string,
 "scheduled_at": string,
 "source": string,
 "status": Database["public"]['Enums']["appointment_status"]
@@ -843,6 +846,11 @@ isOneToOne: false
               "account_id": string,"current_period_end": string,"doctor_count": number,"has_customer": boolean,"is_active": boolean,"seat_quantity": number,"subscription_status": string,"trial_ends_at": string
             }[]
                            },
+"public_appointment":
+{ Args: { "p_token": string }; Returns: {
+              "can_cancel": boolean,"can_confirm": boolean,"clinic_address": string,"clinic_name": string,"doctor_name": string,"duration_minutes": number,"patient_first_name": string,"patient_response": string,"scheduled_at": string,"status": Database["public"]['Enums']["appointment_status"]
+            }[]
+                           },
 "public_available_slots":
 { Args: { "p_date_local": string,"p_doctor_id": string,"p_slug": string }; Returns: {
               "slot_start": string
@@ -858,6 +866,9 @@ isOneToOne: false
               "clinic_address": string,"clinic_id": string,"clinic_name": string,"doctors": Json
             }[]
                            },
+"public_respond_appointment":
+{ Args: { "p_action": string,"p_token": string }; Returns: Database["public"]['Enums']["appointment_status"]
+                           },
 "reschedule_appointment":
 { Args: { "p_appointment_id": string,"p_duration_minutes"?: number,"p_scheduled_at": string }; Returns: {
               "clinic_id": string,
@@ -868,6 +879,9 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "patient_id": string,
+"patient_responded_at": string | null,
+"patient_response": string | null,
+"patient_token": string,
 "scheduled_at": string,
 "source": string,
 "status": Database["public"]['Enums']["appointment_status"]
@@ -888,6 +902,9 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "patient_id": string,
+"patient_responded_at": string | null,
+"patient_response": string | null,
+"patient_token": string,
 "scheduled_at": string,
 "source": string,
 "status": Database["public"]['Enums']["appointment_status"]

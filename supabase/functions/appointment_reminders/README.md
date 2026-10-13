@@ -41,10 +41,17 @@ supabase secrets set RESEND_API_KEY=re_xxx
 supabase secrets set REMINDER_FROM="Clinic <reminders@yourdomain.com>"
 supabase secrets set REMINDER_REPLY_TO=frontdesk@yourdomain.com   # optional
 
+# confirm/cancel link in every reminder (the app's public URL, no trailing slash)
+supabase secrets set APP_URL=https://app.yourdomain.com
+
 # SMS
 supabase secrets set SEMAPHORE_API_KEY=xxxxxxxx
 supabase secrets set SEMAPHORE_SENDER_NAME=YOURCLINIC   # optional; must be approved in Semaphore
 ```
+
+With `APP_URL` set, each reminder links to `/a/<token>`, where the patient
+can confirm or cancel (cancelling closes 2 hours before the visit). Without
+it, reminders ask the patient to contact the clinic instead.
 
 `REMINDER_FROM` must use a domain verified in Resend. Without
 `SEMAPHORE_SENDER_NAME`, Semaphore uses your account's default sender.

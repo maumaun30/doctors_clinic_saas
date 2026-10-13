@@ -13,7 +13,7 @@ const BUCKET = "exports";
 
 // One CSV per table. Read with the admin's own session, so RLS limits
 // every query to their account exactly as the app does.
-const TABLES: { file: string; table: string; select?: string; orderBy?: string; about: string }[] = [
+const TABLES: { file: string; table: string; select?: string; orderBy?: string; omit?: string[]; about: string }[] = [
   { file: "clinics.csv", table: "clinics", about: "Your clinics and online booking settings." },
   { file: "staff.csv", table: "profiles", select: "id, full_name, role, phone, avatar_path, created_at, deactivated_at",
     about: "Admins, doctors and secretaries. deactivated_at is set for people whose access was removed." },
@@ -23,7 +23,9 @@ const TABLES: { file: string; table: string; select?: string; orderBy?: string; 
   { file: "secretary_assignments.csv", table: "clinic_assignments", about: "Which secretary supports which doctor_clinics row." },
   { file: "patients.csv", table: "patients", about: "Patient details." },
   { file: "patient_clinics.csv", table: "patient_clinics", about: "Which clinics each patient is linked to." },
-  { file: "appointments.csv", table: "appointments", about: "All appointments. Times are UTC (ISO 8601)." },
+  // patient_token is the patient's live confirm/cancel link: never exported.
+  { file: "appointments.csv", table: "appointments", omit: ["patient_token"],
+    about: "All appointments. Times are UTC (ISO 8601). patient_response: confirmed/cancelled by the patient from their reminder link." },
   { file: "visits.csv", table: "medical_records", about: "Visit records: complaint, diagnosis, vitals (JSON), notes." },
   { file: "prescriptions.csv", table: "prescriptions", about: "Prescriptions. medical_record_id = visits.csv id." },
   { file: "lab_orders.csv", table: "lab_orders", about: "Lab requests and results." },
@@ -56,7 +58,8 @@ export async function GET(req: Request) {
   const files: Record<string, Uint8Array> = {};
   const counts: string[] = [];
   for (const t of TABLES) {
-    const rows = await fetchAll(sb, t.table, t.select, t.orderBy);
+    const rows = (await fetchAll(sb, t.table, t.select, t.orderBy))
+      .map(r => t.omit ? Object.fromEntries(Object.entries(r).filter(([k]) => !t.omit!.includes(k))) : r);
     files[t.file] = strToU8(toCsv(rows));
     counts.push(`${t.file.padEnd(28)} ${String(rows.length).padStart(7)} rows  ${t.about}`);
   }
