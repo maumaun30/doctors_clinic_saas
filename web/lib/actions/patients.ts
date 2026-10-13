@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
+import { getMyProfile } from "@/lib/data/queries";
 
 // Shared by add and edit. Blank strings from the form mean "not given".
 const blank = (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v);
@@ -90,4 +91,41 @@ export async function unlinkPatientFromClinic(id: string) {
   const sb = await createClient();
   const { error } = await sb.from("patient_clinics").delete().eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+const uuid = z.string().uuid();
+
+/** Admins with 2FA: fold `removeId` into `keepId` (see admin_merge_patients). */
+export async function mergePatients(keepId: string, removeId: string): Promise<PatientResult> {
+  if (!uuid.safeParse(keepId).success || !uuid.safeParse(removeId).success) return { ok: false, error: "Patient not found." };
+  const sb = await createClient();
+  const { error } = await sb.rpc("admin_merge_patients", { p_keep: keepId, p_remove: removeId });
+  if (error) {
+    if (error.message.includes("forbidden")) return { ok: false, error: "Only admins with two-factor sign-in can merge patients." };
+    if (error.message.includes("not_found")) return { ok: false, error: "One of these patients no longer exists. It may already be merged." };
+    if (error.message.includes("same_patient")) return { ok: false, error: "Pick two different patients." };
+    return { ok: false, error: friendly(error.message) };
+  }
+  revalidatePath("/patients");
+  revalidatePath("/patients/duplicates");
+  revalidatePath(`/patients/${keepId}`);
+  return { ok: true, id: keepId };
+}
+
+/** Admins: stop suggesting a pair that are two different people. */
+export async function dismissDuplicate(a: string, b: string): Promise<PatientResult> {
+  if (!uuid.safeParse(a).success || !uuid.safeParse(b).success || a === b) return { ok: false, error: "Patient not found." };
+  const sb = await createClient();
+  const me = await getMyProfile(sb);
+  if (me?.role !== "admin" || !me.account_id) return { ok: false, error: "Only admins can do this." };
+  // Stored in uuid order (the table checks patient_a < patient_b).
+  const [lo, hi] = [a.toLowerCase(), b.toLowerCase()].sort();
+  const { error } = await sb.from("patient_not_duplicates")
+    .upsert({ account_id: me.account_id, patient_a: lo, patient_b: hi, dismissed_by: me.id }, { ignoreDuplicates: true });
+  if (error) {
+    if (error.message.includes("row-level security")) return { ok: false, error: "Only admins with two-factor sign-in can do this." };
+    return { ok: false, error: friendly(error.message) };
+  }
+  revalidatePath("/patients/duplicates");
+  return { ok: true, id: lo };
 }

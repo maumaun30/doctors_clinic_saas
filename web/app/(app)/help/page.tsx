@@ -157,6 +157,7 @@ const GUIDES: Guide[] = [
           <>Set or change a doctor’s or secretary’s photo and details from their page under Doctors or Secretaries.</>,
           <>When someone leaves, open their page and click <strong>Remove access</strong>. They can’t sign in again, their past records keep their name, and removed doctors stop counting toward billing. Move or cancel a doctor’s upcoming appointments first.</>,
           <>The <strong>Audit log</strong> shows who changed patient, appointment and clinical records, and when.</>,
+          <>If a patient was added twice, merge the records from <strong>Patients → Duplicates</strong> or the <strong>Merge</strong> button on their chart.</>,
           <>Download all your clinic’s data as spreadsheets from <strong>Data export</strong>. For one patient’s privacy request, use <strong>Export record</strong> on their chart.</>,
         ],
       },

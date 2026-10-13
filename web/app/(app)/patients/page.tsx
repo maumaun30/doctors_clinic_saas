@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeftIcon, ChevronRightIcon, SearchXIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, SearchXIcon } from "lucide-react";
 import { PageHeader } from "@/app/_components/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
@@ -114,7 +114,12 @@ export default async function PatientsPage({ searchParams }: { searchParams: Pro
     <>
       <PageHeader icon="users" title="Patients"
         sub={`${total} ${total === 1 ? "patient" : "patients"}${filtered ? " match" : ""}${activeClinic ? " · active clinic" : " · all clinics"}`}
-        actions={activeClinic && <PatientDialog />} />
+        actions={<>
+          {me?.role === "admin" && (
+            <Button asChild variant="outline"><Link href="/patients/duplicates"><CopyIcon /> Duplicates</Link></Button>
+          )}
+          {activeClinic && <PatientDialog />}
+        </>} />
 
       <PatientFilters />
 
