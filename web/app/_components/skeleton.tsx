@@ -155,7 +155,7 @@ type Col = {
   label?: string;
   /** Responsive visibility, mirroring the page's TableHead classes. */
   hide?: "md" | "lg" | "xl";
-  cell?: "person" | "text" | "badge" | "num" | "action" | "time";
+  cell?: "person" | "doctor" | "text" | "badge" | "num" | "action" | "time";
   className?: string;
 };
 const HIDE = { md: "hidden md:table-cell", lg: "hidden lg:table-cell", xl: "hidden xl:table-cell" } as const;
@@ -172,6 +172,8 @@ function cellBone(c: Col, i: number) {
           </div>
         </div>
       );
+    case "doctor":
+      return <div className="flex items-center gap-2"><Bone className="size-6 shrink-0 rounded-full" /><Bone className={cn("h-4", w(i))} /></div>;
     case "time":
       return <div className="grid gap-1.5"><Bone className="h-4 w-14" /><Bone className="h-3 w-8" /></div>;
     case "badge":
@@ -285,7 +287,7 @@ export function ScheduleSkeleton() {
       <TableCard group rows={6} cols={[
         { label: "Time", cell: "time", className: "w-28" },
         { label: "Patient", cell: "text" },
-        { label: "Provider", cell: "text", hide: "md" },
+        { label: "Provider", cell: "doctor", hide: "md" },
         { label: "Status", cell: "badge" },
         { cell: "action", className: "w-12" },
       ]} />

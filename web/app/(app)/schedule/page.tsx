@@ -6,6 +6,8 @@ import { getBookingOptions } from "@/lib/data/queries";
 import { getActiveClinicId } from "@/lib/data/clinic-context";
 import { ageYearsMonths } from "@/app/_components/age";
 import { PrintButton } from "@/app/_components/print-button";
+import { UserAvatar } from "@/app/_components/user-avatar";
+import { avatarUrl } from "@/lib/avatar";
 import { BookDialog } from "./book-dialog";
 import { AppointmentActions } from "./appointment-actions";
 import type { Database } from "@/lib/database.types";
@@ -63,7 +65,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   let q = sb.from("appointments")
     .select(`id, scheduled_at, duration_minutes, status, notes, source,
       patient:patients!inner(id, full_name, date_of_birth, sex),
-      doctor:doctors!inner(profile:staff_profiles!inner(full_name)),
+      doctor:doctors!inner(profile:staff_profiles!inner(full_name, avatar_path)),
       clinic:clinics!inner(name)`)
     .gte("scheduled_at", `${from}T00:00:00+08:00`)
     .lte("scheduled_at", `${to}T23:59:59+08:00`)
@@ -205,8 +207,14 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                           {a.notes && <div className="truncate text-xs text-muted-foreground" title={a.notes}>{a.notes}</div>}
                         </TableCell>
                         <TableCell className="hidden align-top md:table-cell">
-                          <div>{a.doctor.profile.full_name}</div>
-                          {showClinic && <div className="text-xs text-muted-foreground">{a.clinic.name}</div>}
+                          <div className="flex items-start gap-2">
+                            <UserAvatar name={a.doctor.profile.full_name ?? ""} src={avatarUrl(a.doctor.profile.avatar_path)}
+                              className="size-6" fallbackClassName="text-[10px]" />
+                            <div className="min-w-0">
+                              <div>{a.doctor.profile.full_name}</div>
+                              {showClinic && <div className="text-xs text-muted-foreground">{a.clinic.name}</div>}
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell className="align-top">
                           <div className="flex flex-wrap gap-1.5">
