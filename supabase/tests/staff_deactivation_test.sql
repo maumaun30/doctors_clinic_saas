@@ -114,7 +114,7 @@ select _assert((select count(*) from appointments) = 0, 'removed secretary sees 
 select _assert((select count(*) from patients) = 0, 'removed secretary sees no patients');
 select _assert((select count(*) from staff_profiles) = 0, 'removed secretary sees no colleagues');
 select _assert_raises($q$ select book_appointment('00000000-0000-0000-0000-00000000d0f1', '00000000-0000-0000-0000-00000000d0d1',
-  '00000000-0000-0000-0000-00000000d0c1', now() + interval '3 days') $q$,
+  '00000000-0000-0000-0000-00000000d0c1', ((now() at time zone 'Asia/Manila')::date + 3 + time '10:00') at time zone 'Asia/Manila') $q$,
   'access_removed', 'removed secretary cannot book through the booking function either');
 select _assert_raises($q$ update profiles set deactivated_at = null where id = '00000000-0000-0000-0000-00000000d0e1' $q$,
   'row-level security', 'removed user cannot reactivate themselves');
