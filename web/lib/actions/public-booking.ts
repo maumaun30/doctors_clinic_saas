@@ -89,11 +89,14 @@ export async function bookPublicAppointment(raw: unknown): Promise<BookResult> {
   return { ok: true, scheduled_at: data[0].scheduled_at };
 }
 
-// Salted hash so raw IPs are never stored.
-async function clientIpHash(): Promise<string | undefined> {
+// Salted hash so raw IPs are never stored. Requests without a client IP
+// share one bucket, so they are still rate limited.
+async function clientIpHash(): Promise<string> {
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip");
-  if (!ip) return undefined;
+  const ip = h.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()
+    || h.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || h.get("x-real-ip")
+    || "unknown";
   return createHash("sha256")
     .update(`${ip}|${process.env.SUPABASE_SERVICE_ROLE_KEY}`)
     .digest("hex");

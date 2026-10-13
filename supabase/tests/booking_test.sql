@@ -147,6 +147,21 @@ update appointments set status = 'cancelled' where clinic_id = '00000000-0000-00
 select _assert_raises($q$ select * from public_book_appointment('open-clinic', '00000000-0000-0000-0000-0000000003d1',
   (select s0 from _t), 'Spammer', '0999 999 9999', null, null, 'ip-spam') $q$, 'too many bookings', 'book: rate limited per IP');
 
+-- Clinic-wide cap (0031): 30 online bookings created per hour, from any network.
+insert into appointments(patient_id, doctor_id, clinic_id, scheduled_at, status, source)
+select (select id from patients where account_id = '00000000-0000-0000-0000-0000000003a1' limit 1),
+       '00000000-0000-0000-0000-0000000003d1', '00000000-0000-0000-0000-0000000003c1',
+       now() + make_interval(days => 3, mins => 15 * g), 'cancelled', 'staff'
+from generate_series(1, 30) g;
+update appointments set source = 'online' where clinic_id = '00000000-0000-0000-0000-0000000003c1';
+select _assert_raises($q$ select * from public_book_appointment('open-clinic', '00000000-0000-0000-0000-0000000003d1',
+  (select s0 from _t), 'Fresh Name', '0918 111 2222', null, null, 'ip-new') $q$, 'lot of online bookings', 'book: clinic-wide hourly cap');
+insert into appointments(patient_id, doctor_id, clinic_id, scheduled_at, status, source)
+select (select id from patients where account_id = '00000000-0000-0000-0000-0000000003a1' limit 1),
+       '00000000-0000-0000-0000-0000000003d1', '00000000-0000-0000-0000-0000000003c1',
+       now() + interval '10 days', 'cancelled', 'staff';
+select _assert(true, 'book: staff bookings are not capped');
+
 drop function _assert(boolean, text);
 drop function _assert_raises(text, text, text);
 rollback;
