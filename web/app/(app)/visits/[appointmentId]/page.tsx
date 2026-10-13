@@ -38,7 +38,7 @@ export default async function VisitPage({ params }: { params: Promise<{ appointm
 
   const [apptRes, meds, labs, conds] = await Promise.all([
     sb.from("appointments")
-      .select("*, patient:patients(id, full_name, date_of_birth, sex, phone), doctor:doctors(profile:profiles(full_name)), clinic:clinics(name)")
+      .select("*, patient:patients(id, full_name, date_of_birth, sex, phone), doctor:doctors(profile:staff_profiles(full_name)), clinic:clinics(name)")
       .eq("id", appointmentId).single(),
     sb.from("common_medications").select("*").order("name"),
     sb.from("common_lab_tests").select("*").order("name"),

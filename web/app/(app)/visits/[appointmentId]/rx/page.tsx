@@ -13,7 +13,7 @@ export default async function RxPrintPage({
 
   const [{ data: doctor }, { data: clinic }, { data: patient }, { data: record }] = await Promise.all([
     sb.from("doctors")
-      .select("specialization, prc_license_no, profiles!inner(full_name)")
+      .select("specialization, prc_license_no, profiles:staff_profiles!inner(full_name)")
       .eq("profile_id", appt.doctor_id).single(),
     sb.from("clinics").select("name, address").eq("id", appt.clinic_id).single(),
     sb.from("patients").select("full_name, date_of_birth, sex").eq("id", appt.patient_id).single(),

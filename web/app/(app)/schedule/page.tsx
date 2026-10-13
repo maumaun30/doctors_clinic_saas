@@ -63,7 +63,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   let q = sb.from("appointments")
     .select(`id, scheduled_at, duration_minutes, status, notes, source,
       patient:patients!inner(id, full_name, date_of_birth, sex),
-      doctor:doctors!inner(profile:profiles!inner(full_name)),
+      doctor:doctors!inner(profile:staff_profiles!inner(full_name)),
       clinic:clinics!inner(name)`)
     .gte("scheduled_at", `${from}T00:00:00+08:00`)
     .lte("scheduled_at", `${to}T23:59:59+08:00`)

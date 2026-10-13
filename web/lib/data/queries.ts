@@ -78,7 +78,7 @@ export async function getBookingOptions(sb: SupabaseClient, activeClinic: string
   const [patients, dcRes] = await Promise.all([
     listPatients(sb),
     sb.from("doctor_clinics")
-      .select("doctor_id, clinic_id, doctor:doctors!inner(profiles!inner(full_name)), clinic:clinics!inner(name)"),
+      .select("doctor_id, clinic_id, doctor:doctors!inner(profiles:staff_profiles!inner(full_name)), clinic:clinics!inner(name)"),
   ]);
   if (dcRes.error) throw dcRes.error;
 
