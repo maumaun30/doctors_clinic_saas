@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyProfile } from "@/lib/data/queries";
 import { getMyClinics, getActiveClinicId } from "@/lib/data/clinic-context";
 import { signOut } from "@/lib/actions/auth";
-import { AppShell, type NavLink } from "@/app/_components/app-shell";
+import { AppShell, type NavGroup } from "@/app/_components/app-shell";
+import { phYmd } from "@/lib/dates";
 import { ClinicSwitcher } from "@/app/_components/clinic-switcher";
 import { UserMenu, type UserMenuLink } from "@/app/_components/user-menu";
 
@@ -41,28 +42,51 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const clinics = isPending ? [] : await getMyClinics(sb);
   const activeClinic = isPending ? null : await getActiveClinicId(sb);
 
-  const nav: NavLink[] = isPending
-    ? []
-    : [
-        { href: "/today", label: "Today", icon: "today" },
-        { href: "/schedule", label: "Schedule", icon: "calendar" },
-        { href: "/patients", label: "Patients", icon: "users" },
-        { href: "/analytics", label: "Analytics", icon: "chart" },
-        { href: "/availability", label: "Availability", icon: "clock" },
-      ];
+  // Live badges: appointments still to see today, and people waiting for
+  // access (admins). Kept cheap: head counts only.
+  let todayLeft = 0;
+  let awaiting = 0;
+  if (!isPending) {
+    const today = phYmd();
+    let tq = sb.from("appointments").select("id", { count: "exact", head: true })
+      .gte("scheduled_at", `${today}T00:00:00+08:00`).lte("scheduled_at", `${today}T23:59:59+08:00`)
+      .in("status", ["scheduled", "confirmed"]);
+    if (activeClinic) tq = tq.eq("clinic_id", activeClinic);
+    if (isDoctor) tq = tq.eq("doctor_id", profile.id);
+    const [{ count }, pendingRes, invitesRes] = await Promise.all([
+      tq,
+      isAdmin ? sb.rpc("list_pending_users") : Promise.resolve({ data: [] as { email: string | null }[] }),
+      isAdmin ? sb.from("staff_invites").select("email").is("accepted_at", null).is("revoked_at", null)
+        : Promise.resolve({ data: [] as { email: string }[] }),
+    ]);
+    todayLeft = count ?? 0;
+    const invited = new Set((invitesRes.data ?? []).map(i => i.email));
+    awaiting = ((pendingRes.data ?? []) as { email: string | null }[])
+      .filter(u => !invited.has(String(u.email ?? "").toLowerCase())).length;
+  }
 
-  const adminNav: NavLink[] =
-    isAdmin && !isPending
-      ? [
-          { href: "/admin/clinics", label: "Clinics", icon: "building" },
-          { href: "/admin/doctors", label: "Doctors", icon: "user" },
-          { href: "/admin/secretaries", label: "Secretaries", icon: "users" },
-          { href: "/admin/library", label: "Library", icon: "settings" },
-          { href: "/admin/users", label: "Team & invites", icon: "user" },
-          { href: "/admin/audit", label: "Audit log", icon: "shield" },
-          { href: "/admin/billing", label: "Billing", icon: "card" },
-        ]
-      : [];
+  const groups: NavGroup[] = isPending ? [] : [
+    { label: null, links: [
+      { href: "/today", label: "Today", icon: "today", count: todayLeft },
+      { href: "/schedule", label: "Schedule", icon: "schedule" },
+      { href: "/patients", label: "Patients", icon: "patients" },
+      { href: "/availability", label: "Availability", icon: "availability" },
+      { href: "/analytics", label: "Analytics", icon: "analytics" },
+    ] },
+    ...(isAdmin ? [
+      { label: "Team", links: [
+        { href: "/admin/doctors", label: "Doctors", icon: "doctors" as const },
+        { href: "/admin/secretaries", label: "Secretaries", icon: "secretaries" as const },
+        { href: "/admin/users", label: "Team & invites", icon: "team" as const, count: awaiting },
+      ] },
+      { label: "Settings", links: [
+        { href: "/admin/clinics", label: "Clinics", icon: "clinics" as const },
+        { href: "/admin/library", label: "Library", icon: "library" as const },
+        { href: "/admin/billing", label: "Billing", icon: "billing" as const },
+        { href: "/admin/audit", label: "Audit log", icon: "audit" as const },
+      ] },
+    ] : []),
+  ];
 
   const name = profile.full_name ?? "User";
 
@@ -120,7 +144,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <AppShell switcher={switcher} nav={nav} adminNav={adminNav} footer={footer}>
+    <AppShell switcher={switcher} groups={groups} footer={footer}>
       <SentryUser id={profile.id} role={profile.role} />
       {banner}
       {children}

@@ -375,12 +375,65 @@ html.dark {
   }
   .nav-item .count {
     margin-left: auto;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--fg-subtle);
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--bg-hover);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
   }
   .nav-item.active .count {
-    color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+  /* Collapsed rail: the badge becomes a dot on the icon. */
+  .app.collapsed .nav-item {
+    position: relative;
+  }
+  .app.collapsed .nav-item .count {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    min-width: 0;
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    font-size: 0;
+    background: var(--accent);
+  }
+  .nav-group + .nav-group {
+    margin-top: 4px;
+  }
+  /* "Search… ⌘K" opens the command menu. */
+  .sidebar-search {
+    padding: 0 14px 4px;
+  }
+  .search-trigger {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 8px 10px;
+    margin: 0;
+    color: var(--fg-subtle);
+  }
+  .search-trigger kbd {
+    margin-left: auto;
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--fg-subtle);
+  }
+  .app.collapsed .sidebar-search {
+    padding: 0 10px 4px;
+  }
+  .app.collapsed .search-trigger {
+    justify-content: center;
+    border-color: transparent;
+    background: transparent;
   }
 
   .sidebar-footer {
