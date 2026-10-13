@@ -47,7 +47,7 @@ on conflict (id) do update set account_id = excluded.account_id, role = excluded
 select _as('00000000-0000-0000-0000-000000000bad', 'aal1');
 select _assert(not is_admin(), 'aal1 admin is not treated as admin');
 select _assert_raises($q$ insert into clinics(account_id, name) values ('00000000-0000-0000-0000-000000000ba1', 'Sneaky') $q$,
-  'row-level security', 'aal1 admin cannot add a clinic');
+  'mfa_required', 'aal1 admin cannot add a clinic');
 select _assert_raises($q$ select admin_assign_user('00000000-0000-0000-0000-000000000b01', 'secretary') $q$,
   'two-factor', 'aal1 admin cannot assign roles');
 
@@ -56,6 +56,19 @@ select _as('00000000-0000-0000-0000-000000000bad', 'aal2');
 select _assert(is_admin(), 'aal2 admin is admin');
 insert into clinics(account_id, name) values ('00000000-0000-0000-0000-000000000ba1', 'MFA Clinic');
 select _assert(exists(select 1 from clinics where name = 'MFA Clinic'), 'aal2 admin can add a clinic');
+
+select set_config('test.clinic', (select id::text from clinics where name = 'MFA Clinic'), true);
+select create_patient(current_setting('test.clinic')::uuid, 'MFA Patient');
+select _assert((select count(*) from patients) = 1, 'aal2 admin can add and see patients');
+
+-- ---- staff-level paths are closed to aal1 admins too (0030) ----
+select _as('00000000-0000-0000-0000-000000000bad', 'aal1');
+select _assert((select count(*) from patients) = 0, 'aal1 admin sees no patients');
+select _assert((select count(*) from clinics) = 0, 'aal1 admin sees no clinics');
+select _assert_raises($q$ select create_patient(current_setting('test.clinic')::uuid, 'Sneaky Patient') $q$,
+  'mfa_required', 'aal1 admin cannot add a patient through the staff RPC');
+with u as (update patients set full_name = 'Renamed' returning 1)
+select _assert((select count(*) from u) = 0, 'aal1 admin cannot change patients');
 
 -- ---- no aal claim (non-user connections) keeps old behaviour ----
 select _as('00000000-0000-0000-0000-000000000bad', null);
