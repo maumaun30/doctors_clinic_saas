@@ -12,6 +12,17 @@ test("admin must set up 2FA, then can use admin pages", async ({ page }) => {
   await page.getByRole("button", { name: "Turn on two-factor" }).click();
   await expect(page).toHaveURL(/\/today/);
 
+  // Setup checklist: the fixture has everything but a subscription.
+  const checklist = page.getByText("Get your clinic ready");
+  await expect(checklist).toBeVisible();
+  await expect(page.getByRole("link", { name: "Subscribe" })).toBeVisible();
+  await page.getByRole("button", { name: "Hide" }).click();
+  await expect(checklist).toBeHidden();
+  await page.goto("/help");
+  await page.getByRole("button", { name: "Show on Today" }).click();
+  await expect(page).toHaveURL(/\/today/);
+  await expect(checklist).toBeVisible();
+
   await page.goto("/admin/doctors");
   await expect(page.getByText("Dr. E2E Doctor")).toBeVisible();
 

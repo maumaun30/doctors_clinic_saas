@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { AppointmentStatusBadge } from "@/app/_components/appointment-status";
 import { StatCard } from "@/app/_components/stat-card";
 import { BookDialog } from "@/app/(app)/schedule/book-dialog";
+import { SetupChecklist } from "./setup-checklist";
 
 export default async function TodayPage() {
   const sb = await createClient();
@@ -114,6 +115,8 @@ export default async function TodayPage() {
           <Button asChild variant="outline"><Link href="/schedule"><Icon name="calendar" /> View schedule</Link></Button>
           <BookDialog {...booking} />
         </>} />
+
+      {me.role === "admin" && <SetupChecklist sb={sb} />}
 
       <div className="stats">
         <StatCard label="Scheduled">{appts.length}</StatCard>

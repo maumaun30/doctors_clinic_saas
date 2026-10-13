@@ -7,13 +7,13 @@ export type Database = {
           Tables: {
             "accounts": {
                   Row: {
-                    "created_at": string,"current_period_end": string | null,"id": string,"name": string,"seat_quantity": number | null,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"trial_ends_at": string
+                    "created_at": string,"current_period_end": string | null,"id": string,"name": string,"seat_quantity": number | null,"setup_checklist_hidden_at": string | null,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"trial_ends_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"current_period_end"?: string | null,"id"?: string,"name": string,"seat_quantity"?: number | null,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"trial_ends_at"?: string
+                    "created_at"?: string,"current_period_end"?: string | null,"id"?: string,"name": string,"seat_quantity"?: number | null,"setup_checklist_hidden_at"?: string | null,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"trial_ends_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"current_period_end"?: string | null,"id"?: string,"name"?: string,"seat_quantity"?: number | null,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"trial_ends_at"?: string
+                    "created_at"?: string,"current_period_end"?: string | null,"id"?: string,"name"?: string,"seat_quantity"?: number | null,"setup_checklist_hidden_at"?: string | null,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"trial_ends_at"?: string
                   }
                   Relationships: [
                     
@@ -690,6 +690,9 @@ isOneToOne: false
                            },
 "admin_merge_patients":
 { Args: { "p_keep": string,"p_remove": string }; Returns: Json
+                           },
+"admin_set_setup_checklist_hidden":
+{ Args: { "p_hidden": boolean }; Returns: undefined
                            },
 "admin_set_staff_active":
 { Args: { "p_active": boolean,"p_user_id": string }; Returns: undefined
