@@ -11,6 +11,7 @@ import { UserMenu, type UserMenuLink } from "@/app/_components/user-menu";
 import { SentryUser } from "@/app/_components/sentry-user";
 import * as Sentry from "@sentry/nextjs";
 import { syncSeats } from "@/lib/billing";
+import { hasTwoFactorSession } from "@/lib/auth/mfa";
 
 import Link from "next/link";
 
@@ -18,6 +19,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const sb = await createClient();
   const profile = await getMyProfile(sb);
   if (!profile) redirect("/login");
+  // Admins must finish two-factor before using the app (set up on first visit).
+  if (profile.role === "admin" && !(await hasTwoFactorSession(sb))) redirect("/mfa");
 
   // Server-side errors for this request carry an opaque id + role only.
   Sentry.setUser({ id: profile.id });
