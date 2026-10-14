@@ -85,7 +85,7 @@ export default async function MergePage({ searchParams }: { searchParams: Promis
                         {[fmtDate(m.date_of_birth) && `Born ${fmtDate(m.date_of_birth)}`, m.phone].filter(Boolean).join(" · ") || "No details"}
                       </span>
                     </span>
-                    <Icon name="chevright" />
+                    <Icon name="chevright" className="size-4 shrink-0 text-muted-foreground" />
                   </Link>
                 </li>
               ))}
