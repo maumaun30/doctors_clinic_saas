@@ -6,6 +6,7 @@ import { getMyProfile } from "@/lib/data/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChecklistToggle } from "@/app/(app)/today/checklist-toggle";
 import { SupportCard } from "./support-card";
 
 export const metadata = { title: "Help & guide" };
@@ -134,7 +135,7 @@ const GUIDES: Guide[] = [
     topics: [
       {
         title: "First-time setup",
-        intro: "Do these once, in order.",
+        intro: "Do these once, in order. The “Get your clinic ready” checklist on Today tracks them for you.",
         steps: [
           <>Set up two-factor authentication when asked. Admin accounts need it.</>,
           <>Add your clinics under <strong>Clinics</strong>.</>,
@@ -180,6 +181,8 @@ export default async function HelpPage() {
   const sb = await createClient();
   const me = await getMyProfile(sb);
   const initial = DEFAULT_TAB[me?.role ?? ""] ?? "start";
+  const checklistHidden = me?.role === "admin"
+    && Boolean((await sb.from("accounts").select("setup_checklist_hidden_at").maybeSingle()).data?.setup_checklist_hidden_at);
 
   return (
     <>
@@ -215,8 +218,17 @@ export default async function HelpPage() {
             </TabsContent>
           ))}
         </Tabs>
-        <div className="lg:sticky lg:top-4">
+        <div className="grid gap-4 lg:sticky lg:top-4">
           <SupportCard />
+          {checklistHidden && (
+            <Card size="sm">
+              <CardHeader>
+                <CardTitle>Setup checklist</CardTitle>
+                <CardDescription>The “Get your clinic ready” steps on Today.</CardDescription>
+              </CardHeader>
+              <CardContent><ChecklistToggle hide={false} /></CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </>

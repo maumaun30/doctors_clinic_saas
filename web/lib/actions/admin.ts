@@ -35,3 +35,17 @@ export async function assignUser(raw: unknown) {
   if (me?.account_id) await syncSeats(me.account_id);
   return data;
 }
+
+/** Hide or show the "Get your clinic ready" checklist on Today, for the whole account. */
+export async function setSetupChecklistHidden(hidden: boolean): Promise<{ ok: true } | { ok: false; error: string }> {
+  const sb = await createClient();
+  const { error } = await sb.rpc("admin_set_setup_checklist_hidden", { p_hidden: hidden });
+  if (error) {
+    if (error.message.includes("account_read_only")) return { ok: false, error: "Your account is read-only — subscribe under Billing first." };
+    if (error.message.includes("forbidden")) return { ok: false, error: "Only admins can change this." };
+    console.error("checklist toggle failed:", error.message);
+    return { ok: false, error: "Couldn’t save. Please try again." };
+  }
+  revalidatePath("/today");
+  return { ok: true };
+}
