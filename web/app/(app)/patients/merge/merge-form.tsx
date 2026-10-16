@@ -8,7 +8,6 @@ import { mergePatients } from "@/lib/actions/patients";
 import type { PatientSummary } from "../duplicates/summary";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -35,12 +34,18 @@ const ROWS: Row[] = [
 
 function Choice({ p, keep, onPick }: { p: PatientSummary; keep: boolean; onPick: () => void }) {
   return (
-    <button type="button" onClick={onPick} aria-pressed={keep}
+    <button type="button" onClick={onPick} role="radio" aria-checked={keep}
       className={cn("grid gap-2 rounded-xl border p-4 text-left text-sm transition-colors",
         keep ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50")}>
       <div className="flex items-start justify-between gap-2">
         <span className="font-medium">{p.full_name}</span>
-        {keep ? <Badge>Keep</Badge> : <Badge variant="secondary">Merge in</Badge>}
+        <span className={cn("flex shrink-0 items-center gap-1.5 text-xs font-medium", keep ? "text-primary" : "text-muted-foreground")}>
+          <span aria-hidden className={cn("grid size-4 place-items-center rounded-full border",
+            keep ? "border-primary" : "border-muted-foreground/50")}>
+            {keep && <span className="size-2 rounded-full bg-primary" />}
+          </span>
+          {keep ? "Keeping this one" : "Keep this one"}
+        </span>
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
         {ROWS.slice(1).map(r => (
@@ -80,15 +85,20 @@ export function MergeForm({ a, b, defaultKeep }: { a: PatientSummary; b: Patient
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-muted-foreground">Choose the record to keep. Click a card to switch.</p>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div>
+        <h2 className="text-base font-semibold">1. Pick the record to keep</h2>
+        <p className="text-sm text-muted-foreground">
+          Nothing is merged yet. Tap the record that should stay; the other one is merged into it and removed.
+        </p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2" role="radiogroup" aria-label="Record to keep">
         <Choice p={a} keep={keepId === a.id} onPick={() => setKeepId(a.id)} />
         <Choice p={b} keep={keepId === b.id} onPick={() => setKeepId(b.id)} />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>After merging</CardTitle>
+          <CardTitle>2. Check the result, then merge</CardTitle>
           <CardDescription>One record, <strong className="text-foreground">{keep.full_name}</strong>, with everything from both.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-1.5 text-sm">
