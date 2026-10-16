@@ -195,6 +195,12 @@ The deployable app is the **`web/`** subdirectory.
 
 Every push to `main` then auto-deploys.
 
+## Backups
+
+A nightly GitHub Action saves an encrypted copy of the production database
+and stored files for 30 days. Setup (four secrets, one key pair) and restore
+steps: [docs/backups.md](docs/backups.md).
+
 ## Trust boundary
 
 - `anon` / `authenticated` keys are safe in the browser — **RLS is the only
