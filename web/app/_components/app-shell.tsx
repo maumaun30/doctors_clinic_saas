@@ -53,6 +53,17 @@ export function AppShell({
     } catch {}
   }, []);
 
+  // Mobile drawer: close it after any navigation (nav links, the account
+  // menu, search), and stop the page behind it from scrolling while open.
+  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const html = document.documentElement;
+    const prev = html.style.overflow;
+    html.style.overflow = "hidden";
+    return () => { html.style.overflow = prev; };
+  }, [open]);
+
   const toggleCollapsed = () => {
     setCollapsed((c) => {
       const next = !c;
