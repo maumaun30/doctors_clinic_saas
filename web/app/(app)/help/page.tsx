@@ -48,6 +48,16 @@ const GUIDES: Guide[] = [
         ],
       },
       {
+        title: "Install on your phone or computer",
+        intro: "Add the app to your home screen to open it like any other app, full screen. Nothing about your patients is saved on the device.",
+        steps: [
+          <><strong>Android (Chrome):</strong> open the menu <strong>⋮</strong>, then <strong>Add to Home screen</strong> or <strong>Install app</strong>.</>,
+          <><strong>iPhone or iPad (Safari):</strong> tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</>,
+          <><strong>Computer (Chrome or Edge):</strong> click your name at the bottom of the sidebar, then <strong>Install app</strong>.</>,
+          <>It still needs an internet connection. Without one you’ll see an offline page until you’re back online.</>,
+        ],
+      },
+      {
         title: "Read-only mode",
         steps: [
           <>If the clinic’s subscription isn’t active, a red banner appears and nothing can be added or changed.</>,

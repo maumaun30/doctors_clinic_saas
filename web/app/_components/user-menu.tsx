@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { MonitorDownIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,7 @@ import {
 import { Icon, type IconName } from "./icons";
 import { ThemeToggle } from "./theme-toggle";
 import { UserAvatar } from "./user-avatar";
+import { promptInstall, useCanInstall } from "./pwa";
 
 export type UserMenuLink = { href: string; label: string; icon: IconName };
 
@@ -33,6 +35,7 @@ export function UserMenu({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [side, setSide] = useState<"top" | "right">("top");
   const [, startTransition] = useTransition();
+  const canInstall = useCanInstall();
 
   return (
     <DropdownMenu
@@ -75,6 +78,13 @@ export function UserMenu({
             </Link>
           </DropdownMenuItem>
         ))}
+
+        {canInstall && (
+          <DropdownMenuItem className="gap-2.5 p-2" onSelect={() => { void promptInstall(); }}>
+            <MonitorDownIcon className="text-muted-foreground" />
+            Install app
+          </DropdownMenuItem>
+        )}
 
         <DropdownMenuSeparator />
         <div className="flex items-center justify-between px-2 py-1 text-sm text-muted-foreground">

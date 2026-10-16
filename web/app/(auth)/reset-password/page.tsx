@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Logo } from "@/app/_components/logo";
 
 // User lands here from the password-reset email after Supabase exchanges
 // the recovery code (via the PASSWORD_RECOVERY auth event in the
@@ -45,8 +46,7 @@ export default function ResetPasswordPage() {
     <div className="auth-screen">
       <div className="card auth-card">
         <div className="auth-brand">
-          <span className="mark">C</span>
-          <span className="wordmark">Clinic</span>
+          <Logo className="h-8 w-auto" />
         </div>
         <h2>Set a new password</h2>
         {!ready && <p className="sub">Verifying reset link…</p>}

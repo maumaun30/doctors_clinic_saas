@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPublicClinic } from "@/lib/actions/public-booking";
 import BookingWidget from "./booking-widget";
+import { PoweredBy } from "@/app/_components/logo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ export default async function PublicBookingPage({ params }: { params: Promise<{ 
           ? <div className="empty">Online booking isn’t available right now. Please call the clinic.</div>
           : <BookingWidget slug={slug} clinicName={clinic.name} doctors={clinic.doctors} />}
       </div>
+      <PoweredBy />
     </div>
   );
 }

@@ -25,6 +25,10 @@ const nextConfig = {
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
       ],
+    }, {
+      // Always fetch the service worker fresh so updates reach installed apps.
+      source: "/sw.js",
+      headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }],
     }];
   },
   // No ESLint config in this project; type errors still fail the build.

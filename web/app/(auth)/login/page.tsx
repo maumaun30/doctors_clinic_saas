@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircleIcon, CheckCircle2Icon, EyeIcon, EyeOffIcon } from "lucide-react";
+import { Logo } from "@/app/_components/logo";
 
 // Supabase auth messages, in plain language.
 const friendly = (m: string) =>
@@ -82,8 +83,7 @@ export default function LoginPage() {
     <div className="auth-screen">
       <div className="card auth-card">
         <div className="auth-brand">
-          <span className="mark">C</span>
-          <span className="wordmark">Clinic</span>
+          <Logo className="h-8 w-auto" />
         </div>
         <h2>{mode === "signin" ? "Sign in" : "Create account"}</h2>
         <p className="sub">

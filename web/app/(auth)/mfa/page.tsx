@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Logo } from "@/app/_components/logo";
 
 type Mode = "loading" | "verify" | "enroll";
 
@@ -92,8 +93,7 @@ export default function MfaPage() {
     <div className="auth-screen">
       <div className="card auth-card">
         <div className="auth-brand">
-          <span className="mark">C</span>
-          <span className="wordmark">Clinic</span>
+          <Logo className="h-8 w-auto" />
         </div>
         <div className="mb-4 flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
           {mode === "enroll" ? <SmartphoneIcon className="size-5" /> : <ShieldCheckIcon className="size-5" />}
