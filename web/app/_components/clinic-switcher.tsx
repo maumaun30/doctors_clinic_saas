@@ -64,7 +64,10 @@ export function ClinicSwitcher({
   };
 
   return (
+    // Non-modal for the same reason as UserMenu: on touch screens a modal
+    // menu lets the opening tap reach the mobile drawer's scrim.
     <DropdownMenu
+      modal={false}
       onOpenChange={(open) => {
         if (open) setSide(triggerRef.current?.closest(".app.collapsed") ? "right" : "bottom");
       }}
