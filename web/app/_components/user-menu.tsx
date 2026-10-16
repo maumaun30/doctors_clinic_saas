@@ -38,7 +38,11 @@ export function UserMenu({
   const canInstall = useCanInstall();
 
   return (
+    // Non-modal: a modal menu turns off pointer events on the page, so on
+    // touch screens the opening tap fell through the mobile drawer to its
+    // scrim, closed the drawer and left the menu stranded off-screen.
     <DropdownMenu
+      modal={false}
       onOpenChange={open => {
         if (open) setSide(triggerRef.current?.closest(".app.collapsed") ? "right" : "top");
       }}
