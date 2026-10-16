@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPatientAppointment } from "@/lib/actions/patient-link";
 import { PatientActions } from "./patient-actions";
+import { PoweredBy } from "@/app/_components/logo";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your appointment", robots: { index: false, follow: false } };
@@ -33,6 +34,7 @@ export default async function PatientAppointmentPage({ params }: { params: Promi
         <PatientActions token={token} status={a.status} canConfirm={a.can_confirm} canCancel={a.can_cancel}
           past={new Date(a.scheduled_at).getTime() <= Date.now()} />
       </div>
+      <PoweredBy />
     </div>
   );
 }

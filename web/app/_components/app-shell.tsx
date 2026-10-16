@@ -7,6 +7,7 @@ import { SearchIcon } from "lucide-react";
 import { Icon } from "./icons";
 import { NAV_ICONS, type NavGroup, type NavLink } from "./nav-icons";
 import { CommandMenu } from "./command-menu";
+import { Logo, LogoMark } from "./logo";
 import { Button } from "@/components/ui/button";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
@@ -84,6 +85,10 @@ export function AppShell({
       <div className="scrim" onClick={() => setOpen(false)} />
 
       <aside className="sidebar">
+        <Link href="/" className="sidebar-brand" aria-label="Doctors Clinic home" onClick={() => setOpen(false)}>
+          <Logo className="brand-full" />
+          <LogoMark className="brand-mark" />
+        </Link>
         <div className="sidebar-section">{switcher}</div>
 
         {links.length > 0 && (
@@ -130,6 +135,7 @@ export function AppShell({
             aria-label="Menu">
             <Icon name="menu" />
           </Button>
+          <LogoMark className="size-5 shrink-0" />
           <span className="title">{titleFor(pathname, links)}</span>
         </div>
 

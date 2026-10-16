@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Logo } from "@/app/_components/logo";
 
 export default function ForgotPasswordPage() {
   const sb = createClient();
@@ -31,8 +32,7 @@ export default function ForgotPasswordPage() {
     <div className="auth-screen">
       <div className="card auth-card">
         <div className="auth-brand">
-          <span className="mark">C</span>
-          <span className="wordmark">Clinic</span>
+          <Logo className="h-8 w-auto" />
         </div>
         <h2>Reset password</h2>
         <p className="sub">Enter your email and we&apos;ll send you a reset link.</p>

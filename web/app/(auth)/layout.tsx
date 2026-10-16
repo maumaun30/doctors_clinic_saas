@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Logo } from "@/app/_components/logo";
 
 // Two-column shell for sign-in, forgot-password and reset-password:
 // the page's form on the left, a clinic photo with a short pitch on the
@@ -21,7 +22,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <Image src={PHOTO} alt="" fill priority sizes="(min-width: 960px) 50vw, 0px" className="auth-split-photo" />
         <div className="auth-split-overlay">
           <div className="auth-split-copy">
-            <p className="auth-split-kicker">Doctors Clinic</p>
+            <Logo mono className="mb-5 h-8 w-auto" />
             <h2>Run your practice, not paperwork.</h2>
             <ul>
               {HIGHLIGHTS.map(h => (
